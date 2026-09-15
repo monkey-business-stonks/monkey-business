@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
-import { SmallButton } from '../../common/small-button/small-button';
+import { Button } from '../../shared/button/button';
 
 @Component({
-  imports: [SmallButton],
+  imports: [Button],
   selector: 'account-select',
   styleUrl: './account-select.css',
   templateUrl: './account-select.html',

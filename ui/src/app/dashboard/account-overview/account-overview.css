@@ -1,0 +1,36 @@
+.account-overview-container {
+  background-color: var(--background-secondary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.label {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  padding-top: var(--space-sm);
+}
+
+.total-balance {
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-family: 'Roboto Mono', sans-serif;
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: -1px;
+}
+
+.daily-summary-container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xs);
+  font-family: 'Roboto Mono', sans-serif;
+  font-size: var(--font-size-xs);
+  color: var(--accent-primary);
+}
+
+.daily-summary-total {
+  background-color: var(--accent-primary-transparent);
+  border-radius: var(--radius-sm);
+  padding-inline: var(--space-md);
+}

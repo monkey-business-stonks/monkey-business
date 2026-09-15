@@ -1,0 +1,42 @@
+/* Base button styles */
+.btn {
+  background-color: var(--clear);
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: 'Inter', sans-serif;
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition-duration: var(--transition-duration);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Primary variant - small button */
+.btn-primary {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  border: 1.5px solid var(--background-tertiary);
+  padding: var(--space-sm) var(--space-md);
+}
+
+.btn-primary:hover:not(:disabled) {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary-transparent);
+}
+
+/* Secondary variant - navigation button */
+.btn-nav {
+  color: var(--text-secondary);
+  font-size: var(--font-size-base);
+  padding: 0;
+}
+
+.btn-nav:hover:not(:disabled) {
+  color: var(--text-primary);
+}

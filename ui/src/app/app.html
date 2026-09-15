@@ -1,15 +1,17 @@
 <main class="main">
-<h1 class="title">Header test</h1>
-<p>Everything below will eventually moved into a single 'frame' component which will change it's content depending on user actions.</p>
+<app-navigation-bar></app-navigation-bar>
+<!-- <p>Everything below will eventually moved into a single 'frame' component which will change it's content depending on user actions.</p>
 <ul>
 <li>account-select will be the component to toggle between viewing an entire portfolio or individual account details. This can be made up of smaller button components (maybe they can be reused elsewhere?)</li>
 <li>account-overview will display current value of an account. This includes balance and cash balance. If a user selects an individual account, it will show detailed information about that account rather than total portfolio value.</li>
 <li>account-details is a component that displays all assets currently held by the selected account. If user has selected 'all' in account-select, it will show all accounts separated by headers. Assets must be separated by account since they will have different avg. bought price.</li>
-</ul>
+</ul> -->
 
 </main>
-<account-select />
-<account-overview />
-<account-details />
+<div class="dashboard-container">
+  <account-select />
+  <account-overview />
+  <account-details />
+</div>
 
 <router-outlet />

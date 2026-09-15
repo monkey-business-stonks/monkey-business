@@ -1,0 +1,4 @@
+.account-select-container {
+  display: flex;
+  gap: var(--space-xs);
+}

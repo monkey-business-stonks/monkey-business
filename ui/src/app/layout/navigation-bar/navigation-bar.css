@@ -1,0 +1,36 @@
+.navbar {
+  display: flex;
+  flex-direction: row;
+  background-color: var(--background-secondary);
+  padding: var(--space-lg) calc(var(--space-xl) - var(--space-md));
+}
+
+.navleft {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-xl);
+  align-items: center;
+}
+
+.logo {
+  display: flex;
+  flex-direction: row;
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-xl);
+  gap: var(--space-xs);
+
+  .monkey {
+    color: var(--text-primary);
+  }
+
+  .business {
+    color: var(--accent-primary);
+  }
+}
+
+.navbuttons {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-lg);
+  align-items: center;
+}
