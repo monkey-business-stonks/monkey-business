@@ -1,0 +1,35 @@
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  background-color: var(--background-secondary); 
+  border: 2px solid var(--background-tertiary); 
+  color: var(--text-primary);
+}
+
+.holdings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-sm);
+}
+
+.holdings-table th {
+  background-color: var(--background-tertiary); 
+  padding: var(--space-xmd) var(--space-md);
+  border-bottom: 2px solid var(--background-tertiary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary); 
+  white-space: nowrap;
+}
+
+.holdings-table td {
+  padding: var(--space-xmd) var(--space-md);
+  white-space: nowrap;
+}
+
+/* Replaced static nth-child with dynamic utility class */
+.mono-cell {
+  font-family: 'Roboto Mono', monospace; 
+}
