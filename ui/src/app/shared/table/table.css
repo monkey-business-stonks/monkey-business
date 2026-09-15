@@ -1,6 +1,6 @@
 .table-wrapper {
   width: 100%;
-  overflow-x: auto;
+  overflow-x: auto; /* Enables horizontal scrolling when columns are wide */
   border-radius: var(--radius-md);
   background-color: var(--background-secondary); 
   border: 2px solid var(--background-tertiary); 
@@ -12,6 +12,12 @@
   border-collapse: collapse;
   font-family: 'Inter', sans-serif;
   font-size: var(--font-size-sm);
+  /* Do NOT add table-layout: fixed if you want auto-expanding content without truncation */
+}
+
+.holdings-table th,
+.holdings-table td {
+  white-space: nowrap; /* Prevents awkward text wrapping */
 }
 
 .holdings-table th {
@@ -32,4 +38,8 @@
 /* Replaced static nth-child with dynamic utility class */
 .mono-cell {
   font-family: 'Roboto Mono', monospace; 
+}
+
+.col-expand {
+  width: 100%;
 }

@@ -4,6 +4,7 @@
       <tr>
         <th 
           *ngFor="let col of columns"
+          [ngClass]="col.className || ''"
           [style.text-align]="col.align || 'center'"
           [style.padding-left]="col.paddingX"
           [style.padding-right]="col.paddingX">
@@ -15,18 +16,19 @@
       <tr *ngFor="let row of data" class="table-row">
         <td 
           *ngFor="let col of columns"
+          [ngClass]="col.className || ''"
           [class.mono-cell]="col.isMonospace"
           [style.text-align]="col.align || 'center'"
           [style.padding-left]="col.paddingX"
           [style.padding-right]="col.paddingX">
           
-          <!-- Render custom cell template if provided, else fallback to raw key value -->
           <ng-container *ngIf="cellTemplate; else defaultCell">
             <ng-container *ngTemplateOutlet="cellTemplate; context: { $implicit: row, column: col }"></ng-container>
           </ng-container>
-            <ng-template #defaultCell>
-              {{ getCellValue(row, col.key) }}
-            </ng-template>
+          <ng-template #defaultCell>
+            {{ getCellValue(row, col.key) }}
+          </ng-template>
+
         </td>
       </tr>
     </tbody>

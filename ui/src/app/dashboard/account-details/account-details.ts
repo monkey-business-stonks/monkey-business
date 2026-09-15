@@ -10,6 +10,7 @@ import { Table, TableColumn } from '../../shared/table/table';
 })
 export class AccountDetails {
   columns: TableColumn[] = [
+    // { key: 'ticker', header: 'Asset / Ticker', align: 'left', className: 'col-expand' },
     { key: 'ticker', header: 'Asset / Ticker', align: 'left' },
     { key: 'quantity', header: 'Quantity', isMonospace: true, paddingX: 'var(--space-xl)' },
     { key: 'avgCost', header: 'Avg Cost', isMonospace: true },

@@ -1,0 +1,10 @@
+.ticker {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  line-height: var(--space-lg);
+}
+
+.asset-name {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}

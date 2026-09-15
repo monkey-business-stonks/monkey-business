@@ -7,6 +7,7 @@ export interface TableColumn<T = any> {
   align?: 'left' | 'center' | 'right';
   paddingX?: string; // Custom padding control per column (e.g., 'var(--space-xl)')
   isMonospace?: boolean;
+  className?: string;
 }
 
 @Component({
