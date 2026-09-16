@@ -1,5 +1,5 @@
 <main class="main">
-<app-navigation-bar></app-navigation-bar>
+<app-navigation-bar *ngIf="!isLoginPage()"></app-navigation-bar>
 <!-- <p>Everything below will eventually moved into a single 'frame' component which will change it's content depending on user actions.</p>
 <ul>
 <li>account-select will be the component to toggle between viewing an entire portfolio or individual account details. This can be made up of smaller button components (maybe they can be reused elsewhere?)</li>
