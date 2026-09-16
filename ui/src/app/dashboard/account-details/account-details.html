@@ -1,27 +1,15 @@
-<div class="table-wrapper">
-  <table class="holdings-table">
-    <thead>
-      <tr>
-        <th>Asset / Ticker</th>
-        <th>Quantity</th>
-        <th>Avg Cost</th>
-        <th>Current Price</th>
-        <th>Market Value</th>
-        <th>Total P&L</th>
-      </tr>
-    </thead>
-    <tbody>
-        <tr class="table-row">
-          <td>
-            <div class="ticker">AAPL</div>
-            <div class="asset-name">Apple Inc.</div>
-          </td>
-          <td>50.00</td>
-          <td>$172.10</td>
-          <td>$187.42</td>
-          <td>$9,371.00</td>
-          <td>+$766.00</td>
-        </tr>
-    </tbody>
-  </table>
-</div>
+<app-table [columns]="columns" [data]="holdings">
+  <ng-template #cellTemplate let-row let-column="column">
+    
+    <!-- Custom template override for ticker / asset name column -->
+    <ng-container *ngIf="column.key === 'ticker'; else standardCell">
+      <div class="ticker">{{ row.ticker }}</div>
+      <div class="asset-name">{{ row.assetName }}</div>
+    </ng-container>
+
+    <ng-template #standardCell>
+      {{ row[column.key] }}
+    </ng-template>
+
+  </ng-template>
+</app-table>
