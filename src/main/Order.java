@@ -33,7 +33,9 @@ public class Order {
     public OrderStatus getStatus() { return this.status; }
     public ZonedDateTime getCreatedOn() { return this.createdOn; }
 
-    public Order(UUID orderID, String ticker, Double quantity, String action, ZonedDateTime submittedOn, Double submittedValue, OrderStatus status, ZonedDateTime createdOn) {
+    public Order(UUID orderID, String ticker, Double quantity, String action, 
+                ZonedDateTime submittedOn, Double submittedValue, 
+                OrderStatus status, ZonedDateTime createdOn) {
         this.orderID = orderID;
         this.ticker = ticker;
         this.quantity = quantity;
