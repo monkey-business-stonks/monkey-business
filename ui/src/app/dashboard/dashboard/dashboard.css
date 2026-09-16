@@ -1,6 +1,6 @@
 .dashboard-container {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  padding: 25px;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
 }
