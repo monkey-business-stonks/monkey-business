@@ -1,0 +1,159 @@
+<div class="profile-page-wrapper">
+  <div class="profile-container">
+    <div class="profile-header">
+      <h1>User Profile</h1>
+      <button 
+        type="button" 
+        (click)="toggleEditMode()" 
+        class="edit-btn"
+        [disabled]="isEditMode"
+      >
+        {{ isEditMode ? 'Editing...' : 'Edit Profile' }}
+      </button>
+    </div>
+
+    <!-- Avatar Section -->
+    <div class="avatar-section">
+      <div class="avatar-container">
+        <img [src]="avatar" alt="User Avatar" class="avatar-image" />
+      </div>
+      <div *ngIf="isEditMode" class="avatar-upload">
+        <input 
+          type="file" 
+          id="avatar-input" 
+          (change)="onAvatarUpload($event)" 
+          accept="image/*"
+          class="file-input"
+        />
+        <label for="avatar-input" class="upload-label">
+          Change Avatar
+        </label>
+      </div>
+    </div>
+
+    <!-- VIEW MODE - Display as text -->
+    <div *ngIf="!isEditMode" class="profile-view">
+      <div class="profile-field">
+        <label>User ID:</label>
+        <p>{{ userId }}</p>
+      </div>
+      <div class="profile-field">
+        <label>Username:</label>
+        <p>{{ username }}</p>
+      </div>
+      <div class="profile-field">
+        <label>Join Date:</label>
+        <p>{{ joinDate }}</p>
+      </div>
+      <div class="profile-field">
+        <label>First Name:</label>
+        <p>{{ firstName }}</p>
+      </div>
+      <div class="profile-field">
+        <label>Last Name:</label>
+        <p>{{ lastName }}</p>
+      </div>
+      <div class="profile-field">
+        <label>Email:</label>
+        <p>{{ email }}</p>
+      </div>
+      <div class="profile-field">
+        <label>Phone Number:</label>
+        <p>{{ phoneNumber }}</p>
+      </div>
+    </div>
+
+    <!-- EDIT MODE - Display as form inputs -->
+    <form *ngIf="isEditMode">
+      <!-- User ID (Read-only) -->
+      <div class="form-group">
+        <label for="userId">User ID:</label>
+        <input 
+          type="text" 
+          id="userId" 
+          [(ngModel)]="userId" 
+          name="userId"
+          readonly
+        />
+      </div>
+
+      <!-- Username (Read-only) -->
+      <div class="form-group">
+        <label for="username">Username:</label>
+        <input 
+          type="text" 
+          id="username" 
+          [(ngModel)]="username" 
+          name="username"
+          readonly
+        />
+      </div>
+
+      <!-- Join Date (Read-only) -->
+      <div class="form-group">
+        <label for="joinDate">Join Date:</label>
+        <input 
+          type="text" 
+          id="joinDate" 
+          [(ngModel)]="joinDate" 
+          name="joinDate"
+          readonly
+        />
+      </div>
+
+      <!-- First Name (Editable) -->
+      <div class="form-group">
+        <label for="firstName">First Name:</label>
+        <input 
+          type="text" 
+          id="firstName" 
+          [(ngModel)]="firstName" 
+          name="firstName"
+        />
+      </div>
+
+      <!-- Last Name (Editable) -->
+      <div class="form-group">
+        <label for="lastName">Last Name:</label>
+        <input 
+          type="text" 
+          id="lastName" 
+          [(ngModel)]="lastName" 
+          name="lastName"
+        />
+      </div>
+
+      <!-- Email (Editable) -->
+      <div class="form-group">
+        <label for="email">Email:</label>
+        <input 
+          type="email" 
+          id="email" 
+          [(ngModel)]="email" 
+          name="email"
+        />
+      </div>
+
+      <!-- Phone Number (Editable) -->
+      <div class="form-group">
+        <label for="phoneNumber">Phone Number:</label>
+        <input 
+          type="tel" 
+          id="phoneNumber" 
+          [(ngModel)]="phoneNumber" 
+          name="phoneNumber"
+        />
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="form-actions">
+        <button type="button" (click)="onSave()" class="save-btn">
+          Save Changes
+        </button>
+        <button type="button" (click)="onCancel()" class="cancel-btn">
+          Cancel
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
