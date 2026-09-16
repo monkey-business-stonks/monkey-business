@@ -1,18 +1,37 @@
 <div class="profile-page-wrapper">
+  <!-- Back button to navigate to dashboard -->
+  <div class="back-button-container">
+    <button type="button" (click)="goBack()" class="back-btn">
+      ← Back to Dashboard
+    </button>
+  </div>
+  
+  <!-- Main profile container -->
   <div class="profile-container">
+    <!-- Header with title and action buttons -->
     <div class="profile-header">
       <h1>User Profile</h1>
-      <button 
-        type="button" 
-        (click)="toggleEditMode()" 
-        class="edit-btn"
-        [disabled]="isEditMode"
-      >
-        {{ isEditMode ? 'Editing...' : 'Edit Profile' }}
-      </button>
+      <div class="header-actions">
+        <button 
+          type="button" 
+          (click)="toggleEditMode()" 
+          class="edit-btn"
+          *ngIf="!isEditMode"
+        >
+          Edit Profile
+        </button>
+        <div class="edit-mode-actions" *ngIf="isEditMode">
+          <button type="button" (click)="onSave()" class="save-btn-header">
+            Save
+          </button>
+          <button type="button" (click)="onCancel()" class="cancel-btn-header">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
 
-    <!-- Avatar Section -->
+    <!-- Profile picture and upload section -->
     <div class="avatar-section">
       <div class="avatar-container">
         <img [src]="avatar" alt="User Avatar" class="avatar-image" />
@@ -31,129 +50,172 @@
       </div>
     </div>
 
-    <!-- VIEW MODE - Display as text -->
-    <div *ngIf="!isEditMode" class="profile-view">
-      <div class="profile-field">
-        <label>User ID:</label>
-        <p>{{ userId }}</p>
-      </div>
-      <div class="profile-field">
-        <label>Username:</label>
-        <p>{{ username }}</p>
-      </div>
-      <div class="profile-field">
-        <label>Join Date:</label>
-        <p>{{ joinDate }}</p>
-      </div>
-      <div class="profile-field">
-        <label>First Name:</label>
-        <p>{{ firstName }}</p>
-      </div>
-      <div class="profile-field">
-        <label>Last Name:</label>
-        <p>{{ lastName }}</p>
-      </div>
-      <div class="profile-field">
-        <label>Email:</label>
-        <p>{{ email }}</p>
-      </div>
-      <div class="profile-field">
-        <label>Phone Number:</label>
-        <p>{{ phoneNumber }}</p>
-      </div>
+    <!-- Display user's full name -->
+    <div class="user-name-section">
+      <p class="user-full-name">{{ firstName }} {{ lastName }}</p>
     </div>
 
-    <!-- EDIT MODE - Display as form inputs -->
-    <form *ngIf="isEditMode">
-      <!-- User ID (Read-only) -->
-      <div class="form-group">
-        <label for="userId">User ID:</label>
-        <input 
-          type="text" 
-          id="userId" 
-          [(ngModel)]="userId" 
-          name="userId"
-          readonly
-        />
+    <!-- Two-column layout: Profile Details (left) and Trading Accounts (right) -->
+    <div class="profile-content">
+      <!-- LEFT COLUMN: User profile information -->
+      <div class="profile-details-column">
+        <h2>Profile Details</h2>
+        
+        <!-- VIEW MODE - Text display -->
+        <div *ngIf="!isEditMode" class="profile-view">
+          <div class="profile-field">
+            <label>User ID:</label>
+            <p>{{ userId }}</p>
+          </div>
+          <div class="profile-field">
+            <label>Username:</label>
+            <p>{{ username }}</p>
+          </div>
+          <div class="profile-field">
+            <label>Email:</label>
+            <p>{{ email }}</p>
+          </div>
+          <div class="profile-field">
+            <label>Phone Number:</label>
+            <p>{{ phoneNumber }}</p>
+          </div>
+          <div class="profile-field">
+            <label>Join Date:</label>
+            <p>{{ joinDate }}</p>
+          </div>
+          <div class="profile-field">
+            <label>Communications:</label>
+            <div class="communications-display">
+              <span *ngIf="notifyByEmail" class="comm-badge">Email</span>
+              <span *ngIf="notifyByPhone" class="comm-badge">Phone</span>
+              <span *ngIf="!notifyByEmail && !notifyByPhone" class="comm-badge-none">None</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- EDIT MODE - Form inputs -->
+        <form *ngIf="isEditMode" class="profile-form">
+          <!-- User ID (Read-only) -->
+          <div class="form-group">
+            <label for="userId">User ID:</label>
+            <input 
+              type="text" 
+              id="userId" 
+              [(ngModel)]="userId" 
+              name="userId"
+              readonly
+            />
+          </div>
+
+          <!-- Username (Read-only) -->
+          <div class="form-group">
+            <label for="username">Username:</label>
+            <input 
+              type="text" 
+              id="username" 
+              [(ngModel)]="username" 
+              name="username"
+              readonly
+            />
+          </div>
+
+          <!-- Email (Editable) -->
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input 
+              type="email" 
+              id="email" 
+              [(ngModel)]="email" 
+              name="email"
+            />
+          </div>
+
+          <!-- Phone Number (Editable) -->
+          <div class="form-group">
+            <label for="phoneNumber">Phone Number:</label>
+            <input 
+              type="tel" 
+              id="phoneNumber" 
+              [(ngModel)]="phoneNumber" 
+              name="phoneNumber"
+            />
+          </div>
+
+          <!-- First Name (Editable) -->
+          <div class="form-group">
+            <label for="firstName">First Name:</label>
+            <input 
+              type="text" 
+              id="firstName" 
+              [(ngModel)]="firstName" 
+              name="firstName"
+            />
+          </div>
+
+          <!-- Last Name (Editable) -->
+          <div class="form-group">
+            <label for="lastName">Last Name:</label>
+            <input 
+              type="text" 
+              id="lastName" 
+              [(ngModel)]="lastName" 
+              name="lastName"
+            />
+          </div>
+
+          <!-- Join Date (Read-only) -->
+          <div class="form-group">
+            <label for="joinDate">Join Date:</label>
+            <input 
+              type="text" 
+              id="joinDate" 
+              [(ngModel)]="joinDate" 
+              name="joinDate"
+              readonly
+            />
+          </div>
+
+          <!-- Communications Preferences -->
+          <div class="communications-section">
+            <label class="communications-label">Communications:</label>
+            <div class="toggle-group">
+              <div class="toggle-item">
+                <label for="notifyEmail" class="toggle-label">Email Notifications</label>
+                <label class="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    id="notifyEmail" 
+                    [(ngModel)]="notifyByEmail" 
+                    name="notifyByEmail"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="toggle-item">
+                <label for="notifyPhone" class="toggle-label">Phone Notifications</label>
+                <label class="toggle-switch">
+                  <input 
+                    type="checkbox" 
+                    id="notifyPhone" 
+                    [(ngModel)]="notifyByPhone" 
+                    name="notifyByPhone"
+                  />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </form>
       </div>
 
-      <!-- Username (Read-only) -->
-      <div class="form-group">
-        <label for="username">Username:</label>
-        <input 
-          type="text" 
-          id="username" 
-          [(ngModel)]="username" 
-          name="username"
-          readonly
-        />
+      <!-- RIGHT COLUMN: User's trading accounts -->
+      <div class="trading-accounts-column">
+        <h2>Trading Accounts</h2>
+        <div class="trading-accounts">
+          <p class="placeholder-text">No trading accounts yet</p>
+          <!-- Trading accounts will be displayed here -->
+        </div>
       </div>
-
-      <!-- Join Date (Read-only) -->
-      <div class="form-group">
-        <label for="joinDate">Join Date:</label>
-        <input 
-          type="text" 
-          id="joinDate" 
-          [(ngModel)]="joinDate" 
-          name="joinDate"
-          readonly
-        />
-      </div>
-
-      <!-- First Name (Editable) -->
-      <div class="form-group">
-        <label for="firstName">First Name:</label>
-        <input 
-          type="text" 
-          id="firstName" 
-          [(ngModel)]="firstName" 
-          name="firstName"
-        />
-      </div>
-
-      <!-- Last Name (Editable) -->
-      <div class="form-group">
-        <label for="lastName">Last Name:</label>
-        <input 
-          type="text" 
-          id="lastName" 
-          [(ngModel)]="lastName" 
-          name="lastName"
-        />
-      </div>
-
-      <!-- Email (Editable) -->
-      <div class="form-group">
-        <label for="email">Email:</label>
-        <input 
-          type="email" 
-          id="email" 
-          [(ngModel)]="email" 
-          name="email"
-        />
-      </div>
-
-      <!-- Phone Number (Editable) -->
-      <div class="form-group">
-        <label for="phoneNumber">Phone Number:</label>
-        <input 
-          type="tel" 
-          id="phoneNumber" 
-          [(ngModel)]="phoneNumber" 
-          name="phoneNumber"
-        />
-      </div>
-
-      <!-- Action Buttons -->
-      <div class="form-actions">
-        <button type="button" (click)="onSave()" class="save-btn">
-          Save Changes
-        </button>
-        <button type="button" (click)="onCancel()" class="cancel-btn">
-          Cancel
-        </button>
-      </div>
-    </form>
+    </div>
   </div>
 </div>
