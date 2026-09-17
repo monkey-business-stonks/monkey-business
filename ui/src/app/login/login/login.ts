@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -26,17 +26,15 @@ import { CommonModule } from '@angular/common';
   imports: [FormsModule, CommonModule],
 })
 export class Login {
-  /**
-   * Username input signal - stores the user's email or username
-   * @type {Signal<string>}
-   */
   username = signal('');
+  password = signal('');
 
   /**
-   * Password input signal - stores the user's password
-   * @type {Signal<string>}
+   * Evaluates to true if either username or password is empty (ignoring whitespace)
    */
-  password = signal('');
+  isFormInvalid = computed(() => {
+    return !this.username().trim() || !this.password().trim();
+  });
 
   /**
    * Handles the sign-in form submission

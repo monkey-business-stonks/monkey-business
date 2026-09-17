@@ -1,16 +1,3 @@
-/**
- * Login Page Styles
- * 
- * Styling for the authentication/login page of the Monkey Business trading platform.
- * Uses the design tokens from the main styles.css for consistent theming.
- * 
- * Color Scheme:
- * - Background: Dark gradient (#0a0e13 to #1a1f2e)
- * - Text: White (#ffffff) for primary, #8A99A5 for secondary
- * - Accent: Green (#00E676) for primary actions
- * - Card: Dark background (#202830) with subtle border
- */
-
 /* ===== LOGIN CONTAINER ===== */
 /* Full viewport container with flexbox centering and dark gradient background */
 .login-container {
@@ -18,7 +5,6 @@
   align-items: center;
   justify-content: center;
   min-height: 100vh;
-  background: linear-gradient(135deg, #0a0e13 0%, #1a1f2e 50%, #0f1419 100%);
   padding: var(--space-md);
 }
 
@@ -31,17 +17,14 @@
   border: 1px solid var(--background-tertiary);
   border-radius: 12px;
   padding: var(--space-2xl);
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
 }
 
 /* ===== LOGO SECTION ===== */
-/* Container for logo, title, and subtitle branding */
 .logo-section {
   text-align: center;
   margin-bottom: var(--space-2xl);
 }
 
-/* Logo and title wrapper - flex container for horizontal alignment */
 .logo-title-wrapper {
   display: flex;
   align-items: center;
@@ -50,7 +33,6 @@
   margin-bottom: var(--space-sm);
 }
 
-/* Logo image styling - responsive sizing with max-width constraint */
 .logo-icon {
   width: auto;
   height: auto;
@@ -59,7 +41,6 @@
   flex-shrink: 0;
 }
 
-/* Main application title with bold weight and tight letter spacing */
 .logo-text {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
@@ -68,17 +49,14 @@
   line-height: 1;
 }
 
-/* Primary text color for "MONKEY" part of title */
 .logo-primary {
   color: var(--text-primary);
 }
 
-/* Accent color for "BUSINESS" part of title - uses brand green */
 .logo-accent {
   color: var(--accent-primary);
 }
 
-/* Descriptive subtitle below title */
 .subtitle {
   color: var(--text-secondary);
   font-size: var(--font-size-base);
@@ -87,21 +65,18 @@
 }
 
 /* ===== FORM STYLES ===== */
-/* Form container with vertical flexbox layout and spacing between groups */
 form {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
 }
 
-/* Individual form field group container */
 .form-group {
   display: flex;
   flex-direction: column;
   gap: var(--space-sm);
 }
 
-/* Form label styling - uppercase, secondary text, tight letter spacing */
 .form-label {
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
@@ -110,7 +85,6 @@ form {
   text-transform: uppercase;
 }
 
-/* Input field styling with focus states and transitions */
 .form-input {
   background-color: var(--background-tertiary);
   color: var(--text-primary);
@@ -122,24 +96,37 @@ form {
   transition: all var(--transition-duration);
 }
 
-/* Placeholder text color for input fields */
 .form-input::placeholder {
-  color: var(--text-secondary);
+  color: var(--text-secondary-transparent);
 }
 
-/* Focus state with green accent border and subtle background glow */
 .form-input:focus {
   outline: none;
-  background-color: rgba(0, 230, 118, 0.05);
   border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1);
+}
+
+/* Override browser autofill styles */
+.form-input:-webkit-autofill,
+.form-input:-webkit-autofill:hover, 
+.form-input:-webkit-autofill:focus, 
+.form-input:-webkit-autofill:active {
+  /* Retain your dark background using a large inset box-shadow */
+  -webkit-box-shadow: 0 0 0 1000px var(--background-tertiary) inset !important;
+  
+  /* Retain text color */
+  -webkit-text-fill-color: var(--text-primary) !important;
+  
+  /* Preserve custom font family */
+  font-family: 'Inter', sans-serif !important;
+  
+  /* Prevent color transition delays on fill */
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 /* ===== SIGN IN BUTTON ===== */
-/* Primary action button with green accent background and hover effects */
 .sign-in-button {
   background-color: var(--accent-primary);
-  color: #000000;
+  color: var(--background-primary);
   border: none;
   padding: var(--space-md) var(--space-lg);
   font-size: var(--font-size-base);
@@ -153,26 +140,13 @@ form {
   text-transform: none;
 }
 
-/* Hover state with brighter green and lift effect */
-.sign-in-button:hover:not(:disabled) {
-  background-color: #00d462;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 230, 118, 0.3);
-}
-
-/* Active/pressed state removes lift effect */
-.sign-in-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-/* Disabled state with reduced opacity */
 .sign-in-button:disabled {
-  opacity: 0.5;
+  background-color: var(--background-primary);
+  color: var(--text-secondary-transparent);
   cursor: not-allowed;
 }
 
 /* ===== FORGOT PASSWORD LINK ===== */
-/* Secondary action button styled as a text link, centered and spaced from sign in button */
 .forgot-password-link {
   display: block;
   background: none;
@@ -189,26 +163,21 @@ form {
   width: fit-content;
 }
 
-/* Hover state with brighter green and underline */
 .forgot-password-link:hover {
   color: #00d462;
   text-decoration: underline;
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
-/* Mobile breakpoint adjustments for screens smaller than 480px */
 @media (max-width: 480px) {
-  /* Reduce padding on smaller screens */
   .login-card {
     padding: var(--space-lg);
   }
 
-  /* Reduce logo text size for mobile */
   .logo-text {
     font-size: var(--font-size-xl);
   }
 
-  /* Reduce input padding for mobile */
   .form-input {
     padding: var(--space-sm) var(--space-md);
   }

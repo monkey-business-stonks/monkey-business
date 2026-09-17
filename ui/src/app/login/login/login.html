@@ -1,12 +1,6 @@
-<!-- Login Page Container -->
-<!-- Root container with flexbox centering and gradient background -->
 <div class="login-container">
-  <!-- Login Card - Central form container with dark theme styling -->
   <div class="login-card">
-    <!-- Logo and Title Section -->
-    <!-- Displays the Monkey Business logo, branding, and subtitle -->
     <div class="logo-section">
-      <!-- Main application title with logo to the left and accent color on "BUSINESS" -->
       <div class="logo-title-wrapper">
         <img src="/logo-icon.png" alt="Monkey Business" class="logo-icon" />
         <h1 class="logo-text">
@@ -14,19 +8,12 @@
         </h1>
       </div>
       
-      <!-- Subtitle describing the application -->
       <p class="subtitle">Enterprise Trading Platform</p>
     </div>
 
-    <!-- Login Form -->
-    <!-- Handles user authentication with two-way data binding -->
     <form (ngSubmit)="onSignIn()">
-      <!-- Username/Email Input Group -->
       <div class="form-group">
-        <!-- Label for username input field -->
         <label for="username" class="form-label">USERNAME</label>
-        
-        <!-- Email input with two-way binding to component's username signal -->
         <input
           id="username"
           type="email"
@@ -38,13 +25,8 @@
         />
       </div>
 
-      <!-- Password Input Group -->
       <div class="form-group">
-        <!-- Label for password input field -->
         <label for="password" class="form-label">PASSWORD</label>
-        
-        <!-- Password input with two-way binding to component's password signal -->
-        <!-- Type is password to mask user input -->
         <input
           id="password"
           type="password"
@@ -56,15 +38,11 @@
         />
       </div>
 
-      <!-- Sign In Submit Button -->
-      <!-- Green accent button that triggers form submission and onSignIn() method -->
-      <button type="submit" class="sign-in-button">
+      <button type="submit" class="sign-in-button" [disabled]="isFormInvalid()">
         Sign In
       </button>
     </form>
 
-    <!-- Forgot Password Link Button -->
-    <!-- Centered button for password recovery flow -->
     <button type="button" class="forgot-password-link" (click)="onForgotPassword()">
       Forgot password?
     </button>
