@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Row } from './row';
+import { TradeSearchRow } from './trade-search-row';
 
-describe('Row', () => {
-  let component: Row;
-  let fixture: ComponentFixture<Row>;
+describe('TradeSearchRow', () => {
+  let component: TradeSearchRow;
+  let fixture: ComponentFixture<TradeSearchRow>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Row],
+      imports: [TradeSearchRow],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(Row);
+    fixture = TestBed.createComponent(TradeSearchRow);
     component = fixture.componentInstance;
     await fixture.whenStable();
   });

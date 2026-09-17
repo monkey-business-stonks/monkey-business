@@ -1,0 +1,5 @@
+.history-container {
+  flex-direction: column;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
