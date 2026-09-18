@@ -3,39 +3,117 @@ config:
     theme: dark
 ---
 classDiagram
-    %% Animal <|-- Duck
-    %% Animal <|-- Fish
-    %% Animal <|-- Zebra
-    %% Animal : +int age
-    %% Animal : +String gender
-    %% Animal: +isMammal()
-    %% Animal: +mate()
-    User <|-- Duck
-    User <|-- Fish
-    User <|-- Zebra
-    User : -UUID final userID
-    User : -String final email
-    User : -String final password
-    User : -ENUM accessLevel
-    User : -bool isAuthenticated
-    User : -Set<Account> accounts
-    User : -ZonedDateTime lastLogin
-    User : +login()
-    User : +logout()
-    User : +getAccount()
-    User : +checkStatus()
-    User : +checkAccessLevel()
-    User : +changePassword()
-    class Duck{
-      +String beakColor
-      +swim()
-      +quack()
+    %% Classes
+    class User {
+      -UUID final userID
+      -String final email
+      -String final password
+      -ENUM accessLevel
+      -bool isAuthenticated
+      -Set~Account~ accounts
+      -ZonedDateTime lastLogin
+      +login()
+      +logout()
+      +getAccount()
+      +checkStatus()
+      +checkAccessLevel()
+      +changePassword()
     }
-    class Fish{
-      -int sizeInFeet
-      -canEat()
+    
+    class Asset {
+      -String final ticker
+      -int quantity
+      -BigDecimal boughtAverage
+      +calculateAvg()
     }
-    class Zebra{
-      +bool is_wild
-      +run()
+    
+    class Account {
+      -UUID accountID
+      -DateTime openedDate
+      -ENUM accountType
+      -BigDecimal balance
+      -BigDecimal cashBalance
+      -Set~Asset~ heldAssets
+      -Set~Order~ orderHistory
+      -double getBalance()
+      -void setBalance()
+      -BigDecimal getCashBalance()
+      -void setCashBalance()
+      -Set~Asset~ getAllAssets()
+      -Asset getAsset()
+      -DateTime getOpenDate()
+      -UUID getAccID()
+      -Enum getAccType()
     }
+    
+    class Order {
+      -UUID final orderID
+      -String final ticker
+      -UUID final accountID
+      -Double final quantity
+      -String final action
+      -ZonedDateTime final submittedOn
+      -ZonedDateTime executedOn
+      -BigDecimal final submittedValue
+      -BigDecimal executedValue
+      -OrderStatus status
+      -ZonedDateTime createdOn
+      +updateExecution()
+    }
+    
+    class Status {
+      REJECTED
+      PENDING
+      SUCCEEDED
+    }
+    
+    class PricingEngine {
+      -Asset asset
+      -BigDecimal getCurrentPrice()
+    }
+    
+    class Validation {
+      -Set~Order~ orders
+      -Account account
+      +Boolean isValidTrade()
+      -Order acceptTrade()
+      -Order rejectTrade()
+    }
+    
+    class Execution {
+      -Set~Order~ orders
+      -Account account
+      -Order processTrade()
+    }
+    
+    class OrderManager {
+      -Account account
+      -Asset asset
+      -Set~Order~ orders
+      -Order createOrder()
+      -void updateStatus()
+      -void updateExecution()
+    }
+    
+    class TransactionManager {
+      -Order order
+      -Account account
+      +updateAccount()
+      +updateOrder()
+    }
+    
+    %% Relationships
+    User *-- "1..*" Account : composition
+    Account *-- "0..*" Asset : composition
+    Account *-- "0..*" Order : composition
+    OrderManager *-- "0..*" Order : composition
+    Validation o-- "0..*" Order : aggregation
+    Execution o-- "0..*" Order : aggregation
+    Account -- OrderManager : association
+    Account -- TransactionManager : association
+    OrderManager -- PricingEngine : association
+    OrderManager -- Validation : association
+    Validation -- Execution : association
+    PricingEngine -- Execution : association
+    TransactionManager -- Execution : association
+    Order -- Status : uses
