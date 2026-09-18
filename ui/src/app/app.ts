@@ -15,7 +15,9 @@ export class App {
 
   constructor(private router: Router) {
     this.router.events.subscribe(() => {
-      this.isLoginPage.set(this.router.url.includes('/login'));
+      this.isLoginPage.set(
+        this.router.url.includes('/login') || this.router.url.includes('/create-account')
+      );
     });
   }
 }
