@@ -1,0 +1,64 @@
+sequenceDiagram
+    actor User
+    participant OM as OrderManager
+    participant A as Account
+    participant PE as Pricing Engine
+    participant V as Validation
+    participant E as Execution
+    participant TM as Transaction Manager
+    participant O as Order
+    participant AS as Asset
+
+    User->>OM: Place BUY/SELL Order
+    OM->>A: Get Account
+    A-->>OM: Account + Holdings
+
+    OM->>PE: Get Current Price
+    PE-->>OM: Submitted Price
+    OM->>O: Set Submitted Value
+
+    OM->>V: Validate Trade(Order, Account)
+
+    alt BUY
+        V->>A: Get Cash Balance
+        A-->>V: Cash Balance
+        V->>V: Check sufficient cash
+
+    else SELL
+        V->>A: Get Asset(ticker)
+        A-->>V: Asset + Quantity
+        V->>V: Check sufficient holdings
+    end
+
+    alt Validation Fails
+        V-->>OM: Reject Trade
+        OM->>O: Set Status(REJECTED)
+
+    else Validation Passes
+        V-->>OM: Accept Trade
+        OM->>O: Set Status(PENDING)
+
+        OM->>E: Process Trade(Order, Account)
+
+        E->>PE: Get Current Price
+        PE-->>E: Execution Price
+        E->>E: Execute Trade
+
+        E-->>TM: Completed Trade
+
+        TM->>OM: Update Order
+        OM->>O: Update Execution
+        O-->>OM: Status = SUCCEEDED
+
+        alt BUY
+            TM->>A: Update Cash Balance
+            TM->>A: Update Asset Position
+            A->>AS: Increase Quantity
+            A->>AS: Calculate Average
+
+        else SELL
+            TM->>A: Update Cash Balance
+            TM->>A: Update Asset Position
+            A->>AS: Decrease Quantity
+        end
+    end
