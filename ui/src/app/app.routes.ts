@@ -4,6 +4,7 @@ import { Trade } from './trade/trade/trade';
 import { History } from './history/history/history';
 import { Profile } from './profile/profile/profile';
 import { Login } from './login/login/login';
+import { CreateAccount } from './login/create-account/create-account';
 
 export const routes: Routes = [
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
@@ -12,4 +13,5 @@ export const routes: Routes = [
   { path: 'history', component: History },
   { path: 'profile', component: Profile },
   { path: 'login', component: Login },
+  { path: 'create-account', component: CreateAccount },
 ];

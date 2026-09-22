@@ -1,18 +1,19 @@
 import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 
 /**
  * Login Component
  * 
  * Handles user authentication and login functionality for the Monkey Business trading platform.
  * This is a standalone component that manages user credentials (username and password) and
- * provides handlers for sign-in and password recovery flows.
+ * provides handlers for sign-in and account creation navigation.
  * 
  * Features:
  * - User input validation and state management using Angular signals
  * - Form submission handling for authentication
- * - Forgot password functionality navigation
+ * - Account creation page navigation
  * - Two-way data binding for form inputs
  * 
  * @standalone true
@@ -37,6 +38,12 @@ export class Login {
   });
 
   /**
+   * Constructor - Injects Router service for navigation
+   * @param {Router} router - Angular Router service
+   */
+  constructor(private router: Router) {}
+
+  /**
    * Handles the sign-in form submission
    * 
    * This method is called when the user clicks the "Sign In" button.
@@ -58,19 +65,14 @@ export class Login {
   }
 
   /**
-   * Handles the forgot password button click
+   * Handles the create account button click
    * 
-   * This method is called when the user clicks the "Forgot password?" link.
-   * Currently logs to console for debugging.
-   * Should navigate to a password reset page or show a recovery modal.
-   * 
-   * TODO: Navigate to password reset/recovery page
-   * TODO: Open password recovery modal
+   * This method is called when the user clicks the "Create account" link.
+   * Navigates to the account creation/registration page.
    * 
    * @returns {void}
    */
-  onForgotPassword() {
-    console.log('Forgot password clicked');
-    // TODO: Navigate to password reset page
+  onCreateAccount() {
+    this.router.navigate(['/create-account']);
   }
 }
