@@ -12,7 +12,8 @@
 }
 
 .btn:disabled {
-  opacity: 0.5;
+  background-color: var(--background-primary);
+  color: var(--text-secondary-transparent);
   cursor: not-allowed;
 }
 
@@ -30,7 +31,25 @@
   background-color: var(--accent-primary-transparent);
 }
 
-/* Secondary variant - navigation button */
+/* Secondary variant - action button */
+.btn-secondary {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: var(--accent-primary);
+  color: #000000;
+  font-size: var(--font-size-base);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.btn-secondary:disabled {
+  background-color: var(--background-primary);
+  color: var(--text-secondary-transparent);
+}
+
+/* Navigation button */
 .btn-nav {
   color: var(--text-secondary);
   font-size: var(--font-size-base);

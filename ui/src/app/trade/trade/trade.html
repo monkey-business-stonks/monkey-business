@@ -1,4 +1,16 @@
 <div class="trade-container">
-  <instrument-details/>
-  <trade-search/>
+  <instrument-details [selectedTicker]="selectedTicker"/>
+  
+  <div class="trade-panels">
+    <trade-search 
+      *ngIf="!isTickerSelected"
+      [selectedTickerFromParent]="selectedTicker"
+      (onTickerHighlighted)="onTickerHighlighted($event)"
+      (onTickerSelected)="onTickerSelected($event)"/>
+    
+    <trade-input 
+      *ngIf="isTickerSelected"
+      [selectedTicker]="selectedTicker"
+      (onBack)="onBack()"/>
+  </div>
 </div>
