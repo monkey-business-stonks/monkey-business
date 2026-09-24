@@ -6,9 +6,10 @@ import java.time.ZonedDateTime;
 import java.util.LinkedHashSet;
 
 public class OrderManager {
+    public final OrderManager OM = new OrderManager();
     private final LinkedHashSet<Order> orders = new LinkedHashSet<Order>();
 
-    public OrderManager(){}
+    private OrderManager(){}
 
     public Order createOrder(String ticker, Double quantity, String action, ZonedDateTime submittedOn, BigDecimal submittedValue) {
         // PricingEngine.getCurrentPrice(ticker)
