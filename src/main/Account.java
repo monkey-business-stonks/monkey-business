@@ -55,8 +55,7 @@ public class Account {
 
 	// Returns all assets held
 	public Set<Asset> getAllAssets() { return heldAssets; }
-	// Finds asset by ticker symbol
-	public Asset getAsset(String ticker) {
+	public Asset getAsset(String ticker) { // Finds asset by ticker symbol
 		if (ticker == null) return null;
 		return heldAssets.stream().filter(a -> ticker.equals(a.ticker())).findFirst().orElse(null);
 	}
@@ -85,49 +84,40 @@ public class Account {
 		if (order == null) return;
 		orderHistory.add(order);
 	}
-
-	// ===== PORTFOLIO CALCULATIONS =====
 	
-	// Calculates sum of cost basis across all holdings
+	// Calculates sum of cost basis for all holdings
 	public BigDecimal getTotalInvestedAmount() {
 		BigDecimal totalInvested = BigDecimal.ZERO;
 		for (Asset asset : heldAssets) {
-			BigDecimal costBasis = BigDecimal.valueOf(asset.quantity())
-				.multiply(BigDecimal.valueOf(asset.boughtAverage()));
-			totalInvested = totalInvested.add(costBasis);
+			totalInvested = totalInvested.add(asset.getCostBasis());
 		}
 		return totalInvested;
 	}
 
 	// Calculates current market value of all holdings
-	public BigDecimal getPortfolioValue(Map<String, Double> currentPrices) {
+	public BigDecimal getPortfolioValue(Map<String, BigDecimal> currentPrices) {
 		if (currentPrices == null) return BigDecimal.ZERO;
 		BigDecimal portfolioValue = BigDecimal.ZERO;
 		for (Asset asset : heldAssets) {
-			Double price = currentPrices.get(asset.ticker());
-			if (price != null && price >= 0) {
-				BigDecimal marketValue = BigDecimal.valueOf(asset.quantity())
-					.multiply(BigDecimal.valueOf(price));
-				portfolioValue = portfolioValue.add(marketValue);
+			BigDecimal price = currentPrices.get(asset.ticker());
+			if (price != null && price.compareTo(BigDecimal.ZERO) >= 0) {
+				portfolioValue = portfolioValue.add(asset.getMarketValue(price));
 			}
 		}
 		return portfolioValue;
 	}
 
 	// Returns net worth (cash + portfolio value)
-	public BigDecimal getNetWorth(Map<String, Double> currentPrices) {
+	public BigDecimal getNetWorth(Map<String, BigDecimal> currentPrices) {
 		return cashBalance.add(getPortfolioValue(currentPrices));
 	}
 
-	// Checks if account has no assets and no orders
+	//Checks if account has no assets and no orders
 	public boolean isEmpty() {
 		return heldAssets.isEmpty() && orderHistory.isEmpty();
 	}
 
-	// Returns when account was opened
 	public ZonedDateTime getOpenDate() { return openedDate; }
-	// Returns unique account ID
 	public UUID getAccID() { return accountID; }
-	// Returns account type
 	public AccountType getAccType() { return accountType; }
 }

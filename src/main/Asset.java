@@ -1,63 +1,72 @@
 package main;
 
-public record Asset(String ticker, double quantity, double boughtAverage) {
+import java.math.BigDecimal;
+
+// Immutable record representing a single security holding (stock, crypto, etc.)
+public record Asset(String ticker, BigDecimal quantity, BigDecimal boughtAverage) {
     public Asset {
         if (ticker == null) throw new IllegalArgumentException("ticker cannot be null");
-        if (quantity < 0) throw new IllegalArgumentException("quantity cannot be negative");
-        if (boughtAverage < 0) throw new IllegalArgumentException("boughtAverage cannot be negative");
+        if (quantity == null || quantity.compareTo(BigDecimal.ZERO) < 0) 
+            throw new IllegalArgumentException("quantity cannot be null or negative");
+        if (boughtAverage == null || boughtAverage.compareTo(BigDecimal.ZERO) < 0) 
+            throw new IllegalArgumentException("boughtAverage cannot be null or negative");
     }
 
     // Creates a new Asset with updated quantity
-    public Asset withQuantity(double quantity) {
+    public Asset withQuantity(BigDecimal quantity) {
         return new Asset(this.ticker, quantity, this.boughtAverage);
     }
 
     // Creates a new Asset with recalculated average cost basis
-    public Asset withBoughtAverage(double addedQuantity, double price) {
-        double oldQty = this.quantity;
-        double oldAvg = this.boughtAverage;
-        double newQty = oldQty + addedQuantity;
-        if (newQty <= 0) return new Asset(this.ticker, this.quantity, this.boughtAverage);
+    public Asset withBoughtAverage(BigDecimal addedQuantity, BigDecimal price) {
+        BigDecimal oldQty = this.quantity;
+        BigDecimal oldAvg = this.boughtAverage;
+        BigDecimal newQty = oldQty.add(addedQuantity);
+        
+        if (newQty.compareTo(BigDecimal.ZERO) <= 0) 
+            return new Asset(this.ticker, this.quantity, this.boughtAverage);
         
         // Calculate total cost: (old quantity × old avg) + (new shares × new price)
-        double oldTotal = oldQty * oldAvg;
-        double newTotal = oldTotal + addedQuantity * price;
+        BigDecimal oldTotal = oldQty.multiply(oldAvg);
+        BigDecimal newTotal = oldTotal.add(addedQuantity.multiply(price));
         
         // New average = total cost / total shares
-        double newAvg = newTotal / newQty;
+        BigDecimal newAvg = newTotal.divide(newQty, 2, java.math.RoundingMode.HALF_UP);
         return new Asset(this.ticker, newQty, newAvg);
     }
 
     // Returns total amount paid for all shares
-    public double getCostBasis() {
-        return quantity * boughtAverage;
+    public BigDecimal getCostBasis() {
+        return quantity.multiply(boughtAverage);
     }
 
     // Returns current market value at given price
-    public double getMarketValue(double currentPrice) {
-        return quantity * currentPrice;
+    public BigDecimal getMarketValue(BigDecimal currentPrice) {
+        return quantity.multiply(currentPrice);
     }
 
     // Returns profit/loss in dollars
-    public double getUnrealizedGainLoss(double currentPrice) {
-        return getMarketValue(currentPrice) - getCostBasis();
+    public BigDecimal getUnrealizedGainLoss(BigDecimal currentPrice) {
+        return getMarketValue(currentPrice).subtract(getCostBasis());
     }
 
     // Returns profit/loss as percentage
-    public double getGainLossPercentage(double currentPrice) {
-        double costBasis = getCostBasis();
-        if (costBasis == 0) return 0;
-        return (getUnrealizedGainLoss(currentPrice) / costBasis) * 100;
+    public BigDecimal getGainLossPercentage(BigDecimal currentPrice) {
+        BigDecimal costBasis = getCostBasis();
+        if (costBasis.compareTo(BigDecimal.ZERO) == 0) return BigDecimal.ZERO;
+        return getUnrealizedGainLoss(currentPrice)
+            .divide(costBasis, 4, java.math.RoundingMode.HALF_UP)
+            .multiply(new BigDecimal(100));
     }
 
     @Override
     public String toString() {
-        return String.format("%s: %.2f shares @ $%.2f avg (cost basis: $%.2f)", 
+        return String.format("%s: %s shares @ $%s avg (cost basis: $%s)", 
             ticker, quantity, boughtAverage, getCostBasis());
     }
 
     // Returns true if quantity is zero
     public boolean isEmpty() {
-        return quantity == 0;
+        return quantity.compareTo(BigDecimal.ZERO) == 0;
     }
 }

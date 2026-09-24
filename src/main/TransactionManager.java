@@ -1,28 +1,87 @@
 package main;
 
+import java.math.BigDecimal;
+import java.time.ZonedDateTime;
+
 public class TransactionManager {
     private final Account account;
-    private final Asset asset;
     private final Order order;
 
-    public TransactionManager(Account account, Asset asset, Order order) {
+    public TransactionManager(Account account, Order order) {
         this.account = account;
-        this.asset = asset;
         this.order = order;
     }
 
     public Account getAccount() { return account; }
-    public Asset getAsset() { return asset; }
     public Order getOrder() { return order; }
 
-    // This will be broken up into seperate methods
+    // Updates account holdings and cash based on order execution
     public void updateAccount() {
-        // TODO: implement updateAccount
-        throw new UnsupportedOperationException("updateAccount() not implemented");
+        if (account == null || order == null) {
+            throw new IllegalArgumentException("Account and Order cannot be null");
+        }
+        
+        String action = order.getAction();
+        String ticker = order.getTicker();
+        BigDecimal quantity = BigDecimal.valueOf(order.getQuantity());
+        BigDecimal executedPrice = BigDecimal.valueOf(order.getExecutedValue());
+        
+        if (action == null || action.isEmpty()) {
+            throw new IllegalArgumentException("Order action cannot be null or empty");
+        }
+        if (ticker == null || ticker.isEmpty()) {
+            throw new IllegalArgumentException("Ticker cannot be null or empty");
+        }
+        if (executedPrice == null || executedPrice.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Executed price must be greater than zero");
+        }
+        
+        if (action.equalsIgnoreCase("BUY")) {
+            // Get existing asset or create new one
+            Asset existing = account.getAsset(ticker);
+            Asset updated;
+            
+            if (existing == null) {
+                updated = new Asset(ticker, quantity, executedPrice);
+            } else {
+                updated = existing.withBoughtAverage(quantity, executedPrice);
+            }
+            
+            account.updateAsset(updated);
+            
+            // Deduct cash from account
+            BigDecimal cashSpent = quantity.multiply(executedPrice);
+            BigDecimal newCash = account.getCashBalance().subtract(cashSpent);
+            account.setCashBalance(newCash);
+            
+        }else if (action.equalsIgnoreCase("SELL")) {
+            // Remove asset or reduce quantity
+            Asset existing = account.getAsset(ticker);
+            if (existing != null) {
+                BigDecimal newQuantity = existing.quantity().subtract(quantity);
+                
+                if (newQuantity.compareTo(BigDecimal.ZERO) <= 0) {
+                    account.removeAsset(existing);
+                } else {
+                    Asset updated = existing.withQuantity(newQuantity);
+                    account.updateAsset(updated);
+                }
+                
+                // Add cash to account from sale
+                BigDecimal cashReceived = quantity.multiply(executedPrice);
+                BigDecimal newCash = account.getCashBalance().add(cashReceived);
+                account.setCashBalance(newCash);
+            }
+        }
     }
 
+    //updates order status to succeeded
     public void updateStatus() {
-        // TODO: implement updateStatus
-        throw new UnsupportedOperationException("updateStatus() not implemented");
+        if (order == null) return;
+        order.updateExecution(
+            ZonedDateTime.now(),
+            order.getExecutedValue(),
+            Order.OrderStatus.SUCCEEDED
+        );
     }
 }
