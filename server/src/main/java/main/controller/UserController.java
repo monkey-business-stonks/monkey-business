@@ -28,10 +28,14 @@ public class UserController {
             return ResponseEntity.status(HttpStatus.CREATED).body(user);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage(), "INVALID_INPUT"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("INVALID_INPUT"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to create user", "SERVER_ERROR"));
+                .body(new ErrorResponse()
+                    .message("Failed to create user")
+                    .error("SERVER_ERROR"));
         }
     }
 
@@ -46,10 +50,14 @@ public class UserController {
             return ResponseEntity.ok(user);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("Invalid user ID format", "INVALID_ID"));
+                .body(new ErrorResponse()
+                    .message("Invalid user ID format")
+                    .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage(), "NOT_FOUND"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
         }
     }
 
@@ -63,10 +71,14 @@ public class UserController {
             return ResponseEntity.ok(authResponse);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(new ErrorResponse(e.getMessage(), "INVALID_CREDENTIALS"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("INVALID_CREDENTIALS"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Authentication failed", "SERVER_ERROR"));
+                .body(new ErrorResponse()
+                    .message("Authentication failed")
+                    .error("SERVER_ERROR"));
         }
     }
 

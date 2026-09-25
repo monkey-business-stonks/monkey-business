@@ -33,12 +33,10 @@ public class MarketDataService {
     public MarketDataDto getMarketData(String ticker) {
         BigDecimal price = MOCK_PRICES.getOrDefault(ticker.toUpperCase(), new BigDecimal("100.00"));
         
-        return new MarketDataDto(
-            ticker.toUpperCase(),
-            price,
-            LocalDateTime.now(),
-            "USD"
-        );
+        return new MarketDataDto()
+            .ticker(ticker.toUpperCase())
+            .price(price)
+            .lastUpdate(LocalDateTime.now().atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime());
     }
 
     /**

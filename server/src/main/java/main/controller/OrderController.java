@@ -33,13 +33,19 @@ public class OrderController {
             return ResponseEntity.status(HttpStatus.CREATED).body(order);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage(), "INVALID_ORDER"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("INVALID_ORDER"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage(), "NOT_FOUND"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to place order: " + e.getMessage(), "SERVER_ERROR"));
+                .body(new ErrorResponse()
+                    .message("Failed to place order: " + e.getMessage())
+                    .error("SERVER_ERROR"));
         }
     }
 
@@ -59,7 +65,7 @@ public class OrderController {
             // Filter by status if provided
             if (status != null && !status.isEmpty()) {
                 orders = orders.stream()
-                    .filter(o -> o.getStatus().equalsIgnoreCase(status))
+                    .filter(o -> o.getStatus().toString().equalsIgnoreCase(status))
                     .toList();
             }
             
@@ -73,10 +79,14 @@ public class OrderController {
             return ResponseEntity.ok(orders);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("Invalid account ID format", "INVALID_ID"));
+                .body(new ErrorResponse()
+                    .message("Invalid account ID format")
+                    .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage(), "NOT_FOUND"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
         }
     }
 }

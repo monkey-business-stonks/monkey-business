@@ -32,31 +32,20 @@ public class AccountService {
         }
 
         // Validate request
-        if (request.getAccountType() == null || request.getAccountType().isEmpty()) {
+        if (request.getAccountType() == null) {
             throw new IllegalArgumentException("Account type is required");
         }
 
-        // Validate account type
-        try {
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase());
-        } catch (IllegalArgumentException e) {
-            throw new IllegalArgumentException("Invalid account type: " + request.getAccountType());
-        }
-
-        // Set default balances if not provided
-        BigDecimal balance = request.getInitialBalance() != null 
-            ? request.getInitialBalance() 
-            : BigDecimal.ZERO;
-        BigDecimal cashBalance = request.getInitialCashBalance() != null 
-            ? request.getInitialCashBalance() 
-            : balance;  // Default: all balance is cash
+        // Set default balances
+        BigDecimal balance = BigDecimal.ZERO;
+        BigDecimal cashBalance = balance;  // Default: all balance is cash
 
         // Create account
         UUID accountId = UUID.randomUUID();
         Account account = new Account(
             accountId,
             ZonedDateTime.now(),
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase()),
+            Account.AccountType.valueOf(request.getAccountType().toString()),
             balance,
             cashBalance,
             new HashSet<>(),
@@ -118,13 +107,12 @@ public class AccountService {
      * Convert Account to AccountResponse
      */
     private AccountResponse toAccountResponse(Account account, UUID userId) {
-        return new AccountResponse(
-            account.getAccID(),
-            userId,
-            account.getAccType().toString(),
-            account.getOpenDate(),
-            new BigDecimal(account.getBalance()),
-            account.getCashBalance()
-        );
+        return new AccountResponse()
+            .accountId(account.getAccID())
+            .userId(userId)
+            .accountType(main.dto.AccountType.valueOf(account.getAccType().toString()))
+            .openedDate(account.getOpenDate().toOffsetDateTime())
+            .balance(new BigDecimal(account.getBalance()))
+            .cashBalance(account.getCashBalance());
     }
 }

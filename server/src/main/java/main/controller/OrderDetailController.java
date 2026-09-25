@@ -30,7 +30,9 @@ public class OrderDetailController {
             return ResponseEntity.ok(order);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest()
-                .body(new ErrorResponse("Invalid order ID format", "INVALID_ID"));
+                .body(new ErrorResponse()
+                    .message("Invalid order ID format")
+                    .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }

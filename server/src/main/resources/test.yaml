@@ -507,3 +507,10 @@ components:
         error: { type: string, example: Not Found }
         message: { type: string, example: User not found }
         timestamp: { type: string, format: date-time }
+
+    MarketDataDto:
+      type: object
+      properties:
+        ticker: { type: string, example: AAPL }
+        price: { type: number, example: 150.25 }
+        lastUpdate: { type: string, format: date-time }

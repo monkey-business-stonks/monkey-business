@@ -23,7 +23,7 @@ class UserTest {
             "testuser",
             "test@example.com",
             "password123",
-            User.AccessLevel.User,
+            User.AccessLevel.USER,
             true,
             testAccounts,
             LocalDateTime.now()
@@ -52,7 +52,7 @@ class UserTest {
             "testuser",
             "test@example.com",
             "password123",
-            User.AccessLevel.User,
+            User.AccessLevel.USER,
             false,
             testAccounts,
             LocalDateTime.now()
@@ -75,7 +75,7 @@ class UserTest {
 
     @Test
     void testCheckAccessLevel() {
-        assertTrue(user.checkAccessLevel(User.AccessLevel.User), "User should have User access level");
-        assertFalse(user.checkAccessLevel(User.AccessLevel.Analyst), "User should not have Analyst access level");
+        assertTrue(user.checkAccessLevel(User.AccessLevel.USER), "User should have USER access level");
+        assertFalse(user.checkAccessLevel(User.AccessLevel.ANALYST), "User should not have ANALYST access level");
     }
 }

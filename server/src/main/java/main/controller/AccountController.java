@@ -32,13 +32,19 @@ public class AccountController {
             return ResponseEntity.status(HttpStatus.CREATED).body(account);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse(e.getMessage(), "INVALID_INPUT"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("INVALID_INPUT"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage(), "NOT_FOUND"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(new ErrorResponse("Failed to create account", "SERVER_ERROR"));
+                .body(new ErrorResponse()
+                    .message("Failed to create account")
+                    .error("SERVER_ERROR"));
         }
     }
 
@@ -53,10 +59,14 @@ public class AccountController {
             return ResponseEntity.ok(accounts);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorResponse("Invalid user ID format", "INVALID_ID"));
+                .body(new ErrorResponse()
+                    .message("Invalid user ID format")
+                    .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(new ErrorResponse(e.getMessage(), "NOT_FOUND"));
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
         }
     }
 }

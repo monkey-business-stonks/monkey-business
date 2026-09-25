@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -48,7 +49,7 @@ public class UserService {
             request.getUsername(),
             request.getEmail(),
             request.getPassword(),
-            User.AccessLevel.User,
+            User.AccessLevel.USER,
             true,
             new HashSet<>(),
             LocalDateTime.now()
@@ -80,28 +81,25 @@ public class UserService {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        return new AuthResponse(
-            user.userId(),
-            true,
-            user.userAccessLevel().toString(),
-            "mock-jwt-token-" + user.userId()  // Mock JWT token
-        );
+        return new AuthResponse()
+            .userId(user.userId())
+            .isAuthenticated(true)
+            .accessLevel(main.dto.AccessLevel.valueOf(user.userAccessLevel().toString()));
     }
 
     /**
      * Convert User to UserResponse
      */
     private UserResponse toUserResponse(User user) {
-        return new UserResponse(
-            user.userId(),
-            user.username(),
-            user.username(),  // Reusing for name (should be separate in User record)
-            user.email(),
-            null,
-            null,
-            user.userAccessLevel().toString(),
-            user.createdAt()
-        );
+        return new UserResponse()
+            .userId(user.userId())
+            .username(user.username())
+            .name(user.username())  // Reusing for name (should be separate in User record)
+            .email(user.email())
+            .phone(null)
+            .dob(null)
+            .accessLevel(main.dto.AccessLevel.valueOf(user.userAccessLevel().toString()))
+            .lastLogin(user.createdAt().atZone(ZoneId.systemDefault()).toOffsetDateTime());
     }
 
     /**
