@@ -3,14 +3,14 @@ spring:
     name: monkeybusiness-server
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/monkey_business
+    url: jdbc:postgresql://10.23.137.54:5432/monkey_business
     username: postgres
-    password: postgres
+    password: n3u3d4!
     driver-class-name: org.postgresql.Driver
   
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
     properties:
       hibernate:
         '[dialect]': org.hibernate.dialect.PostgreSQLDialect

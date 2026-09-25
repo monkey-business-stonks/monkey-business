@@ -62,8 +62,8 @@ class UserTest {
 
     @Test
     void testChangePassword() {
-        User updatedUser = user.changePassword("password123", "newpassword456");
-        assertTrue(updatedUser.login("newpassword456"), "Should login with new password");
+        user.changePassword("password123", "newpassword456");
+        assertTrue(user.login("newpassword456"), "Should login with new password");
     }
 
     @Test

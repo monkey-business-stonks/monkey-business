@@ -2,6 +2,7 @@ package main.service;
 
 import main.*;
 import main.dto.*;
+import main.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +19,8 @@ public class OrderService {
     @Autowired
     private MarketDataService marketDataService;
 
-    // In-memory storage for orders
-    private final Map<UUID, Order> orderDatabase = new HashMap<>();
-    private final Map<UUID, List<UUID>> accountOrderIndex = new HashMap<>();
+    @Autowired
+    private OrderRepository orderRepository;
 
     /**
      * Place an order - orchestrates validation, execution, and transaction
@@ -72,8 +72,8 @@ public class OrderService {
         if (!isValid) {
             // Order rejected
             order.updateExecution(now, null, Order.OrderStatus.REJECTED);
-            orderDatabase.put(orderId, order);
-            accountOrderIndex.computeIfAbsent(accountId, k -> new ArrayList<>()).add(orderId);
+            order.setAccount(account);
+            orderRepository.save(order);
             
             throw new IllegalArgumentException("Order validation failed: insufficient funds or holdings");
         }
@@ -86,9 +86,12 @@ public class OrderService {
         transactionManager.updateAccount();  // Updates balance and assets
         transactionManager.updateStatus();   // Marks order as SUCCEEDED
 
-        // Step 9: Store order
-        orderDatabase.put(orderId, order);
-        accountOrderIndex.computeIfAbsent(accountId, k -> new ArrayList<>()).add(orderId);
+        // Step 9: Set account relationship and save order to repository
+        order.setAccount(account);
+        orderRepository.save(order);
+        
+        // Also save the account back (to persist balance/asset changes)
+        accountService.saveAccount(account);
 
         return toOrderResponse(order, accountId);
     }
@@ -115,17 +118,13 @@ public class OrderService {
      * Get order by ID
      */
     public OrderResponse getOrder(UUID orderId) {
-        Order order = orderDatabase.get(orderId);
-        if (order == null) {
-            throw new NoSuchElementException("Order not found with ID: " + orderId);
-        }
+        Order order = orderRepository.findById(orderId)
+            .orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
         
-        // Find account ID
-        UUID accountId = accountOrderIndex.entrySet().stream()
-            .filter(e -> e.getValue().contains(orderId))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Account not found for order: " + orderId));
+        UUID accountId = order.getAccount() != null ? order.getAccount().getAccID() : null;
+        if (accountId == null) {
+            throw new NoSuchElementException("Account not found for order: " + orderId);
+        }
 
         return toOrderResponse(order, accountId);
     }
@@ -134,9 +133,7 @@ public class OrderService {
      * List orders for an account
      */
     public List<OrderSummary> listOrdersForAccount(UUID accountId) {
-        List<UUID> orderIds = accountOrderIndex.getOrDefault(accountId, new ArrayList<>());
-        return orderIds.stream()
-            .map(orderDatabase::get)
+        return orderRepository.findByAccountId(accountId).stream()
             .map(this::toOrderSummary)
             .toList();
     }
@@ -181,6 +178,6 @@ public class OrderService {
      * Get stored order (internal use)
      */
     public Order getOrderDirect(UUID orderId) {
-        return orderDatabase.get(orderId);
+        return orderRepository.findById(orderId).orElse(null);
     }
 }

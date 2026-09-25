@@ -3,6 +3,8 @@ package main.service;
 import main.dto.*;
 import main.Account;
 import main.User;
+import main.repository.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,10 +15,8 @@ import java.util.*;
 @Service
 public class UserService {
 
-    // In-memory storage for demo (replace with database later)
-    private final Map<UUID, User> userDatabase = new HashMap<>();
-    private final Map<String, UUID> usernameIndex = new HashMap<>();
-    private final Map<String, UUID> emailIndex = new HashMap<>();
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Create a new user
@@ -34,10 +34,10 @@ public class UserService {
         }
 
         // Check for duplicates
-        if (usernameIndex.containsKey(request.getUsername())) {
+        if (userRepository.findByUsername(request.getUsername()).isPresent()) {
             throw new IllegalArgumentException("Username already exists");
         }
-        if (emailIndex.containsKey(request.getEmail())) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
             throw new IllegalArgumentException("Email already exists");
         }
 
@@ -54,10 +54,8 @@ public class UserService {
             LocalDateTime.now()
         );
 
-        // Store user
-        userDatabase.put(userId, user);
-        usernameIndex.put(request.getUsername(), userId);
-        emailIndex.put(request.getEmail(), userId);
+        // Store user in repository
+        userRepository.save(user);
 
         return toUserResponse(user);
     }
@@ -66,10 +64,8 @@ public class UserService {
      * Get user by ID
      */
     public UserResponse getUser(UUID userId) {
-        User user = userDatabase.get(userId);
-        if (user == null) {
-            throw new NoSuchElementException("User not found with ID: " + userId);
-        }
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
         return toUserResponse(user);
     }
 
@@ -77,21 +73,18 @@ public class UserService {
      * Authenticate user
      */
     public AuthResponse authenticate(AuthenticateRequest request) {
-        UUID userId = usernameIndex.get(request.getUsername());
-        if (userId == null) {
-            throw new IllegalArgumentException("Invalid username or password");
-        }
+        User user = userRepository.findByUsername(request.getUsername())
+            .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
 
-        User user = userDatabase.get(userId);
         if (!user.login(request.getPassword())) {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
         return new AuthResponse(
-            userId,
+            user.userId(),
             true,
             user.userAccessLevel().toString(),
-            "mock-jwt-token-" + userId  // Mock JWT token
+            "mock-jwt-token-" + user.userId()  // Mock JWT token
         );
     }
 
@@ -115,6 +108,6 @@ public class UserService {
      * Get stored user (internal use)
      */
     public User getUserDirect(UUID userId) {
-        return userDatabase.get(userId);
+        return userRepository.findById(userId).orElse(null);
     }
 }

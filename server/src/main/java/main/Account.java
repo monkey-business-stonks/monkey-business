@@ -6,17 +6,29 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "accounts")
 public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
+	@Id
 	private final UUID accountID;
 	private final ZonedDateTime openedDate;
 	private final AccountType accountType;
 	private BigDecimal balance;
 	private BigDecimal cashBalance;
+	
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
 	private final Set<Asset> heldAssets;
+	
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
 	private final Set<Order> orderHistory;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
 
 	public Account(UUID accountID, ZonedDateTime openedDate, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
@@ -52,6 +64,11 @@ public class Account {
     	}
     	this.cashBalance = cashBalance;
 	}
+
+	// Returns associated user
+	public User getUser() { return user; }
+	// Sets associated user
+	public void setUser(User user) { this.user = user; }
 
 	// Returns all assets held
 	public Set<Asset> getAllAssets() { return heldAssets; }

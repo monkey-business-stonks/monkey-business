@@ -8,6 +8,7 @@ main\Account$AccountType.class
 main\Order.class
 main\service\OrderService.class
 main\OrderManager.class
+main\repository\UserRepository.class
 main\controller\AccountDetailController.class
 main\Order$OrderStatus.class
 main\dto\OrderSummary.class
@@ -28,6 +29,8 @@ main\dto\CreateUserRequest.class
 main\service\AccountService.class
 main\service\MarketDataService.class
 main\TransactionManager.class
+main\repository\OrderRepository.class
+main\repository\AccountRepository.class
 main\controller\OrderDetailController.class
 main\User$AccessLevel.class
 main\dto\AuthResponse.class
@@ -36,3 +39,4 @@ main\controller\AccountController.class
 main\OrderExecutor.class
 main\dto\UpdateAccountRequest.class
 main\Account.class
+main\repository\AssetRepository.class

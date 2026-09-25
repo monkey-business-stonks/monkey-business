@@ -27,6 +27,10 @@ C:\Course\monkey-business\server\src\main\java\main\OrderExecutor.java
 C:\Course\monkey-business\server\src\main\java\main\OrderManager.java
 C:\Course\monkey-business\server\src\main\java\main\OrderValidator.java
 C:\Course\monkey-business\server\src\main\java\main\PricingEngine.java
+C:\Course\monkey-business\server\src\main\java\main\repository\AccountRepository.java
+C:\Course\monkey-business\server\src\main\java\main\repository\AssetRepository.java
+C:\Course\monkey-business\server\src\main\java\main\repository\OrderRepository.java
+C:\Course\monkey-business\server\src\main\java\main\repository\UserRepository.java
 C:\Course\monkey-business\server\src\main\java\main\service\AccountService.java
 C:\Course\monkey-business\server\src\main\java\main\service\MarketDataService.java
 C:\Course\monkey-business\server\src\main\java\main\service\OrderService.java

@@ -4,7 +4,10 @@ import java.math.BigDecimal;
 // import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.util.UUID;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "orders")
 public class Order {
     public enum OrderStatus {
         REJECTED,
@@ -12,6 +15,7 @@ public class Order {
         SUCCEEDED
     }
 
+    @Id
     private final UUID orderID;
     private final String ticker;
     private final Double quantity;
@@ -23,6 +27,10 @@ public class Order {
     private OrderStatus status;
     private ZonedDateTime createdOn;
 
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
     public UUID getOrderID() { return this.orderID; }
     public String getTicker() { return this.ticker; }
     public Double getQuantity() { return this.quantity; }
@@ -33,6 +41,8 @@ public class Order {
     public BigDecimal getExecutedValue() { return this.executedValue; }
     public OrderStatus getStatus() { return this.status; }
     public ZonedDateTime getCreatedOn() { return this.createdOn; }
+    public Account getAccount() { return this.account; }
+    public void setAccount(Account account) { this.account = account; }
 
     public Order(UUID orderID, String ticker, Double quantity, String action, 
                 ZonedDateTime submittedOn, BigDecimal submittedValue, 

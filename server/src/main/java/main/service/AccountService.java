@@ -4,6 +4,7 @@ import main.Account;
 import main.dto.AccountResponse;
 import main.dto.CreateAccountRequest;
 import main.User;
+import main.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,8 @@ public class AccountService {
     @Autowired
     private UserService userService;
 
-    // In-memory storage for demo
-    private final Map<UUID, Account> accountDatabase = new HashMap<>();
-    private final Map<UUID, List<UUID>> userAccountIndex = new HashMap<>();
+    @Autowired
+    private AccountRepository accountRepository;
 
     /**
      * Create account for user
@@ -62,10 +62,10 @@ public class AccountService {
             new HashSet<>(),
             new HashSet<>()
         );
+        account.setUser(user);
 
-        // Store account
-        accountDatabase.put(accountId, account);
-        userAccountIndex.computeIfAbsent(userId, k -> new ArrayList<>()).add(accountId);
+        // Store account in repository
+        accountRepository.save(account);
 
         return toAccountResponse(account, userId);
     }
@@ -74,16 +74,13 @@ public class AccountService {
      * Get account by ID
      */
     public AccountResponse getAccount(UUID accountId) {
-        Account account = accountDatabase.get(accountId);
-        if (account == null) {
-            throw new NoSuchElementException("Account not found with ID: " + accountId);
+        Account account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new NoSuchElementException("Account not found with ID: " + accountId));
+        
+        UUID userId = account.getUser() != null ? account.getUser().getUserId() : null;
+        if (userId == null) {
+            throw new NoSuchElementException("User not found for account: " + accountId);
         }
-        // Find user ID (in production, would be from account metadata)
-        UUID userId = userAccountIndex.entrySet().stream()
-            .filter(e -> e.getValue().contains(accountId))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("User not found for account: " + accountId));
 
         return toAccountResponse(account, userId);
     }
@@ -98,9 +95,7 @@ public class AccountService {
             throw new NoSuchElementException("User not found with ID: " + userId);
         }
 
-        List<UUID> accountIds = userAccountIndex.getOrDefault(userId, new ArrayList<>());
-        return accountIds.stream()
-            .map(accountDatabase::get)
+        return accountRepository.findByUserId(userId).stream()
             .map(account -> toAccountResponse(account, userId))
             .toList();
     }
@@ -109,7 +104,14 @@ public class AccountService {
      * Get stored account (internal use)
      */
     public Account getAccountDirect(UUID accountId) {
-        return accountDatabase.get(accountId);
+        return accountRepository.findById(accountId).orElse(null);
+    }
+
+    /**
+     * Save account to repository (for updates)
+     */
+    public void saveAccount(Account account) {
+        accountRepository.save(account);
     }
 
     /**
