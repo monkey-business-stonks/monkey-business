@@ -31,8 +31,8 @@ public class OrderValidator {
 
         // TODO: Move the following into Account to be validated 
         if (action.equalsIgnoreCase("BUY")) {
-            BigDecimal requiredCash = new BigDecimal(order.getQuantity()).multiply(order.getSubmittedValue());
-            if (account.getCashBalance().compareTo(requiredCash) < 0) {
+            // submittedValue is already the total cost (price * quantity), not per-unit price
+            if (account.getCashBalance().compareTo(order.getSubmittedValue()) < 0) {
                 return false;
             }
         } else if (action.equalsIgnoreCase("SELL")) {

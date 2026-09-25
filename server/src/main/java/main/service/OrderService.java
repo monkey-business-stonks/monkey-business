@@ -5,6 +5,7 @@ import main.dto.*;
 import main.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -25,6 +26,7 @@ public class OrderService {
     /**
      * Place an order - orchestrates validation, execution, and transaction
      */
+    @Transactional
     public OrderResponse placeOrder(UUID accountId, PlaceOrderRequest request) {
         // Step 1: Validate input
         validateOrderRequest(request);
@@ -70,12 +72,11 @@ public class OrderService {
         Boolean isValid = OrderValidator.isValidTrade(order, dummyUser, account);
         
         if (!isValid) {
-            // Order rejected
+            // Order rejected - mark it and return without updating account
             order.updateExecution(now, null, Order.OrderStatus.REJECTED);
             order.setAccount(account);
-            orderRepository.save(order);
-            
-            throw new IllegalArgumentException("Order validation failed: insufficient funds or holdings");
+            orderRepository.save(order);    // Save rejected order
+            return toOrderResponse(order, accountId);
         }
 
         // Step 7: Update order with execution price
@@ -133,7 +134,7 @@ public class OrderService {
      * List orders for an account
      */
     public List<OrderSummary> listOrdersForAccount(UUID accountId) {
-        return orderRepository.findByAccountId(accountId).stream()
+        return orderRepository.findByAccountAccountID(accountId).stream()
             .map(this::toOrderSummary)
             .toList();
     }

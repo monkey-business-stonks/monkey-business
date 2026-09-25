@@ -8,6 +8,6 @@ import java.util.UUID;
 
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
-    List<Order> findByAccountId(UUID accountId);
-    List<Order> findByAccountIdAndStatus(UUID accountId, String status);
+    List<Order> findByAccountAccountID(UUID accountID);
+    List<Order> findByAccountAccountIDAndStatus(UUID accountID, Order.OrderStatus status);
 }

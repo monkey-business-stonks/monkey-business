@@ -16,20 +16,35 @@ public class Order {
     }
 
     @Id
-    private final UUID orderID;
-    private final String ticker;
-    private final Double quantity;
-    private final String action;
-    private final ZonedDateTime submittedOn;
+    private UUID orderID;
+    private String ticker;
+    private Double quantity;
+    private String action;
+    private ZonedDateTime submittedOn;
     private ZonedDateTime executedOn;
-    private final BigDecimal submittedValue;
+    private BigDecimal submittedValue;
     private BigDecimal executedValue;
+    @Enumerated(EnumType.ORDINAL)
     private OrderStatus status;
     private ZonedDateTime createdOn;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    // No-arg constructor for JPA
+    protected Order() {
+        this.orderID = null;
+        this.ticker = null;
+        this.quantity = null;
+        this.action = null;
+        this.submittedOn = null;
+        this.executedOn = null;
+        this.submittedValue = null;
+        this.executedValue = null;
+        this.status = null;
+        this.createdOn = null;
+    }
 
     public UUID getOrderID() { return this.orderID; }
     public String getTicker() { return this.ticker; }
@@ -52,7 +67,9 @@ public class Order {
         this.quantity = quantity;
         this.action = action;
         this.submittedOn = submittedOn;
+        this.executedOn = null;
         this.submittedValue = submittedValue;
+        this.executedValue = null;
         this.status = status;
         this.createdOn = createdOn;
     }

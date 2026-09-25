@@ -8,5 +8,5 @@ import java.util.UUID;
 
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, UUID> {
-    Optional<Asset> findByAccountIdAndTicker(UUID accountId, String ticker);
+    Optional<Asset> findByAccountAccountIDAndTicker(UUID accountID, String ticker);
 }

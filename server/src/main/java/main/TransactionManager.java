@@ -17,61 +17,69 @@ public class TransactionManager {
 
     // Updates account holdings and cash based on order execution
     public void updateAccount() {
-        if (account == null || order == null) {
-            throw new IllegalArgumentException("Account and Order cannot be null");
-        }
-        
-        String action = order.getAction();
-        String ticker = order.getTicker();
-        Double quantity = order.getQuantity();
-        BigDecimal executedPrice = order.getExecutedValue();
-        
-        if (action == null || action.isEmpty()) {
-            throw new IllegalArgumentException("Order action cannot be null or empty");
-        }
-        if (ticker == null || ticker.isEmpty()) {
-            throw new IllegalArgumentException("Ticker cannot be null or empty");
-        }
-        if (executedPrice == null || executedPrice.compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("Executed price must be greater than zero");
-        }
-        
-        if (action.equalsIgnoreCase("BUY")) {
-            // Get existing asset or create new one
-            Asset existing = account.getAsset(ticker);
-            Asset updated;
-            
-            if (existing == null) {
-                updated = new Asset(ticker, quantity, executedPrice);
-            } else {
-                updated = existing.withBoughtAverage(quantity, executedPrice);
+        try {
+            if (account == null || order == null) {
+                throw new IllegalArgumentException("Account and Order cannot be null");
             }
             
-            account.updateAsset(updated);
+            String action = order.getAction();
+            String ticker = order.getTicker();
+            Double quantity = order.getQuantity();
+            BigDecimal submittedValue = order.getSubmittedValue();  // Total cost, not unit price
             
-            // Deduct cash from account
-            BigDecimal cashSpent = executedPrice.multiply(BigDecimal.valueOf(quantity));
-            BigDecimal newCash = account.getCashBalance().subtract(cashSpent);
-            account.setCashBalance(newCash);
+            if (action == null || action.isEmpty()) {
+                throw new IllegalArgumentException("Order action cannot be null or empty");
+            }
+            if (ticker == null || ticker.isEmpty()) {
+                throw new IllegalArgumentException("Ticker cannot be null or empty");
+            }
+            if (submittedValue == null || submittedValue.compareTo(BigDecimal.ZERO) <= 0) {
+                throw new IllegalArgumentException("Submitted value must be greater than zero");
+            }
             
-        } else if (action.equalsIgnoreCase("SELL")) {
-            // Remove asset or reduce quantity
-            Asset existing = account.getAsset(ticker);
-            if (existing != null) {
-                Double newQuantity = existing.quantity() - quantity;
+            if (action.equalsIgnoreCase("BUY")) {
+                // Calculate unit price
+                BigDecimal unitPrice = submittedValue.divide(BigDecimal.valueOf(quantity), 2, java.math.RoundingMode.HALF_UP);
                 
-                if (newQuantity <= 0) {
-                    account.removeAsset(existing);
+                // Get existing asset or create new one
+                Asset existing = account.getAsset(ticker);
+                
+                if (existing == null) {
+                    // Create new asset with calculated unit price
+                    Asset newAsset = new Asset(ticker, quantity, unitPrice);
+                    account.updateAsset(newAsset);
                 } else {
-                    Asset updated = existing.withQuantity(newQuantity);
+                    // Update existing asset with new average
+                    Asset updated = existing.withBoughtAverage(quantity, unitPrice);
                     account.updateAsset(updated);
                 }
                 
-                // Add cash to account from sale
-                BigDecimal cashReceived = executedPrice.multiply(BigDecimal.valueOf(quantity));
-                BigDecimal newCash = account.getCashBalance().add(cashReceived);
+                // Deduct cash from account (submittedValue is already the total cost)
+                BigDecimal newCash = account.getCashBalance().subtract(submittedValue);
                 account.setCashBalance(newCash);
+                
+            } else if (action.equalsIgnoreCase("SELL")) {
+                // Remove asset or reduce quantity
+                Asset existing = account.getAsset(ticker);
+                if (existing != null) {
+                    Double newQuantity = existing.quantity() - quantity;
+                    
+                    if (newQuantity <= 0) {
+                        account.removeAsset(existing);
+                    } else {
+                        Asset updated = existing.withQuantity(newQuantity);
+                        account.updateAsset(updated);
+                    }
+                    
+                    // Add cash to account from sale (submittedValue is already the total proceeds)
+                    BigDecimal newCash = account.getCashBalance().add(submittedValue);
+                    account.setCashBalance(newCash);
+                }
             }
+        } catch (Exception e) {
+            System.err.println("ERROR in TransactionManager.updateAccount(): " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
     }
 

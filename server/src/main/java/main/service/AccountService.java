@@ -95,7 +95,7 @@ public class AccountService {
             throw new NoSuchElementException("User not found with ID: " + userId);
         }
 
-        return accountRepository.findByUserId(userId).stream()
+        return accountRepository.findByUserUserId(userId).stream()
             .map(account -> toAccountResponse(account, userId))
             .toList();
     }

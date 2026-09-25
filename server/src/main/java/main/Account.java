@@ -14,21 +14,36 @@ public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
 	@Id
-	private final UUID accountID;
-	private final ZonedDateTime openedDate;
-	private final AccountType accountType;
+	private UUID accountID;
+	private ZonedDateTime openedDate;
+	private AccountType accountType;
+	
+	@Column(name = "balance")
 	private BigDecimal balance;
+	
+	@Column(name = "cash_balance")
 	private BigDecimal cashBalance;
 	
-	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
-	private final Set<Asset> heldAssets;
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Set<Asset> heldAssets;
 	
-	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
-	private final Set<Order> orderHistory;
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Set<Order> orderHistory;
 
 	@ManyToOne
 	@JoinColumn(name = "user_id")
 	private User user;
+
+	// No-arg constructor for JPA
+	protected Account() {
+		this.accountID = null;
+		this.openedDate = null;
+		this.accountType = null;
+		this.balance = BigDecimal.ZERO;
+		this.cashBalance = BigDecimal.ZERO;
+		this.heldAssets = new LinkedHashSet<>();
+		this.orderHistory = new LinkedHashSet<>();
+	}
 
 	public Account(UUID accountID, ZonedDateTime openedDate, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
