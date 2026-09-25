@@ -3,7 +3,10 @@ package main.service;
 import main.Account;
 import main.dto.AccountResponse;
 import main.dto.CreateAccountRequest;
-import main.User;
+import main.entity.AccountEntity;
+import main.entity.UserEntity;
+import main.repository.AccountRepository;
+import main.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,21 +18,18 @@ import java.util.*;
 public class AccountService {
 
     @Autowired
-    private UserService userService;
+    private AccountRepository accountRepository;
 
-    // In-memory storage for demo
-    private final Map<UUID, Account> accountDatabase = new HashMap<>();
-    private final Map<UUID, List<UUID>> userAccountIndex = new HashMap<>();
+    @Autowired
+    private UserRepository userRepository;
 
     /**
      * Create account for user
      */
     public AccountResponse createAccount(UUID userId, CreateAccountRequest request) {
         // Verify user exists
-        User user = userService.getUserDirect(userId);
-        if (user == null) {
-            throw new NoSuchElementException("User not found with ID: " + userId);
-        }
+        UserEntity user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
 
         // Validate request
         if (request.getAccountType() == null || request.getAccountType().isEmpty()) {
@@ -38,7 +38,7 @@ public class AccountService {
 
         // Validate account type
         try {
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase());
+            AccountEntity.AccountType.valueOf(request.getAccountType().toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid account type: " + request.getAccountType());
         }
@@ -51,41 +51,29 @@ public class AccountService {
             ? request.getInitialCashBalance() 
             : balance;  // Default: all balance is cash
 
-        // Create account
+        // Create account entity
         UUID accountId = UUID.randomUUID();
-        Account account = new Account(
+        AccountEntity account = new AccountEntity(
             accountId,
-            ZonedDateTime.now(),
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase()),
+            user,
+            AccountEntity.AccountType.valueOf(request.getAccountType().toUpperCase()),
             balance,
             cashBalance,
-            new HashSet<>(),
-            new HashSet<>()
+            ZonedDateTime.now()
         );
 
-        // Store account
-        accountDatabase.put(accountId, account);
-        userAccountIndex.computeIfAbsent(userId, k -> new ArrayList<>()).add(accountId);
-
-        return toAccountResponse(account, userId);
+        // Save to database
+        account = accountRepository.save(account);
+        return toAccountResponse(account);
     }
 
     /**
      * Get account by ID
      */
     public AccountResponse getAccount(UUID accountId) {
-        Account account = accountDatabase.get(accountId);
-        if (account == null) {
-            throw new NoSuchElementException("Account not found with ID: " + accountId);
-        }
-        // Find user ID (in production, would be from account metadata)
-        UUID userId = userAccountIndex.entrySet().stream()
-            .filter(e -> e.getValue().contains(accountId))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("User not found for account: " + accountId));
-
-        return toAccountResponse(account, userId);
+        AccountEntity account = accountRepository.findById(accountId)
+            .orElseThrow(() -> new NoSuchElementException("Account not found with ID: " + accountId));
+        return toAccountResponse(account);
     }
 
     /**
@@ -93,35 +81,39 @@ public class AccountService {
      */
     public List<AccountResponse> listAccounts(UUID userId) {
         // Verify user exists
-        User user = userService.getUserDirect(userId);
-        if (user == null) {
-            throw new NoSuchElementException("User not found with ID: " + userId);
-        }
+        userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
 
-        List<UUID> accountIds = userAccountIndex.getOrDefault(userId, new ArrayList<>());
-        return accountIds.stream()
-            .map(accountDatabase::get)
-            .map(account -> toAccountResponse(account, userId))
+        // Get all accounts for user
+        return accountRepository.findByUserUserId(userId).stream()
+            .map(this::toAccountResponse)
             .toList();
     }
 
     /**
      * Get stored account (internal use)
      */
-    public Account getAccountDirect(UUID accountId) {
-        return accountDatabase.get(accountId);
+    public AccountEntity getAccountDirect(UUID accountId) {
+        return accountRepository.findById(accountId).orElse(null);
     }
 
     /**
-     * Convert Account to AccountResponse
+     * Save account (internal use for transaction updates)
      */
-    private AccountResponse toAccountResponse(Account account, UUID userId) {
+    public AccountEntity saveAccount(AccountEntity account) {
+        return accountRepository.save(account);
+    }
+
+    /**
+     * Convert AccountEntity to AccountResponse
+     */
+    private AccountResponse toAccountResponse(AccountEntity account) {
         return new AccountResponse(
-            account.getAccID(),
-            userId,
-            account.getAccType().toString(),
-            account.getOpenDate(),
-            new BigDecimal(account.getBalance()),
+            account.getAccountId(),
+            account.getUser().getUserId(),
+            account.getAccountType().toString(),
+            account.getOpenedDate(),
+            account.getBalance(),
             account.getCashBalance()
         );
     }

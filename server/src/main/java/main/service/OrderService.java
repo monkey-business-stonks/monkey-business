@@ -2,6 +2,9 @@ package main.service;
 
 import main.*;
 import main.dto.*;
+import main.entity.AccountEntity;
+import main.entity.OrderEntity;
+import main.repository.OrderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,9 +21,8 @@ public class OrderService {
     @Autowired
     private MarketDataService marketDataService;
 
-    // In-memory storage for orders
-    private final Map<UUID, Order> orderDatabase = new HashMap<>();
-    private final Map<UUID, List<UUID>> accountOrderIndex = new HashMap<>();
+    @Autowired
+    private OrderRepository orderRepository;
 
     /**
      * Place an order - orchestrates validation, execution, and transaction
@@ -30,19 +32,32 @@ public class OrderService {
         validateOrderRequest(request);
 
         // Step 2: Get account
-        Account account = accountService.getAccountDirect(accountId);
-        if (account == null) {
+        AccountEntity accountEntity = accountService.getAccountDirect(accountId);
+        if (accountEntity == null) {
             throw new NoSuchElementException("Account not found with ID: " + accountId);
         }
 
         // Step 3: Get current market price
         BigDecimal currentPrice = marketDataService.getPrice(request.getTicker());
         
-        // Step 4: Create order object
+        // Step 4: Create order entity
         UUID orderId = UUID.randomUUID();
         ZonedDateTime now = ZonedDateTime.now();
         BigDecimal submittedValue = currentPrice.multiply(new BigDecimal(request.getQuantity()));
 
+        OrderEntity orderEntity = new OrderEntity(
+            orderId,
+            accountEntity,
+            request.getTicker().toUpperCase(),
+            request.getQuantity(),
+            request.getAction().toUpperCase(),
+            now,
+            submittedValue,
+            OrderEntity.OrderStatus.PENDING,
+            now
+        );
+
+        // Step 5: Create temporary Order domain model for validation
         Order order = new Order(
             orderId,
             request.getTicker().toUpperCase(),
@@ -54,7 +69,18 @@ public class OrderService {
             now
         );
 
-        // Step 5: Create dummy user for validation (in production, get from auth)
+        // Step 6: Create temporary Account domain model for validation
+        Account account = new Account(
+            accountEntity.getAccountId(),
+            accountEntity.getOpenedDate(),
+            Account.AccountType.valueOf(accountEntity.getAccountType().toString()),
+            accountEntity.getBalance(),
+            accountEntity.getCashBalance(),
+            new HashSet<>(),
+            new HashSet<>()
+        );
+
+        // Step 7: Create dummy user for validation (in production, get from auth)
         User dummyUser = new User(
             UUID.randomUUID(),
             "user",
@@ -66,31 +92,33 @@ public class OrderService {
             now.toLocalDateTime()
         );
 
-        // Step 6: Validate order using OrderValidator
+        // Step 8: Validate order using OrderValidator
         Boolean isValid = OrderValidator.isValidTrade(order, dummyUser, account);
         
         if (!isValid) {
             // Order rejected
-            order.updateExecution(now, null, Order.OrderStatus.REJECTED);
-            orderDatabase.put(orderId, order);
-            accountOrderIndex.computeIfAbsent(accountId, k -> new ArrayList<>()).add(orderId);
-            
+            orderEntity.setStatus(OrderEntity.OrderStatus.REJECTED);
+            orderRepository.save(orderEntity);
             throw new IllegalArgumentException("Order validation failed: insufficient funds or holdings");
         }
 
-        // Step 7: Update order with execution price
-        order.updateExecution(now, submittedValue, Order.OrderStatus.PENDING);
+        // Step 9: Update order with execution details
+        orderEntity.setStatus(OrderEntity.OrderStatus.SUCCEEDED);
+        orderEntity.setExecutedOn(now);
+        orderEntity.setExecutedValue(submittedValue);
 
-        // Step 8: Use TransactionManager to atomically update account and order status
-        TransactionManager transactionManager = new TransactionManager(account, order);
-        transactionManager.updateAccount();  // Updates balance and assets
-        transactionManager.updateStatus();   // Marks order as SUCCEEDED
+        // Step 10: Update account balances (in production, use transaction manager)
+        if ("BUY".equalsIgnoreCase(request.getAction())) {
+            accountEntity.setCashBalance(accountEntity.getCashBalance().subtract(submittedValue));
+        } else if ("SELL".equalsIgnoreCase(request.getAction())) {
+            accountEntity.setCashBalance(accountEntity.getCashBalance().add(submittedValue));
+        }
 
-        // Step 9: Store order
-        orderDatabase.put(orderId, order);
-        accountOrderIndex.computeIfAbsent(accountId, k -> new ArrayList<>()).add(orderId);
+        // Step 11: Save to database
+        accountService.saveAccount(accountEntity);
+        orderEntity = orderRepository.save(orderEntity);
 
-        return toOrderResponse(order, accountId);
+        return toOrderResponse(orderEntity);
     }
 
     /**
@@ -106,48 +134,33 @@ public class OrderService {
         if (request.getAction() == null || request.getAction().isEmpty()) {
             throw new IllegalArgumentException("Action is required (BUY or SELL)");
         }
-        if (request.getOrderType() == null || request.getOrderType().isEmpty()) {
-            throw new IllegalArgumentException("Order type is required");
-        }
     }
 
     /**
      * Get order by ID
      */
     public OrderResponse getOrder(UUID orderId) {
-        Order order = orderDatabase.get(orderId);
-        if (order == null) {
-            throw new NoSuchElementException("Order not found with ID: " + orderId);
-        }
-        
-        // Find account ID
-        UUID accountId = accountOrderIndex.entrySet().stream()
-            .filter(e -> e.getValue().contains(orderId))
-            .map(Map.Entry::getKey)
-            .findFirst()
-            .orElseThrow(() -> new NoSuchElementException("Account not found for order: " + orderId));
-
-        return toOrderResponse(order, accountId);
+        OrderEntity orderEntity = orderRepository.findById(orderId)
+            .orElseThrow(() -> new NoSuchElementException("Order not found with ID: " + orderId));
+        return toOrderResponse(orderEntity);
     }
 
     /**
      * List orders for an account
      */
     public List<OrderSummary> listOrdersForAccount(UUID accountId) {
-        List<UUID> orderIds = accountOrderIndex.getOrDefault(accountId, new ArrayList<>());
-        return orderIds.stream()
-            .map(orderDatabase::get)
+        return orderRepository.findByAccountAccountId(accountId).stream()
             .map(this::toOrderSummary)
             .toList();
     }
 
     /**
-     * Convert Order to OrderResponse
+     * Convert OrderEntity to OrderResponse
      */
-    private OrderResponse toOrderResponse(Order order, UUID accountId) {
+    private OrderResponse toOrderResponse(OrderEntity order) {
         return new OrderResponse(
-            order.getOrderID(),
-            accountId,
+            order.getOrderId(),
+            order.getAccount().getAccountId(),
             "EQUITY",  // Mock - in production, would be stored in Order
             order.getAction(),
             order.getTicker(),
@@ -162,11 +175,11 @@ public class OrderService {
     }
 
     /**
-     * Convert Order to OrderSummary
+     * Convert OrderEntity to OrderSummary
      */
-    private OrderSummary toOrderSummary(Order order) {
+    private OrderSummary toOrderSummary(OrderEntity order) {
         return new OrderSummary(
-            order.getOrderID(),
+            order.getOrderId(),
             "EQUITY",  // Mock
             order.getAction(),
             order.getTicker(),
@@ -180,7 +193,7 @@ public class OrderService {
     /**
      * Get stored order (internal use)
      */
-    public Order getOrderDirect(UUID orderId) {
-        return orderDatabase.get(orderId);
+    public OrderEntity getOrderDirect(UUID orderId) {
+        return orderRepository.findById(orderId).orElse(null);
     }
 }

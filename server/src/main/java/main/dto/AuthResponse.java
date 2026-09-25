@@ -4,16 +4,18 @@ import java.util.UUID;
 
 public class AuthResponse {
     private UUID userId;
-    private boolean isAuthenticated;
+    private String username;
+    private String email;
     private String accessLevel;
     private String token;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(UUID userId, boolean isAuthenticated, String accessLevel, String token) {
+    public AuthResponse(UUID userId, String username, String email, String accessLevel, String token) {
         this.userId = userId;
-        this.isAuthenticated = isAuthenticated;
+        this.username = username;
+        this.email = email;
         this.accessLevel = accessLevel;
         this.token = token;
     }
@@ -26,12 +28,20 @@ public class AuthResponse {
         this.userId = userId;
     }
 
-    public boolean isAuthenticated() {
-        return isAuthenticated;
+    public String getUsername() {
+        return username;
     }
 
-    public void setAuthenticated(boolean authenticated) {
-        isAuthenticated = authenticated;
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getAccessLevel() {
