@@ -1,0 +1,81 @@
+package main;
+
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
+import static org.junit.jupiter.api.Assertions.*;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
+class UserTest {
+    private User user;
+    private UUID testUserId;
+    private Set<Account> testAccounts;
+
+    @BeforeEach
+    void setUp() {
+        testUserId = UUID.randomUUID();
+        testAccounts = new HashSet<>();
+        user = new User(
+            testUserId,
+            "testuser",
+            "test@example.com",
+            "password123",
+            User.AccessLevel.User,
+            true,
+            testAccounts,
+            LocalDateTime.now()
+        );
+    }
+
+    @Test
+    void testLoginWithCorrectPassword() {
+        assertTrue(user.login("password123"), "Login should succeed with correct password");
+    }
+
+    @Test
+    void testLoginWithIncorrectPassword() {
+        assertFalse(user.login("wrongpassword"), "Login should fail with incorrect password");
+    }
+
+    @Test
+    void testGetIsActive() {
+        assertTrue(user.isActive(), "User should be active");
+    }
+
+    @Test
+    void testLoginWhenInactive() {
+        User inactiveUser = new User(
+            testUserId,
+            "testuser",
+            "test@example.com",
+            "password123",
+            User.AccessLevel.User,
+            false,
+            testAccounts,
+            LocalDateTime.now()
+        );
+        assertFalse(inactiveUser.login("password123"), "Login should fail when user is inactive");
+    }
+
+    @Test
+    void testChangePassword() {
+        User updatedUser = user.changePassword("password123", "newpassword456");
+        assertTrue(updatedUser.login("newpassword456"), "Should login with new password");
+    }
+
+    @Test
+    void testChangePasswordWithWrongOldPassword() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            user.changePassword("wrongpassword", "newpassword456");
+        }, "Should throw exception with wrong old password");
+    }
+
+    @Test
+    void testCheckAccessLevel() {
+        assertTrue(user.checkAccessLevel(User.AccessLevel.User), "User should have User access level");
+        assertFalse(user.checkAccessLevel(User.AccessLevel.Analyst), "User should not have Analyst access level");
+    }
+}
