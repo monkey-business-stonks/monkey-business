@@ -41,13 +41,13 @@ public class OrderService {
         // Step 4: Create order object
         UUID orderId = UUID.randomUUID();
         ZonedDateTime now = ZonedDateTime.now();
-        BigDecimal submittedValue = currentPrice.multiply(new BigDecimal(request.getQuantity()));
+        BigDecimal submittedValue = currentPrice.multiply(request.getQuantity());
 
         Order order = new Order(
             orderId,
             request.getTicker().toUpperCase(),
-            request.getQuantity(),
-            request.getAction().toUpperCase(),
+            request.getQuantity().doubleValue(),
+            request.getAction().toString(),
             now,
             submittedValue,
             Order.OrderStatus.PENDING,
@@ -100,13 +100,13 @@ public class OrderService {
         if (request.getTicker() == null || request.getTicker().isEmpty()) {
             throw new IllegalArgumentException("Ticker is required");
         }
-        if (request.getQuantity() == null || request.getQuantity() <= 0) {
+        if (request.getQuantity() == null || request.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
             throw new IllegalArgumentException("Quantity must be greater than 0");
         }
-        if (request.getAction() == null || request.getAction().isEmpty()) {
+        if (request.getAction() == null) {
             throw new IllegalArgumentException("Action is required (BUY or SELL)");
         }
-        if (request.getOrderType() == null || request.getOrderType().isEmpty()) {
+        if (request.getOrderType() == null) {
             throw new IllegalArgumentException("Order type is required");
         }
     }
@@ -145,36 +145,34 @@ public class OrderService {
      * Convert Order to OrderResponse
      */
     private OrderResponse toOrderResponse(Order order, UUID accountId) {
-        return new OrderResponse(
-            order.getOrderID(),
-            accountId,
-            "EQUITY",  // Mock - in production, would be stored in Order
-            order.getAction(),
-            order.getTicker(),
-            order.getQuantity(),
-            order.getSubmittedValue(),
-            order.getExecutedValue(),
-            order.getStatus().toString(),
-            order.getSubmittedOn(),
-            order.getExecutedOn(),
-            order.getCreatedOn()
-        );
+        return new OrderResponse()
+            .orderId(order.getOrderID())
+            .accountId(accountId)
+            .orderType(OrderType.EQUITY)  // Mock - in production, would be stored in Order
+            .action(OrderAction.fromValue(order.getAction()))
+            .ticker(order.getTicker())
+            .quantity(new BigDecimal(order.getQuantity()))
+            .submittedValue(order.getSubmittedValue())
+            .executedValue(order.getExecutedValue() != null ? order.getExecutedValue() : null)
+            .status(OrderStatus.fromValue(order.getStatus().toString()))
+            .submittedOn(order.getSubmittedOn().toOffsetDateTime())
+            .executedOn(order.getExecutedOn() != null ? order.getExecutedOn().toOffsetDateTime() : null)
+            .createdOn(order.getCreatedOn().toOffsetDateTime());
     }
 
     /**
      * Convert Order to OrderSummary
      */
     private OrderSummary toOrderSummary(Order order) {
-        return new OrderSummary(
-            order.getOrderID(),
-            "EQUITY",  // Mock
-            order.getAction(),
-            order.getTicker(),
-            order.getQuantity(),
-            order.getStatus().toString(),
-            order.getSubmittedOn(),
-            order.getExecutedValue()
-        );
+        return new OrderSummary()
+            .orderId(order.getOrderID())
+            .orderType(OrderType.EQUITY)  // Mock
+            .action(OrderAction.fromValue(order.getAction()))
+            .ticker(order.getTicker())
+            .quantity(new BigDecimal(order.getQuantity()))
+            .status(OrderStatus.fromValue(order.getStatus().toString()))
+            .submittedOn(order.getSubmittedOn().toOffsetDateTime())
+            .executedValue(order.getExecutedValue() != null ? order.getExecutedValue() : null);
     }
 
     /**

@@ -87,28 +87,25 @@ public class UserService {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        return new AuthResponse(
-            userId,
-            true,
-            user.userAccessLevel().toString(),
-            "mock-jwt-token-" + userId  // Mock JWT token
-        );
+        return new AuthResponse()
+            .userId(userId)
+            .isAuthenticated(true)
+            .accessLevel(main.dto.AccessLevel.fromValue(user.userAccessLevel().toString().toUpperCase()));
     }
 
     /**
      * Convert User to UserResponse
      */
     private UserResponse toUserResponse(User user) {
-        return new UserResponse(
-            user.userId(),
-            user.username(),
-            user.username(),  // Reusing for name (should be separate in User record)
-            user.email(),
-            null,
-            null,
-            user.userAccessLevel().toString(),
-            user.createdAt()
-        );
+        return new UserResponse()
+            .userId(user.userId())
+            .username(user.username())
+            .name(user.username())  // Reusing for name (should be separate in User record)
+            .email(user.email())
+            .phone(null)
+            .dob(null)
+            .accessLevel(main.dto.AccessLevel.fromValue(user.userAccessLevel().toString().toUpperCase()))
+            .lastLogin(user.createdAt() != null ? user.createdAt().atZone(java.time.ZoneId.systemDefault()).toOffsetDateTime() : null);
     }
 
     /**

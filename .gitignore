@@ -1,0 +1,28 @@
+# Build and dependencies
+target/
+node_modules/
+*.jar
+*.war
+*.ear
+*.class
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Environment
+.env
+.env.local
+*.log
+
+# Generated files (from Maven/npm builds - will be regenerated)
+dist/
+build/
+out/
+
+# Keep tracked files
+!test.yaml

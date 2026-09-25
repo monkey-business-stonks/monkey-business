@@ -32,13 +32,13 @@ public class AccountService {
         }
 
         // Validate request
-        if (request.getAccountType() == null || request.getAccountType().isEmpty()) {
+        if (request.getAccountType() == null) {
             throw new IllegalArgumentException("Account type is required");
         }
 
         // Validate account type
         try {
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase());
+            Account.AccountType.valueOf(request.getAccountType().toString());
         } catch (IllegalArgumentException e) {
             throw new IllegalArgumentException("Invalid account type: " + request.getAccountType());
         }
@@ -56,7 +56,7 @@ public class AccountService {
         Account account = new Account(
             accountId,
             ZonedDateTime.now(),
-            Account.AccountType.valueOf(request.getAccountType().toUpperCase()),
+            Account.AccountType.valueOf(request.getAccountType().toString()),
             balance,
             cashBalance,
             new HashSet<>(),
@@ -116,13 +116,15 @@ public class AccountService {
      * Convert Account to AccountResponse
      */
     private AccountResponse toAccountResponse(Account account, UUID userId) {
-        return new AccountResponse(
-            account.getAccID(),
-            userId,
-            account.getAccType().toString(),
-            account.getOpenDate(),
-            new BigDecimal(account.getBalance()),
-            account.getCashBalance()
-        );
+        // Convert domain enum to DTO enum (replace underscores with spaces for ROTH_IRA)
+        String accountTypeStr = account.getAccType().toString().replace("_", " ");
+        
+        return new AccountResponse()
+            .accountId(account.getAccID())
+            .userId(userId)
+            .accountType(main.dto.AccountType.fromValue(accountTypeStr))
+            .openedDate(account.getOpenDate().toOffsetDateTime())
+            .balance(new BigDecimal(account.getBalance()))  // Convert double to BigDecimal
+            .cashBalance(account.getCashBalance());
     }
 }
