@@ -32,8 +32,8 @@ public record User(
         return this;
     }
 
-    public String isActive() {
-        return isActive;
+    public boolean isActive() {
+        return this.isActive;
     }
 
     public User changePassword(String oldPassword, String newPassword) {

@@ -1,10 +1,15 @@
 package main;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 
 public class OrderValidator {
 
     private final PricingEngine pricingEngine;
+
+    public OrderValidator(PricingEngine pricingEngine) {
+        this.pricingEngine = pricingEngine;
+    }
 
     public static Boolean isValidTrade(Order order, User user, Account account) {
         if (!user.isActive()) {
@@ -26,7 +31,7 @@ public class OrderValidator {
 
         // TODO: Move the following into Account to be validated 
         if (action.equalsIgnoreCase("BUY")) {
-            BigDecimal requiredCash = BigDecimal.valueOf(order.getQuantity() * order.getSubmittedValue());
+            BigDecimal requiredCash = new BigDecimal(order.getQuantity()).multiply(order.getSubmittedValue());
             if (account.getCashBalance().compareTo(requiredCash) < 0) {
                 return false;
             }
@@ -40,7 +45,7 @@ public class OrderValidator {
         return true;
     }
 
-    public static Order acceptTrade(Order order, User user, Account account) {
+    public Order acceptTrade(Order order, User user, Account account) {
         // TODO: Update stub to match actual use of getCurrentPrice()
         if (isValidTrade(order, user, account)) {
             order.updateExecution(
@@ -50,9 +55,10 @@ public class OrderValidator {
             );
             return order;
         }
+        return null;
     }
 
-    public static Order rejectTrade(Order order) {
+    public Order rejectTrade(Order order) {
         // TODO: Update stub to match actual use of getCurrentPrice()
         order.updateExecution(
             ZonedDateTime.now(),

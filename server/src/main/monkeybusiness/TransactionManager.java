@@ -24,7 +24,7 @@ public class TransactionManager {
         String action = order.getAction();
         String ticker = order.getTicker();
         Double quantity = order.getQuantity();
-        BigDecimal executedPrice = BigDecimal.valueOf(order.getExecutedValue());
+        BigDecimal executedPrice = order.getExecutedValue();
         
         if (action == null || action.isEmpty()) {
             throw new IllegalArgumentException("Order action cannot be null or empty");
