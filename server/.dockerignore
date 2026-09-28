@@ -1,0 +1,7 @@
+target/
+.git/
+.gitignore
+.DS_Store
+*.log
+*.md
+node_modules/
