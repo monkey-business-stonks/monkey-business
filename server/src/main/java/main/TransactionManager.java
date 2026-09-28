@@ -47,10 +47,12 @@ public class TransactionManager {
                 if (existing == null) {
                     // Create new asset with calculated unit price
                     Asset newAsset = new Asset(ticker, quantity, unitPrice);
+                    newAsset.setAccount(account);  // CRITICAL: Set account relationship
                     account.updateAsset(newAsset);
                 } else {
                     // Update existing asset with new average
                     Asset updated = existing.withBoughtAverage(quantity, unitPrice);
+                    updated.setAccount(account);  // CRITICAL: Set account relationship
                     account.updateAsset(updated);
                 }
                 
@@ -68,6 +70,7 @@ public class TransactionManager {
                         account.removeAsset(existing);
                     } else {
                         Asset updated = existing.withQuantity(newQuantity);
+                        updated.setAccount(account);  // CRITICAL: Set account relationship
                         account.updateAsset(updated);
                     }
                     
