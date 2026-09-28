@@ -3,7 +3,7 @@ spring:
     name: monkeybusiness-server
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/monkey_business
+    url: jdbc:postgresql://postgres:5432/monkey_business
     username: postgres
     password: n3u3d4!
     driver-class-name: org.postgresql.Driver
