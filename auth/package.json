@@ -1,0 +1,24 @@
+{
+  "name": "monkey-business-auth",
+  "version": "1.0.0",
+  "description": "JWT authentication stub for Monkey Business trading platform",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
+  },
+  "keywords": [
+    "jwt",
+    "auth",
+    "authentication"
+  ],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.0",
+    "jsonwebtoken": "^9.0.0",
+    "body-parser": "^1.20.0",
+    "cors": "^2.8.5"
+  }
+}
