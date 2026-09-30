@@ -1,0 +1,31 @@
+---
+config:
+    theme: dark
+---
+flowchart TD
+    A[Order Submitted]
+    B[OrderValidator]
+    C["{REJECTED}"]
+    D[OrderExecutor]
+    E[PricingEngine]
+    F["{ACCEPTED}"]
+    G[TransactionManager]
+    H[OrderManager]
+    I[Account]
+    J["[UI] Order 'Report' Screen"]
+    K["[UI] Order History Tab"]
+
+    A-->H
+    H-->|Order Created| B
+    E-->|Check Price| B
+    B-->|Order Validated| D
+    B-->|Order Failed to Validate| C
+    D-->|Order Price Changed| C
+    C-->|Show Rejection| J
+    E-->|Re-Check Price| D
+    D-->|Order Executed| F
+    F-->G
+    G-->|Update Account's Assets|I
+    G-->|Update Order History|H
+    G-->|Display Successful Order|J
+    H-->|Display Previous Orders|K
