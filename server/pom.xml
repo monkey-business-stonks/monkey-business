@@ -115,8 +115,8 @@
                     <inputSpec>src/main/resources/test.yaml</inputSpec>
                     <generatorName>spring</generatorName>
                     <configOptions>
-                        <packageName>main.dto</packageName>
-                        <modelPackage>main.dto</modelPackage>
+                        <packageName>domain.dto</packageName>
+                        <modelPackage>domain.dto</modelPackage>
                         <serializableModel>true</serializableModel>
                         <dateLibrary>java8</dateLibrary>
                         <useJakartaEe>true</useJakartaEe>
@@ -132,8 +132,9 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>3.1.4</version>
                 <configuration>
-                    <mainClass>main.MonkeyBusinessApplication</mainClass>
+                    <mainClass>domain.MonkeyBusinessApplication</mainClass>
                 </configuration>
             </plugin>
         </plugins>

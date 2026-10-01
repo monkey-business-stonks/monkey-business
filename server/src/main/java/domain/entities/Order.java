@@ -1,0 +1,82 @@
+package domain.entities;
+
+import java.math.BigDecimal;
+// import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.util.UUID;
+import jakarta.persistence.*;
+
+@Entity
+@Table(name = "orders")
+public class Order {
+    public enum OrderStatus {
+        REJECTED,
+        PENDING,
+        SUCCEEDED
+    }
+
+    @Id
+    private UUID orderID;
+    private String ticker;
+    private Double quantity;
+    private String action;
+    private ZonedDateTime submittedOn;
+    private ZonedDateTime executedOn;
+    private BigDecimal submittedValue;
+    private BigDecimal executedValue;
+    @Enumerated(EnumType.ORDINAL)
+    private OrderStatus status;
+    private ZonedDateTime createdOn;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    // No-arg constructor for JPA
+    protected Order() {
+        this.orderID = null;
+        this.ticker = null;
+        this.quantity = null;
+        this.action = null;
+        this.submittedOn = null;
+        this.executedOn = null;
+        this.submittedValue = null;
+        this.executedValue = null;
+        this.status = null;
+        this.createdOn = null;
+    }
+
+    public UUID getOrderID() { return this.orderID; }
+    public String getTicker() { return this.ticker; }
+    public Double getQuantity() { return this.quantity; }
+    public String getAction() { return this.action; }
+    public ZonedDateTime getSubmittedOn() { return this.submittedOn; }
+    public ZonedDateTime getExecutedOn() { return this.executedOn; }
+    public BigDecimal getSubmittedValue() { return this.submittedValue; }
+    public BigDecimal getExecutedValue() { return this.executedValue; }
+    public OrderStatus getStatus() { return this.status; }
+    public ZonedDateTime getCreatedOn() { return this.createdOn; }
+    public Account getAccount() { return this.account; }
+    public void setAccount(Account account) { this.account = account; }
+
+    public Order(UUID orderID, String ticker, Double quantity, String action, 
+                ZonedDateTime submittedOn, BigDecimal submittedValue, 
+                OrderStatus status, ZonedDateTime createdOn) {
+        this.orderID = orderID;
+        this.ticker = ticker;
+        this.quantity = quantity;
+        this.action = action;
+        this.submittedOn = submittedOn;
+        this.executedOn = null;
+        this.submittedValue = submittedValue;
+        this.executedValue = null;
+        this.status = status;
+        this.createdOn = createdOn;
+    }
+
+    public void updateExecution(ZonedDateTime executedOn, BigDecimal executedValue, OrderStatus status) {
+        this.executedOn = executedOn;
+        this.executedValue = executedValue;
+        this.status = status;
+    }
+}
