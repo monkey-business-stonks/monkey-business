@@ -1,0 +1,9 @@
+.instrument-chart {
+  margin-top: var(--space-md);
+  margin-bottom: var(--space-md);
+  width: 100%;
+  height: calc(100vh - 340px);
+  background-color: var(--background-primary);
+  border-radius: var(--radius-md);
+  border: 2px solid var(--background-tertiary);
+}

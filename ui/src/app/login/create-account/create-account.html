@@ -1,0 +1,130 @@
+<!-- Create Account Page Container -->
+<!-- Root container with flexbox centering and gradient background -->
+<div class="login-container">
+  <!-- Create Account Card - Central form container with dark theme styling -->
+  <div class="login-card">
+    <!-- Logo and Title Section -->
+    <!-- Displays the Monkey Business logo, branding, and subtitle -->
+    <div class="logo-section">
+      <!-- Logo and Title Wrapper -->
+      <div class="logo-title-wrapper">
+        <!-- Application logo image -->
+        <img src="/logo-icon.png" alt="Monkey Business" class="logo-icon" />
+        
+        <!-- Main application title with accent color on "BUSINESS" -->
+        <h1 class="logo-text">
+          <span class="logo-primary">MONKEY</span><span class="logo-accent">BUSINESS</span>
+        </h1>
+      </div>
+      
+      <!-- Subtitle describing the application -->
+      <p class="subtitle">Enterprise Trading Platform</p>
+    </div>
+
+    <!-- Account Creation Form -->
+    <!-- Handles user registration with two-way data binding -->
+    <form (ngSubmit)="onCreateAccount()">
+      <!-- First Name Input Group -->
+      <div class="form-group">
+        <!-- Label for first name input field -->
+        <label for="firstName" class="form-label">FIRST NAME</label>
+        
+        <!-- First name input with two-way binding to component's firstName signal -->
+        <input
+          id="firstName"
+          type="text"
+          class="form-input"
+          placeholder="Monkey"
+          [(ngModel)]="firstName"
+          name="firstName"
+          required
+        />
+      </div>
+
+      <!-- Last Name Input Group -->
+      <div class="form-group">
+        <!-- Label for last name input field -->
+        <label for="lastName" class="form-label">LAST NAME</label>
+        
+        <!-- Last name input with two-way binding to component's lastName signal -->
+        <input
+          id="lastName"
+          type="text"
+          class="form-input"
+          placeholder="Business"
+          [(ngModel)]="lastName"
+          name="lastName"
+          required
+        />
+      </div>
+
+      <!-- Email Input Group -->
+      <div class="form-group">
+        <!-- Label for email input field -->
+        <label for="email" class="form-label">EMAIL ADDRESS</label>
+        
+        <!-- Email input with two-way binding to component's email signal -->
+        <input
+          id="email"
+          type="email"
+          class="form-input"
+          placeholder="trader@monkeybusiness.com"
+          [(ngModel)]="email"
+          name="email"
+          required
+        />
+      </div>
+
+      <!-- Password Input Group -->
+      <div class="form-group">
+        <!-- Label for password input field -->
+        <label for="password" class="form-label">PASSWORD</label>
+        
+        <!-- Password input with two-way binding to component's password signal -->
+        <!-- Type is password to mask user input -->
+        <input
+          id="password"
+          type="password"
+          class="form-input"
+          placeholder="••••••••••"
+          [(ngModel)]="password"
+          name="password"
+          required
+        />
+      </div>
+
+      <!-- Terms Agreement Checkbox Group -->
+      <div class="form-group checkbox-group">
+        <!-- Checkbox for terms agreement -->
+        <input
+          id="termsCheckbox"
+          type="checkbox"
+          class="terms-checkbox"
+          [(ngModel)]="agreedToTerms"
+          name="agreedToTerms"
+        />
+        
+        <!-- Label with clickable links to Terms of Service and Privacy Policy -->
+        <label for="termsCheckbox" class="terms-label">
+          I agree to the
+          <a href="#" class="terms-link">Terms of Service</a>,
+          <a href="#" class="terms-link">Privacy Policy</a>,
+          and certify that my provided identity matches government records.
+        </label>
+      </div>
+
+      <!-- Create Account Submit Button -->
+      <!-- Green accent button that triggers form submission and onCreateAccount() method -->
+      <!-- Button is disabled if form is invalid or terms are not accepted -->
+      <button type="submit" class="sign-in-button" [disabled]="!isFormValid()">
+        Agree & Create Account
+      </button>
+    </form>
+
+    <!-- Sign In Link Button -->
+    <!-- Centered link for users who already have an account -->
+    <button type="button" class="sign-in-link" (click)="onSignIn()">
+      Already have an account? <span class="sign-in-text">Sign In</span>
+    </button>
+  </div>
+</div>

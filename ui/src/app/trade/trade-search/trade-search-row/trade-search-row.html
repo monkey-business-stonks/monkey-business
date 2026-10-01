@@ -1,0 +1,24 @@
+<div 
+  class="asset-row" 
+  [class.selected]="data.selected"
+  (click)="onSelect()"
+>
+  <div class="asset-info">
+    <span class="symbol">{{ data.symbol }}</span>
+    <span class="name">{{ data.name }}</span>
+  </div>
+
+  <div class="sparkline" [class.positive]="isPositive" [class.negative]="!isPositive">
+    <svg viewBox="0 0 50 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path *ngIf="isPositive" d="M 2 16 L 14 14 L 26 8 L 38 10 L 48 3" />
+      <path *ngIf="!isPositive" d="M 2 4 L 14 6 L 26 12 L 38 10 L 48 17" />
+    </svg>
+  </div>
+
+  <div class="asset-metrics" [class.positive]="isPositive" [class.negative]="!isPositive">
+    <span class="price">${{ data.price | number:'1.2-2' }}</span>
+    <span class="change">
+      {{ isPositive ? '+' : '' }}{{ data.changePercent | number:'1.2-2' }}%
+    </span>
+  </div>
+</div>

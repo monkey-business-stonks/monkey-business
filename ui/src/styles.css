@@ -19,6 +19,7 @@
   --clear: #ffffff00;
   --text-primary: #ffffff;
   --text-secondary: #8A99A5;
+  --text-secondary-transparent: #8A99A540;
   --background-primary: #161B21;
   --background-secondary: #202830;
   --background-tertiary: #26313C;
@@ -27,6 +28,7 @@
   --accent-negative: #FF3B30;
 
   /* Spacing */
+  --space-xxs: 2px;
   --space-xs: 4px;
   --space-sm: 8px;
   --space-xmd: 12px;

@@ -1,0 +1,14 @@
+.trade-container {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space-lg);
+  padding: var(--space-lg);
+}
+
+instrument-details {
+  flex: 2;
+}
+
+trade-search {
+  flex: 1;
+}

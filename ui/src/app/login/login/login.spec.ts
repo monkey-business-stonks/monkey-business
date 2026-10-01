@@ -100,13 +100,13 @@ describe('Login Component', () => {
   });
 
   /**
-   * Test: Forgot Password Link Rendering
-   * Verifies that the "Forgot password?" link button is rendered with correct text
+   * Test: Create Account Link Rendering
+   * Verifies that the "Create account" link is rendered with correct text
    */
-  it('should render Forgot password link', () => {
+  it('should render create account link', () => {
     const link = fixture.nativeElement.querySelector('.forgot-password-link');
     expect(link).toBeTruthy();
-    expect(link.textContent).toContain('Forgot password?');
+    expect(link.textContent).toContain('Create account');
   });
 });
 

@@ -1,0 +1,10 @@
+  <div class="trade-search-container">
+    <input class="search-bar" type="text" placeholder="Search tickers...">
+    <div class="rows-list">
+      <trade-search-row 
+        *ngFor="let asset of assetList" 
+        [data]="asset"
+        (rowClick)="handleSelect($event)"
+      ></trade-search-row>
+    </div>
+  </div>
