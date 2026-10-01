@@ -1,0 +1,103 @@
+.order-panel {
+  padding: var(--space-lg);
+  height: calc(100vh - 130px);
+  background-color: var(--background-secondary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+  box-sizing: border-box;
+  overflow-y: auto
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.panel-title {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-base);
+}
+
+.back-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  padding: var(--space-xs);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  transition: color var(--transition-duration), background-color var(--transition-duration);
+
+  &:hover {
+    color: var(--text-primary);
+    background-color: var(--background-secondary);
+  }
+}
+
+.form-fields {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.divider {
+  border: none;
+  border-top: 1px solid var(--background-secondary);
+  margin: 0;
+}
+
+.summary-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xmd);
+}
+
+.summary-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: var(--text-primary);
+}
+
+.text-secondary {
+  color: var(--text-secondary);
+}
+
+.font-mono {
+  font-family: 'Roboto Mono', monospace;
+}
+
+.total-row {
+  font-size: var(--font-size-base);
+}
+
+.total-amount {
+  color: var(--accent-primary);
+  font-weight: var(--font-weight-bold);
+  font-size: var(--font-size-lg);
+}
+
+.submit-btn {
+  width: 100%;
+  padding: var(--space-md);
+  background-color: var(--accent-primary);
+  color: #000000;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: inherit;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: opacity var(--transition-duration) ease;
+
+  &:hover {
+    opacity: 0.9;
+  }
+}

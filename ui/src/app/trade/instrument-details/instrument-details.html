@@ -2,29 +2,29 @@
   <div class="instrument-details-header">
     <div class="instrument-details-header-left">    
       <div class="instrument-details-header-title">
-        <div class="ticker">AAPL</div>
-        <div><p class="type">EQUITY</p></div>
+        <div class="ticker">{{ selectedTicker?.symbol || '--' }}</div>
+        <div><p class="type">{{ selectedTicker?.type || 'EQUITY' }}</p></div>
       </div>
-      <div class="name">Apple Inc. — NASDAQ</div>
+      <div class="name">{{ selectedTicker?.name || '--' }} — {{ selectedTicker?.exchange || 'NASDAQ' }}</div>
     </div>
     <div class="instrument-details-header-right">
-      <div class="value">$187.42</div>
-      <div class="change-today">+$1.71 (+0.92% today)</div>
+      <div class="value">{{ selectedTicker?.price ? ('$' + selectedTicker.price) : '--' }}</div>
+      <div class="change-today">{{ selectedTicker?.changePercent ? ('+$' + selectedTicker.changeAmount + ' (+' + selectedTicker.changePercent + '% today)') : '--' }}</div>
     </div>
   </div>
   <instrument-chart/>
   <div class="instrument-caption">
     <div class="instrument-caption-pair">
       <p class="label">BID</p>
-      <p class="val">$187.38</p>
+      <p class="val">{{ selectedTicker?.bid || '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">ASK</p>
-      <p class="val">$187.45</p>
+      <p class="val">{{ selectedTicker?.ask || '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">SPREAD</p>
-      <p class="val">$0.07 (0.04%)</p>
+      <p class="val">{{ selectedTicker?.spread || '--' }}</p>
     </div>
   </div>
 </div>

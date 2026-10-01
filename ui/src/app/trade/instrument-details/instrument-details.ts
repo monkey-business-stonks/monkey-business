@@ -1,10 +1,14 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { InstrumentChart } from './instrument-chart/instrument-chart';
 
 @Component({
-  imports: [InstrumentChart],
   selector: 'instrument-details',
-  styleUrl: './instrument-details.css',
+  standalone: true,
+  imports: [CommonModule, InstrumentChart],
   templateUrl: './instrument-details.html',
+  styleUrl: './instrument-details.css',
 })
-export class InstrumentDetails {}
+export class InstrumentDetails {
+  @Input() selectedTicker: any;
+}

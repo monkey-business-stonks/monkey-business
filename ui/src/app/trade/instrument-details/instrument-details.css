@@ -4,6 +4,7 @@
   background-color: var(--background-secondary);
   border: 2px solid var(--background-tertiary);
   border-radius: var(--radius-md);
+  overflow-y: auto
 }
 
 .instrument-details-header {

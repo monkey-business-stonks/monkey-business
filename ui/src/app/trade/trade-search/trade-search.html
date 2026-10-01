@@ -1,10 +1,14 @@
-  <div class="trade-search-container">
-    <input class="search-bar" type="text" placeholder="Search tickers...">
-    <div class="rows-list">
-      <trade-search-row 
-        *ngFor="let asset of assetList" 
-        [data]="asset"
-        (rowClick)="handleSelect($event)"
-      ></trade-search-row>
-    </div>
+<div class="trade-search-container">
+  <input class="search-bar" type="text" placeholder="Search tickers...">
+  <div class="rows-list">
+    <trade-search-row 
+      *ngFor="let asset of assetList" 
+      [data]="asset"
+      (rowClick)="handleSelect($event)"
+    ></trade-search-row>
   </div>
+  
+  <app-button variant="secondary" [disabled]="!selectedAsset" (click)="selectedAsset && onTickerSelected.emit(selectedAsset!)">
+    {{ selectedAsset ? `Trade ${selectedAsset.symbol}` : 'Select ticker to trade' }}
+  </app-button>
+</div>

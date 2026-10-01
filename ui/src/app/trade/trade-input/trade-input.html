@@ -1,0 +1,58 @@
+<div class="order-panel">
+  <div class="panel-header">
+    <button type="button" class="back-btn" aria-label="Go back" (click)="handleBack()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M19 12H5M12 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    <span class="panel-title">Return to Search</span>
+  </div>
+  
+  <!-- Order Action Switcher -->
+  <app-segmented-control 
+    [options]="actionOptions" 
+    [(value)]="selectedAction"
+  ></app-segmented-control>
+
+  <!-- Form Inputs -->
+  <div class="form-fields">
+    <app-select-input
+      label="Account"
+      [options]="accountOptions"
+      [(value)]="selectedAccount"
+    ></app-select-input>
+
+    <app-select-input
+      label="Order Type"
+      [options]="orderTypeOptions"
+      [(value)]="selectedOrderType"
+    ></app-select-input>
+
+    <app-base-input
+      label="Quantity (Shares)"
+      type="number"
+      suffix="Max: 679"
+      [(value)]="quantity"
+    ></app-base-input>
+  </div>
+
+  <hr class="divider" />
+
+  <!-- Pricing Summary -->
+  <div class="summary-section">
+    <div class="summary-row text-sm">
+      <span class="text-secondary">Est. Share Price</span>
+      <span class="font-mono">{{ sharePrice | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+
+    <div class="summary-row total-row">
+      <span class="font-bold">Estimated Total</span>
+      <span class="total-amount font-mono">{{ estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+    </div>
+  </div>
+
+  <!-- Action Button -->
+  <app-button variant="secondary" (click)="reviewOrder()">
+    Review Order
+  </app-button>
+</div>
