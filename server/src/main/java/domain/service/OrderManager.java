@@ -1,9 +1,11 @@
-package main;
+package domain.service;
 
 import java.util.UUID;
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.LinkedHashSet;
+
+import domain.entities.Order;
 
 public class OrderManager {
     public final OrderManager OM = new OrderManager();

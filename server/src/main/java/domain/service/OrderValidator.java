@@ -1,7 +1,12 @@
-package main;
+package domain.service;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+
+import domain.entities.Order;
+import domain.entities.User;
+import domain.entities.Account;
+import domain.entities.Asset;
 
 public class OrderValidator {
 
@@ -31,8 +36,8 @@ public class OrderValidator {
 
         // TODO: Move the following into Account to be validated 
         if (action.equalsIgnoreCase("BUY")) {
-            BigDecimal requiredCash = new BigDecimal(order.getQuantity()).multiply(order.getSubmittedValue());
-            if (account.getCashBalance().compareTo(requiredCash) < 0) {
+            // submittedValue is already the total cost (price * quantity), not per-unit price
+            if (account.getCashBalance().compareTo(order.getSubmittedValue()) < 0) {
                 return false;
             }
         } else if (action.equalsIgnoreCase("SELL")) {

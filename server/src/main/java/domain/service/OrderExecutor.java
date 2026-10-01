@@ -1,9 +1,11 @@
-package main;
+package domain.service;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 
-import main.Order.OrderStatus;
+import domain.entities.Order;
+import domain.entities.Order.OrderStatus;
+import domain.entities.Account;
 
 public class OrderExecutor {
     private OrderExecutor() {

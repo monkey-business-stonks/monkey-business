@@ -1,0 +1,36 @@
+# Maven
+target/
+release.properties
+dependency-reduced-pom.xml
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# Test scripts
+test-order.ps1
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+*.iml
+
+# Java
+*.class
+*.jar
+*.war
+*.ear
+
+# Node/Angular
+node_modules/
+dist/
+.angular/
+
+# Database
+*.db
+*.sqlite
+
+# Logs
+*.log

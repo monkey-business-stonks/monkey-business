@@ -1,6 +1,8 @@
-package main;
+package domain.service;
 
 import java.math.BigDecimal;
+
+import domain.entities.Asset;
 
 public class PricingEngine {
     private final Asset asset;

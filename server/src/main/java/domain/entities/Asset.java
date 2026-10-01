@@ -1,16 +1,56 @@
-package main;
+package domain.entities;
 
 import java.math.BigDecimal;
+import jakarta.persistence.*;
 
-// Immutable record representing a single security holding (stock, crypto, etc.)
-public record Asset(String ticker, Double quantity, BigDecimal boughtAverage) {
-    public Asset {
+@Entity
+@Table(name = "assets")
+public class Asset {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private String id;
+    
+    @Column(nullable = false)
+    private String ticker;
+    
+    @Column(nullable = false)
+    private Double quantity;
+    
+    @Column(nullable = false)
+    private BigDecimal boughtAverage;
+
+    @ManyToOne
+    @JoinColumn(name = "account_id")
+    private Account account;
+
+    // No-arg constructor for JPA
+    public Asset() {}
+
+    // Full constructor
+    public Asset(String ticker, Double quantity, BigDecimal boughtAverage) {
         if (ticker == null) throw new IllegalArgumentException("ticker cannot be null");
         if (quantity == null || quantity < 0) 
             throw new IllegalArgumentException("quantity cannot be null or negative");
         if (boughtAverage == null || boughtAverage.compareTo(BigDecimal.ZERO) < 0) 
             throw new IllegalArgumentException("boughtAverage cannot be null or negative");
+        
+        this.ticker = ticker;
+        this.quantity = quantity;
+        this.boughtAverage = boughtAverage;
     }
+
+    // Getters
+    public String getId() { return this.id; }
+    public String ticker() { return this.ticker; }
+    public Double quantity() { return this.quantity; }
+    public BigDecimal boughtAverage() { return this.boughtAverage; }
+    public Account getAccount() { return this.account; }
+
+    // Setters
+    public void setTicker(String ticker) { this.ticker = ticker; }
+    public void setQuantity(Double quantity) { this.quantity = quantity; }
+    public void setBoughtAverage(BigDecimal boughtAverage) { this.boughtAverage = boughtAverage; }
+    public void setAccount(Account account) { this.account = account; }
 
     // Creates a new Asset with updated quantity
     public Asset withQuantity(Double quantity) {
@@ -57,16 +97,5 @@ public record Asset(String ticker, Double quantity, BigDecimal boughtAverage) {
         return getUnrealizedGainLoss(currentPrice)
             .divide(costBasis, 4, java.math.RoundingMode.HALF_UP)
             .multiply(new BigDecimal(100));
-    }
-
-    @Override
-    public String toString() {
-        return String.format("%s: %s shares @ $%s avg (cost basis: $%s)", 
-            ticker, quantity, boughtAverage, getCostBasis());
-    }
-
-    // Returns true if quantity is zero
-    public boolean isEmpty() {
-        return quantity == 0;
     }
 }

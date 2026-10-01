@@ -1,4 +1,4 @@
-package main;
+package domain.entities;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
@@ -6,17 +6,44 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import jakarta.persistence.*;
 
+@Entity
+@Table(name = "accounts")
 public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
-	private final UUID accountID;
-	private final ZonedDateTime openedDate;
-	private final AccountType accountType;
+	@Id
+	private UUID accountID;
+	private ZonedDateTime openedDate;
+	private AccountType accountType;
+	
+	@Column(name = "balance")
 	private BigDecimal balance;
+	
+	@Column(name = "cash_balance")
 	private BigDecimal cashBalance;
-	private final Set<Asset> heldAssets;
-	private final Set<Order> orderHistory;
+	
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Set<Asset> heldAssets;
+	
+	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+	private Set<Order> orderHistory;
+
+	@ManyToOne
+	@JoinColumn(name = "user_id")
+	private User user;
+
+	// No-arg constructor for JPA
+	protected Account() {
+		this.accountID = null;
+		this.openedDate = null;
+		this.accountType = null;
+		this.balance = BigDecimal.ZERO;
+		this.cashBalance = BigDecimal.ZERO;
+		this.heldAssets = new LinkedHashSet<>();
+		this.orderHistory = new LinkedHashSet<>();
+	}
 
 	public Account(UUID accountID, ZonedDateTime openedDate, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
@@ -29,6 +56,18 @@ public class Account {
 		this.heldAssets = heldAssets == null ? new LinkedHashSet<>() : heldAssets;
 		this.orderHistory = orderHistory == null ? new LinkedHashSet<>() : orderHistory;
 	}
+
+	// Returns account ID
+	public UUID getAccountID() { return accountID; }
+	// Returns account type
+	public AccountType getAccountType() { return accountType; }
+	// Returns opened date
+	public ZonedDateTime getOpenedDate() { return openedDate; }
+	
+	// Alias methods for compatibility
+	public UUID getAccID() { return accountID; }
+	public AccountType getAccType() { return accountType; }
+	public ZonedDateTime getOpenDate() { return openedDate; }
 
 	// Returns total account value as double
 	public double getBalance() { return balance.doubleValue(); }
@@ -52,6 +91,11 @@ public class Account {
     	}
     	this.cashBalance = cashBalance;
 	}
+
+	// Returns associated user
+	public User getUser() { return user; }
+	// Sets associated user
+	public void setUser(User user) { this.user = user; }
 
 	// Returns all assets held
 	public Set<Asset> getAllAssets() { return heldAssets; }
@@ -116,8 +160,4 @@ public class Account {
 	public boolean isEmpty() {
 		return heldAssets.isEmpty() && orderHistory.isEmpty();
 	}
-
-	public ZonedDateTime getOpenDate() { return openedDate; }
-	public UUID getAccID() { return accountID; }
-	public AccountType getAccType() { return accountType; }
 }
