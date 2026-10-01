@@ -1,0 +1,13 @@
+<div class="field-container">
+  <label *ngIf="label" class="field-label">{{ label }}</label>
+  <div class="input-wrapper">
+    <input 
+      [type]="type"
+      [ngModel]="value"
+      (ngModelChange)="valueChange.emit($event)"
+      [placeholder]="placeholder"
+      class="custom-input"
+    />
+    <span *ngIf="suffix" class="input-suffix">{{ suffix }}</span>
+  </div>
+</div>

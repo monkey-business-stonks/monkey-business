@@ -1,0 +1,11 @@
+<div class="segmented-control">
+  <button 
+    *ngFor="let option of options"
+    type="button"
+    class="segmented-option"
+    [class.active]="option === value"
+    (click)="selectOption(option)"
+  >
+    {{ option }}
+  </button>
+</div>

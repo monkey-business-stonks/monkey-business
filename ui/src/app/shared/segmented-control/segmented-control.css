@@ -1,0 +1,30 @@
+.segmented-control {
+  display: flex;
+  background-color: var(--background-tertiary);
+  padding: var(--space-xs);
+  border-radius: var(--radius-md);
+  gap: var(--space-xs);
+}
+
+.segmented-option {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  transition: all var(--transition-duration) ease;
+
+  &:hover {
+    color: var(--text-primary);
+  }
+
+  &.active {
+    background-color: var(--background-primary);
+    color: var(--accent-primary);
+  }
+}
