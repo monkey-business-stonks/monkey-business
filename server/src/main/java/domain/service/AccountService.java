@@ -111,7 +111,7 @@ public class AccountService {
             .accountId(account.getAccID())
             .userId(userId)
             .accountType(domain.dto.AccountType.valueOf(account.getAccType().toString()))
-            .openedDate(account.getOpenDate().toOffsetDateTime())
+            .openedDate(account.getCreatedOn().toOffsetDateTime())
             .balance(new BigDecimal(account.getBalance()))
             .cashBalance(account.getCashBalance());
     }

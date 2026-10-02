@@ -9,24 +9,29 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "accounts")
+@Table(name = "Accounts")
 public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
 	@Id
 	private UUID accountId;
 	
+	@Column(name = "userId")
+	private UUID userId;
+	
 	@Column(name = "createdOn")
 	private ZonedDateTime createdOn;
+	
+	@Column(name = "accountType")
 	private AccountType accountType;
 	
 	@Column(name = "balance")
 	private BigDecimal balance;
 	
-	@Column(name = "cash_balance")
+	@Column(name = "cashBalance")
 	private BigDecimal cashBalance;
 	
-	@Column(nullable = false)
+	@Column(name = "updatedAt")
 	private ZonedDateTime updatedAt;
 	
 	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -36,7 +41,7 @@ public class Account {
 	private Set<Order> orderHistory;
 
 	@ManyToOne
-	@JoinColumn(name = "user_id")
+	@JoinColumn(name = "userId", insertable=false, updatable=false)
 	private User user;
 
 	// No-arg constructor for JPA
@@ -106,7 +111,17 @@ public class Account {
 	// Returns associated user
 	public User getUser() { return user; }
 	// Sets associated user
-	public void setUser(User user) { this.user = user; }
+	public void setUser(User user) { 
+		this.user = user;
+		if (user != null) {
+			this.userId = user.getUserId();
+		}
+	}
+	
+	// Returns user ID
+	public UUID getUserId() { return userId; }
+	// Sets user ID
+	public void setUserId(UUID userId) { this.userId = userId; }
 
 	// Returns all assets held
 	public Set<Asset> getAllAssets() { return heldAssets; }

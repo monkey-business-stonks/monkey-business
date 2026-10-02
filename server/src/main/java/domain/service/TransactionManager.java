@@ -50,7 +50,14 @@ public class TransactionManager {
                 
                 if (existing == null) {
                     // Create new asset with calculated unit price
-                    Asset newAsset = new Asset(ticker, quantity, unitPrice);
+                    Asset newAsset = new Asset(
+                        java.util.UUID.randomUUID(),
+                        "EQUITY", // assetClass - TODO: determine from ticker/market data
+                        ticker,
+                        ticker, // name - use ticker as placeholder
+                        quantity,
+                        unitPrice
+                    );
                     newAsset.setAccount(account);  // CRITICAL: Set account relationship
                     account.updateAsset(newAsset);
                 } else {
@@ -90,13 +97,14 @@ public class TransactionManager {
         }
     }
 
-    //updates order status to succeeded
+    //updates order status to filled
     public void updateStatus() {
         if (order == null) return;
         order.updateExecution(
             ZonedDateTime.now(),
             order.getExecutedValue(),
-            Order.OrderStatus.SUCCEEDED
+            Order.OrderStatus.FILLED,
+            0
         );
     }
 }

@@ -6,7 +6,7 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "orders")
+@Table(name = "Orders")
 public class Order {
     public enum OrderStatus {
         SUBMITTED,
@@ -17,22 +17,47 @@ public class Order {
 
     @Id
     private UUID orderId;
+    
+    @Column(name = "accountId", insertable = false, updatable = false)
+    private UUID accountId;
+    
+    @Column(name = "orderType")
     private String orderType;
+    
+    @Column(name = "ticker")
     private String ticker;
+    
+    @Column(name = "quantity")
     private Double quantity;
+    
+    @Column(name = "action")
     private String action;
+    
+    @Column(name = "submittedOn")
     private ZonedDateTime submittedOn;
+    
+    @Column(name = "executedOn")
     private ZonedDateTime executedOn;
+    
+    @Column(name = "submittedValue")
     private BigDecimal submittedValue;
+    
+    @Column(name = "executedValue")
     private BigDecimal executedValue;
+    
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private OrderStatus status;
+    
+    @Column(name = "statusCode")
     private Integer statusCode;
+    
+    @Column(name = "createdAt")
     private ZonedDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+	@JoinColumn(name = "accountId", insertable=false, updatable=false)
+	private Account account;
 
     // No-arg constructor for JPA
     protected Order() {

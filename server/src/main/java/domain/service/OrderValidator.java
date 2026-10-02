@@ -17,7 +17,8 @@ public class OrderValidator {
     }
 
     public static Boolean isValidTrade(Order order, User user, Account account) {
-        if (!user.isActive()) {
+        // TODO: Implement user active status check (may need added to User entity)
+        if (user == null || user.getAccessLevel() == null) {
             return false;
         }
 
@@ -56,7 +57,8 @@ public class OrderValidator {
             order.updateExecution(
                 ZonedDateTime.now(),
                 pricingEngine.getCurrentPrice(), 
-                Order.OrderStatus.SUCCEEDED
+                Order.OrderStatus.FILLED,
+                0
             );
             return order;
         }
@@ -68,7 +70,8 @@ public class OrderValidator {
         order.updateExecution(
             ZonedDateTime.now(),
             pricingEngine.getCurrentPrice(),
-            Order.OrderStatus.REJECTED
+            Order.OrderStatus.REJECTED,
+            1
         );
         return order;
     }
