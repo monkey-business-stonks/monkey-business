@@ -1,8 +1,7 @@
 package domain.entities;
 
 import java.math.BigDecimal;
-// import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.LocalDateTime;
 import java.util.UUID;
 import jakarta.persistence.*;
 
@@ -10,23 +9,26 @@ import jakarta.persistence.*;
 @Table(name = "orders")
 public class Order {
     public enum OrderStatus {
-        REJECTED,
-        PENDING,
-        SUCCEEDED
+        SUBMITTED,
+        ACCEPTED,
+        FILLED,
+        REJECTED
     }
 
     @Id
-    private UUID orderID;
+    private UUID orderId;
+    private String orderType;
     private String ticker;
     private Double quantity;
     private String action;
-    private ZonedDateTime submittedOn;
-    private ZonedDateTime executedOn;
+    private LocalDateTime submittedOn;
+    private LocalDateTime executedOn;
     private BigDecimal submittedValue;
     private BigDecimal executedValue;
-    @Enumerated(EnumType.ORDINAL)
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
-    private ZonedDateTime createdOn;
+    private Integer statusCode;
+    private LocalDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
@@ -34,7 +36,8 @@ public class Order {
 
     // No-arg constructor for JPA
     protected Order() {
-        this.orderID = null;
+        this.orderId = null;
+        this.orderType = null;
         this.ticker = null;
         this.quantity = null;
         this.action = null;
@@ -43,26 +46,32 @@ public class Order {
         this.submittedValue = null;
         this.executedValue = null;
         this.status = null;
-        this.createdOn = null;
+        this.statusCode = null;
+        this.createdAt = null;
     }
 
-    public UUID getOrderID() { return this.orderID; }
+    public UUID getOrderId() { return this.orderId; }
+    public String getOrderType() { return this.orderType; }
     public String getTicker() { return this.ticker; }
     public Double getQuantity() { return this.quantity; }
     public String getAction() { return this.action; }
-    public ZonedDateTime getSubmittedOn() { return this.submittedOn; }
-    public ZonedDateTime getExecutedOn() { return this.executedOn; }
+    public LocalDateTime getSubmittedOn() { return this.submittedOn; }
+    public LocalDateTime getExecutedOn() { return this.executedOn; }
     public BigDecimal getSubmittedValue() { return this.submittedValue; }
     public BigDecimal getExecutedValue() { return this.executedValue; }
     public OrderStatus getStatus() { return this.status; }
-    public ZonedDateTime getCreatedOn() { return this.createdOn; }
+    public Integer getStatusCode() { return this.statusCode; }
+    public LocalDateTime getCreatedAt() { return this.createdAt; }
     public Account getAccount() { return this.account; }
     public void setAccount(Account account) { this.account = account; }
+    public UUID getOrderID() { return this.orderId; }
+    public LocalDateTime getCreatedOn() { return this.createdAt; }
 
-    public Order(UUID orderID, String ticker, Double quantity, String action, 
-                ZonedDateTime submittedOn, BigDecimal submittedValue, 
-                OrderStatus status, ZonedDateTime createdOn) {
-        this.orderID = orderID;
+    public Order(UUID orderId, String orderType, String ticker, Double quantity, String action, 
+                LocalDateTime submittedOn, BigDecimal submittedValue, 
+                OrderStatus status, Integer statusCode, LocalDateTime createdAt) {
+        this.orderId = orderId;
+        this.orderType = orderType;
         this.ticker = ticker;
         this.quantity = quantity;
         this.action = action;
@@ -71,12 +80,14 @@ public class Order {
         this.submittedValue = submittedValue;
         this.executedValue = null;
         this.status = status;
-        this.createdOn = createdOn;
+        this.statusCode = statusCode;
+        this.createdAt = createdAt;
     }
 
-    public void updateExecution(ZonedDateTime executedOn, BigDecimal executedValue, OrderStatus status) {
+    public void updateExecution(LocalDateTime executedOn, BigDecimal executedValue, OrderStatus status, Integer statusCode) {
         this.executedOn = executedOn;
         this.executedValue = executedValue;
         this.status = status;
+        this.statusCode = statusCode;
     }
 }
