@@ -2,12 +2,15 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { UserPanel } from '../user-panel/user-panel';
+import { AccountsPanel } from '../accounts-panel/accounts-panel';
+
 
 // Profile component - displays and manages user profile information
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, UserPanel, AccountsPanel],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

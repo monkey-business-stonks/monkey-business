@@ -1,0 +1,19 @@
+<div class="user-panel-container">
+  <div class="avatar-section">
+    <div class="avatar-container">
+      <img [src]="avatar" alt="User Avatar" class="avatar-image" />
+    </div>
+    <div *ngIf="isEditMode" class="avatar-upload">
+      <input 
+        type="file" 
+        id="avatar-input" 
+        (change)="onAvatarUpload($event)" 
+        accept="image/*"
+        class="file-input"
+      />
+      <label for="avatar-input" class="upload-label">
+        Change Avatar
+      </label>
+    </div>
+  </div>
+</div>

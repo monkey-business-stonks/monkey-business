@@ -1,0 +1,21 @@
+.label {
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sublabel {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  /* padding-top: var(--space-sm); */
+}
+
+.top-panel {
+  display: flex;
+  flex-direction: row;
+}
+
+.top-labels {
+  flex: 3;
+}
