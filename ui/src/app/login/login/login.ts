@@ -1,8 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { AuthService } from '../../auth/services/auth.service';
+import { AuthService } from '@/app/auth/services/auth.service';
+import { Button } from '@/app/shared/button/button'
+import { BaseInputComponent } from '@/app/shared/base-input/base-input'
 
 /**
  * Login Component
@@ -34,7 +36,7 @@ import { AuthService } from '../../auth/services/auth.service';
   templateUrl: './login.html',
   styleUrl: './login.css',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, BaseInputComponent, Button],
 })
 export class Login {
   /**
@@ -60,6 +62,16 @@ export class Login {
    * @type {Signal<string | null>}
    */
   error = signal<string | null>(null);
+
+  /**
+   * Evaluates to true if all required fields are filled and terms are accepted
+   */
+  isFormValid = computed(() => {
+    return (
+      this.username().trim().length > 0 &&
+      this.password().trim().length > 0
+    );
+  });
 
   constructor(
     private authService: AuthService,
@@ -120,6 +132,6 @@ export class Login {
   }
 
   onCreateAccount() {
-    this.router.navigate(['/create-account']);
+    this.router.navigate(['/create-user']);
   }
 }

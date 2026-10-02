@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { InstrumentDetails } from './instrument-details';
+import { InstrumentDetails } from '@/app/trade/instrument-details/instrument-details';
 
 describe('InstrumentDetails', () => {
   let component: InstrumentDetails;

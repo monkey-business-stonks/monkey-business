@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { InstrumentChart } from './instrument-chart';
+import { InstrumentChart } from '@/app/trade/instrument-details/instrument-chart/instrument-chart';
 
 describe('InstrumentChart', () => {
   let component: InstrumentChart;

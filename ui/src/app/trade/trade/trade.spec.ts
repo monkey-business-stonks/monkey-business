@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Trade } from './trade';
+import { Trade } from '@/app/trade/trade/trade';
 
 describe('Trade', () => {
   let component: Trade;

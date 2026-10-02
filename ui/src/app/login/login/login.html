@@ -16,41 +16,35 @@
         {{ error() }}
       </div>
 
-      <div class="form-group">
-        <label for="username" class="form-label">USERNAME</label>
-        <input
-          id="username"
-          type="email"
-          class="form-input"
-          placeholder="trader@monkeybusiness.com"
-          [(ngModel)]="username"
-          name="username"
-          [disabled]="loading()"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="USERNAME"
+        type="email"
+        placeholder="trader@monkeybusiness.com"
+        [(value)]="username"
+        name="username"
+        [disabled]="loading()"
+        [required]="true"
+      />
 
-      <div class="form-group">
-        <label for="password" class="form-label">PASSWORD</label>
-        <input
-          id="password"
-          type="password"
-          class="form-input"
-          placeholder="••••••••••"
-          [(ngModel)]="password"
-          name="password"
-          [disabled]="loading()"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="PASSWORD"
+        type="password"
+        placeholder="••••••••••"
+        [(value)]="password"
+        name="password"
+        [disabled]="loading()"
+        [required]="true"
+      />
 
-      <button type="submit" class="sign-in-button" [disabled]="loading()">
+      <app-button variant="secondary" [disabled]="loading() || !isFormValid()">
         {{ loading() ? 'Signing In...' : 'Sign In' }}
-      </button>
+      </app-button>
     </form>
 
     <button type="button" class="forgot-password-link" (click)="onCreateAccount()">
-      Need an account? <span class="create-account-link">Create account</span>
+      Need an account? <span class="create-user-link">Create account</span>
     </button>
   </div>
 </div>

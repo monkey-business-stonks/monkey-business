@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TradeSearchRow } from './trade-search-row';
+import { TradeSearchRow } from '@/app/trade/trade-search/trade-search-row/trade-search-row';
 
 describe('TradeSearchRow', () => {
   let component: TradeSearchRow;

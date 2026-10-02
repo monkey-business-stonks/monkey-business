@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { CreateAccount } from './create-account';
+import { CreateUser } from '@/app/login/create-user/create-user';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -18,9 +18,9 @@ import { CommonModule } from '@angular/common';
  * Tests verify that the component correctly manages account creation form UI,
  * validates user input, and handles user interactions for registration flow.
  */
-describe('CreateAccount Component', () => {
-  let component: CreateAccount;
-  let fixture: ComponentFixture<CreateAccount>;
+describe('CreateUser Component', () => {
+  let component: CreateUser;
+  let fixture: ComponentFixture<CreateUser>;
 
   /**
    * Setup before each test
@@ -28,17 +28,17 @@ describe('CreateAccount Component', () => {
    */
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CreateAccount, FormsModule, CommonModule],
+      imports: [CreateUser, FormsModule, CommonModule],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(CreateAccount);
+    fixture = TestBed.createComponent(CreateUser);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
 
   /**
    * Test: Component Creation
-   * Verifies that the CreateAccount component is successfully instantiated
+   * Verifies that the CreateUser component is successfully instantiated
    */
   it('should create', () => {
     expect(component).toBeTruthy();

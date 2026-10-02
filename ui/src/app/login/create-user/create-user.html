@@ -1,0 +1,99 @@
+<!-- Create Account Page Container -->
+<!-- Root container with flexbox centering and gradient background -->
+<div class="login-container">
+  <!-- Create Account Card - Central form container with dark theme styling -->
+  <div class="login-card">
+    <!-- Logo and Title Section -->
+    <!-- Displays the Monkey Business logo, branding, and subtitle -->
+    <div class="logo-section">
+      <!-- Logo and Title Wrapper -->
+      <div class="logo-title-wrapper">
+        <!-- Application logo image -->
+        <img src="/logo-icon.png" alt="Monkey Business" class="logo-icon" />
+        
+        <!-- Main application title with accent color on "BUSINESS" -->
+        <h1 class="logo-text">
+          <span class="logo-primary">MONKEY</span><span class="logo-accent">BUSINESS</span>
+        </h1>
+      </div>
+      
+      <!-- Subtitle describing the application -->
+      <p class="subtitle">Enterprise Trading Platform</p>
+    </div>
+
+    <!-- Account Creation Form -->
+    <!-- Handles user registration with two-way data binding -->
+    <form (ngSubmit)="onCreateAccount()">
+      <app-base-input
+        variant="form"
+        label="FIRST NAME"
+        type="text"
+        placeholder="Monkey"
+        [(value)]="firstName"
+        name="firstName"
+        [required]="true"
+      />
+
+      <app-base-input
+        variant="form"
+        label="LAST NAME"
+        type="text"
+        placeholder="Business"
+        [(value)]="lastName"
+        name="lastName"
+        [required]="true"
+      />
+
+      <app-base-input
+        variant="form"
+        label="EMAIL ADDRESS"
+        type="email"
+        placeholder="trader@monkeybusiness.com"
+        [(value)]="email"
+        name="email"
+        [required]="true"
+      />
+
+      <app-base-input
+        variant="form"
+        label="PASSWORD"
+        type="password"
+        placeholder="••••••••••"
+        [(value)]="password"
+        name="password"
+        [required]="true"
+      />
+
+      <!-- Terms Agreement Checkbox Group -->
+      <div class="form-group checkbox-group">
+        <!-- Checkbox for terms agreement -->
+        <input
+          id="termsCheckbox"
+          type="checkbox"
+          class="terms-checkbox"
+          [(ngModel)]="agreedToTerms"
+          name="agreedToTerms"
+        />
+        
+        <!-- Label with clickable links to Terms of Service and Privacy Policy -->
+        <label for="termsCheckbox" class="terms-label">
+          I agree to the
+          <a href="#" class="terms-link">Terms of Service</a>,
+          <a href="#" class="terms-link">Privacy Policy</a>,
+          and certify that my provided identity matches government records.
+        </label>
+      </div>
+
+      <!-- Create Account Submit Button -->
+      <app-button variant="secondary" [disabled]="!isFormValid()">
+        Agree & Create Account
+      </app-button>
+    </form>
+
+    <!-- Sign In Link Button -->
+    <!-- Centered link for users who already have an account -->
+    <button type="button" class="sign-in-link" (click)="onSignIn()">
+      Already have an account? <span class="sign-in-text">Sign In</span>
+    </button>
+  </div>
+</div>

@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { AccountOverview } from './account-overview';
+import { AccountOverview } from '@/app/dashboard/account-overview/account-overview';
 
 describe('AccountOverview', () => {
   let component: AccountOverview;

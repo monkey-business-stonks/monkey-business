@@ -2,6 +2,8 @@ import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Button } from '@/app/shared/button/button';
+import { BaseInputComponent } from '@/app/shared/base-input/base-input';
 
 /**
  * Create Account Component
@@ -19,16 +21,16 @@ import { Router } from '@angular/router';
  * - Navigation back to login page
  * 
  * @standalone true
- * @selector app-create-account
+ * @selector app-create-user
  */
 @Component({
-  selector: 'app-create-account',
-  templateUrl: './create-account.html',
-  styleUrl: './create-account.css',
+  selector: 'app-create-user',
+  templateUrl: './create-user.html',
+  styleUrl: './create-user.css',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, BaseInputComponent, Button],
 })
-export class CreateAccount {
+export class CreateUser {
   /**
    * First name input signal
    * @type {Signal<string>}
