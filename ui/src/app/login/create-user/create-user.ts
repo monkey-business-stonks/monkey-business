@@ -2,6 +2,8 @@ import { Component, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { Button } from '@/app/shared/button/button';
+import { BaseInputComponent } from '@/app/shared/base-input/base-input';
 
 /**
  * Create Account Component
@@ -26,7 +28,7 @@ import { Router } from '@angular/router';
   templateUrl: './create-user.html',
   styleUrl: './create-user.css',
   standalone: true,
-  imports: [FormsModule, CommonModule],
+  imports: [FormsModule, CommonModule, BaseInputComponent, Button],
 })
 export class CreateUser {
   /**

@@ -24,74 +24,45 @@
     <!-- Account Creation Form -->
     <!-- Handles user registration with two-way data binding -->
     <form (ngSubmit)="onCreateAccount()">
-      <!-- First Name Input Group -->
-      <div class="form-group">
-        <!-- Label for first name input field -->
-        <label for="firstName" class="form-label">FIRST NAME</label>
-        
-        <!-- First name input with two-way binding to component's firstName signal -->
-        <input
-          id="firstName"
-          type="text"
-          class="form-input"
-          placeholder="Monkey"
-          [(ngModel)]="firstName"
-          name="firstName"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="FIRST NAME"
+        type="text"
+        placeholder="Monkey"
+        [(value)]="firstName"
+        name="firstName"
+        [required]="true"
+      />
 
-      <!-- Last Name Input Group -->
-      <div class="form-group">
-        <!-- Label for last name input field -->
-        <label for="lastName" class="form-label">LAST NAME</label>
-        
-        <!-- Last name input with two-way binding to component's lastName signal -->
-        <input
-          id="lastName"
-          type="text"
-          class="form-input"
-          placeholder="Business"
-          [(ngModel)]="lastName"
-          name="lastName"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="LAST NAME"
+        type="text"
+        placeholder="Business"
+        [(value)]="lastName"
+        name="lastName"
+        [required]="true"
+      />
 
-      <!-- Email Input Group -->
-      <div class="form-group">
-        <!-- Label for email input field -->
-        <label for="email" class="form-label">EMAIL ADDRESS</label>
-        
-        <!-- Email input with two-way binding to component's email signal -->
-        <input
-          id="email"
-          type="email"
-          class="form-input"
-          placeholder="trader@monkeybusiness.com"
-          [(ngModel)]="email"
-          name="email"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="EMAIL ADDRESS"
+        type="email"
+        placeholder="trader@monkeybusiness.com"
+        [(value)]="email"
+        name="email"
+        [required]="true"
+      />
 
-      <!-- Password Input Group -->
-      <div class="form-group">
-        <!-- Label for password input field -->
-        <label for="password" class="form-label">PASSWORD</label>
-        
-        <!-- Password input with two-way binding to component's password signal -->
-        <!-- Type is password to mask user input -->
-        <input
-          id="password"
-          type="password"
-          class="form-input"
-          placeholder="••••••••••"
-          [(ngModel)]="password"
-          name="password"
-          required
-        />
-      </div>
+      <app-base-input
+        variant="form"
+        label="PASSWORD"
+        type="password"
+        placeholder="••••••••••"
+        [(value)]="password"
+        name="password"
+        [required]="true"
+      />
 
       <!-- Terms Agreement Checkbox Group -->
       <div class="form-group checkbox-group">
@@ -114,11 +85,9 @@
       </div>
 
       <!-- Create Account Submit Button -->
-      <!-- Green accent button that triggers form submission and onCreateAccount() method -->
-      <!-- Button is disabled if form is invalid or terms are not accepted -->
-      <button type="submit" class="sign-in-button" [disabled]="!isFormValid()">
+      <app-button variant="secondary" [disabled]="!isFormValid()">
         Agree & Create Account
-      </button>
+      </app-button>
     </form>
 
     <!-- Sign In Link Button -->

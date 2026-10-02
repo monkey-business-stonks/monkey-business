@@ -107,40 +107,6 @@ form {
   align-items: flex-start;
 }
 
-/* Form label styling - uppercase, secondary text, tight letter spacing */
-.form-label {
-  color: var(--text-secondary);
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-}
-
-/* Input field styling with focus states and transitions */
-.form-input {
-  background-color: var(--background-tertiary);
-  color: var(--text-primary);
-  border: 1px solid var(--background-tertiary);
-  border-radius: var(--radius-md);
-  padding: var(--space-md) var(--space-md);
-  font-family: 'Inter', sans-serif;
-  font-size: var(--font-size-base);
-  transition: all var(--transition-duration);
-}
-
-/* Placeholder text color for input fields */
-.form-input::placeholder {
-  color: var(--text-secondary);
-}
-
-/* Focus state with green accent border and subtle background glow */
-.form-input:focus {
-  outline: none;
-  background-color: rgba(0, 230, 118, 0.05);
-  border-color: var(--accent-primary);
-  box-shadow: 0 0 0 3px rgba(0, 230, 118, 0.1);
-}
-
 /* ===== CHECKBOX STYLING ===== */
 /* Custom checkbox for terms agreement */
 .terms-checkbox {
@@ -172,42 +138,6 @@ form {
 .terms-link:hover {
   color: #00d462;
   text-decoration: underline;
-}
-
-/* ===== SIGN IN BUTTON ===== */
-/* Primary action button with green accent background and hover effects */
-.sign-in-button {
-  background-color: var(--accent-primary);
-  color: var(--background-primary);
-  border: none;
-  padding: var(--space-md) var(--space-lg);
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-bold);
-  font-family: 'Inter', sans-serif;
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all var(--transition-duration);
-  margin-top: var(--space-md);
-  width: 100%;
-  text-transform: none;
-}
-
-.sign-in-button:hover:not(:disabled) {
-  background-color: #00d462;
-  transform: translateY(-2px);
-  box-shadow: 0 8px 24px rgba(0, 230, 118, 0.3);
-}
-
-.sign-in-button:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-/* Disabled state with reduced opacity and secondary text color */
-.sign-in-button:disabled {
-  background-color: var(--background-tertiary);
-  color: var(--text-secondary);
-  cursor: not-allowed;
-  opacity: 0.5;
 }
 
 /* ===== SIGN IN LINK ===== */
