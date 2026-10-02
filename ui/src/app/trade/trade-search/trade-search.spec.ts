@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { TradeSearch } from './trade-search';
+import { TradeSearch } from '@/app/trade/trade-search/trade-search';
 
 describe('TradeSearch', () => {
   let component: TradeSearch;

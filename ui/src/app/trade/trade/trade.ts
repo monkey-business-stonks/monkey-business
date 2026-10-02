@@ -1,8 +1,8 @@
 import { Component, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InstrumentDetails } from '../instrument-details/instrument-details';
-import { TradeSearch } from '../trade-search/trade-search';
-import { TradeInput } from '../trade-input/trade-input';
+import { InstrumentDetails } from '@/app/trade/instrument-details/instrument-details';
+import { TradeSearch } from '@/app/trade/trade-search/trade-search';
+import { TradeInput } from '@/app/trade/trade-input/trade-input';
 
 @Component({
   imports: [CommonModule, InstrumentDetails, TradeSearch, TradeInput],
