@@ -1,10 +1,13 @@
 package domain.controller;
 
 import domain.dto.AccountResponse;
+import domain.dto.ErrorResponse;
 import domain.service.AccountService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -13,6 +16,8 @@ import java.util.UUID;
 @RequestMapping("/accounts")
 @CrossOrigin(origins = "*")
 public class AccountDetailController {
+
+    private static final Logger logger = LoggerFactory.getLogger(AccountDetailController.class);
 
     @Autowired
     private AccountService accountService;
@@ -25,11 +30,32 @@ public class AccountDetailController {
         try {
             UUID id = UUID.fromString(accountId);
             AccountResponse account = accountService.getAccount(id);
+            if (account == null) {
+                logger.warn("Account not found for ID: {}", accountId);
+                return ResponseEntity.status(404)
+                    .body(new ErrorResponse()
+                        .message("Account not found")
+                        .error("NOT_FOUND"));
+            }
             return ResponseEntity.ok(account);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+            logger.warn("Invalid account ID format: {}", accountId);
+            return ResponseEntity.badRequest()
+                .body(new ErrorResponse()
+                    .message("Invalid account ID format")
+                    .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
-            return ResponseEntity.notFound().build();
+            logger.warn("Account not found for ID: {}", accountId);
+            return ResponseEntity.status(404)
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
+        } catch (Exception e) {
+            logger.error("Error retrieving account: {}", accountId, e);
+            return ResponseEntity.status(500)
+                .body(new ErrorResponse()
+                    .message("Failed to retrieve account")
+                    .error("SERVER_ERROR"));
         }
     }
 }
