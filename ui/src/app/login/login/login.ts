@@ -1,20 +1,30 @@
-import { Component, signal, computed } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '../../auth/services/auth.service';
 
 /**
  * Login Component
  * 
  * Handles user authentication and login functionality for the Monkey Business trading platform.
  * This is a standalone component that manages user credentials (username and password) and
- * provides handlers for sign-in and account creation navigation.
+ * provides handlers for sign-in and password recovery flows.
+ * 
+ * JWT Authentication Flow:
+ * 1. User enters credentials and clicks "Sign In"
+ * 2. Component calls AuthService.authenticate()
+ * 3. AuthService sends POST to auth stub (Node.js service)
+ * 4. Auth stub returns JWT token signed with shared secret
+ * 5. Token is stored in localStorage by AuthService
+ * 6. HTTP interceptor automatically attaches token to subsequent requests
+ * 7. User is redirected to dashboard
  * 
  * Features:
  * - User input validation and state management using Angular signals
- * - Form submission handling for authentication
- * - Account creation page navigation
- * - Two-way data binding for form inputs
+ * - Form submission handling for JWT authentication
+ * - Loading and error state management
+ * - Automatic redirect to dashboard on successful authentication
  * 
  * @standalone true
  * @selector app-login
@@ -27,51 +37,88 @@ import { Router } from '@angular/router';
   imports: [FormsModule, CommonModule],
 })
 export class Login {
+  /**
+   * Username input signal - stores the user's email or username
+   * @type {Signal<string>}
+   */
   username = signal('');
+
+  /**
+   * Password input signal - stores the user's password
+   * @type {Signal<string>}
+   */
   password = signal('');
 
   /**
-   * Evaluates to true if either username or password is empty (ignoring whitespace)
+   * Loading state signal - indicates authentication is in progress
+   * @type {Signal<boolean>}
    */
-  isFormInvalid = computed(() => {
-    return !this.username().trim() || !this.password().trim();
-  });
+  loading = signal(false);
 
   /**
-   * Constructor - Injects Router service for navigation
-   * @param {Router} router - Angular Router service
+   * Error message signal - displays authentication errors
+   * @type {Signal<string | null>}
    */
-  constructor(private router: Router) {}
+  error = signal<string | null>(null);
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
 
   /**
    * Handles the sign-in form submission
    * 
    * This method is called when the user clicks the "Sign In" button.
-   * Currently logs credentials to console for debugging.
-   * Should be connected to an authentication service for production use.
+   * Sends credentials to auth stub to obtain JWT token.
    * 
-   * TODO: Implement actual authentication logic with backend API
-   * TODO: Handle loading states and error responses
-   * TODO: Navigate to dashboard on successful authentication
+   * Flow:
+   * 1. Validates inputs
+   * 2. Sets loading state
+   * 3. Calls AuthService.authenticate()
+   * 4. On success: stores token and redirects to dashboard
+   * 5. On error: displays error message to user
    * 
    * @returns {void}
    */
   onSignIn() {
-    console.log('Sign in with:', {
-      username: this.username(),
-      password: this.password(),
+    const user = this.username();
+    const pass = this.password();
+
+    // Validate inputs
+    if (!user || !pass) {
+      this.error.set('Username and password are required');
+      return;
+    }
+
+    this.loading.set(true);
+    this.error.set(null);
+
+    // Call auth service to get JWT token
+    this.authService.authenticate(user, pass).subscribe({
+      next: (response) => {
+        console.log('Authentication successful:', response);
+        this.loading.set(false);
+        
+        // Clear form
+        this.username.set('');
+        this.password.set('');
+        
+        // Redirect to dashboard
+        this.router.navigate(['/dashboard']);
+      },
+      error: (err) => {
+        console.error('Authentication error:', err);
+        this.loading.set(false);
+        this.error.set(
+          err.error?.message || 
+          err.message || 
+          'Authentication failed. Please try again.'
+        );
+      }
     });
-    // TODO: Implement authentication logic
   }
 
-  /**
-   * Handles the create account button click
-   * 
-   * This method is called when the user clicks the "Create account" link.
-   * Navigates to the account creation/registration page.
-   * 
-   * @returns {void}
-   */
   onCreateAccount() {
     this.router.navigate(['/create-account']);
   }
