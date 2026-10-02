@@ -1,7 +1,7 @@
 package domain.entities;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import jakarta.persistence.*;
 
@@ -21,14 +21,14 @@ public class Order {
     private String ticker;
     private Double quantity;
     private String action;
-    private LocalDateTime submittedOn;
-    private LocalDateTime executedOn;
+    private ZonedDateTime submittedOn;
+    private ZonedDateTime executedOn;
     private BigDecimal submittedValue;
     private BigDecimal executedValue;
     @Enumerated(EnumType.STRING)
     private OrderStatus status;
     private Integer statusCode;
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
@@ -55,21 +55,21 @@ public class Order {
     public String getTicker() { return this.ticker; }
     public Double getQuantity() { return this.quantity; }
     public String getAction() { return this.action; }
-    public LocalDateTime getSubmittedOn() { return this.submittedOn; }
-    public LocalDateTime getExecutedOn() { return this.executedOn; }
+    public ZonedDateTime getSubmittedOn() { return this.submittedOn; }
+    public ZonedDateTime getExecutedOn() { return this.executedOn; }
     public BigDecimal getSubmittedValue() { return this.submittedValue; }
     public BigDecimal getExecutedValue() { return this.executedValue; }
     public OrderStatus getStatus() { return this.status; }
     public Integer getStatusCode() { return this.statusCode; }
-    public LocalDateTime getCreatedAt() { return this.createdAt; }
+    public ZonedDateTime getCreatedAt() { return this.createdAt; }
     public Account getAccount() { return this.account; }
     public void setAccount(Account account) { this.account = account; }
     public UUID getOrderID() { return this.orderId; }
-    public LocalDateTime getCreatedOn() { return this.createdAt; }
+    public ZonedDateTime getCreatedOn() { return this.createdAt; }
 
     public Order(UUID orderId, String orderType, String ticker, Double quantity, String action, 
-                LocalDateTime submittedOn, BigDecimal submittedValue, 
-                OrderStatus status, Integer statusCode, LocalDateTime createdAt) {
+                ZonedDateTime submittedOn, BigDecimal submittedValue, 
+                OrderStatus status, Integer statusCode, ZonedDateTime createdAt) {
         this.orderId = orderId;
         this.orderType = orderType;
         this.ticker = ticker;
@@ -84,7 +84,7 @@ public class Order {
         this.createdAt = createdAt;
     }
 
-    public void updateExecution(LocalDateTime executedOn, BigDecimal executedValue, OrderStatus status, Integer statusCode) {
+    public void updateExecution(ZonedDateTime executedOn, BigDecimal executedValue, OrderStatus status, Integer statusCode) {
         this.executedOn = executedOn;
         this.executedValue = executedValue;
         this.status = status;

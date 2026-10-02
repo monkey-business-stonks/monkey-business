@@ -1,7 +1,7 @@
 package domain.entities;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
@@ -17,7 +17,7 @@ public class Account {
 	private UUID accountId;
 	
 	@Column(name = "createdOn")
-	private LocalDateTime createdOn;
+	private ZonedDateTime createdOn;
 	private AccountType accountType;
 	
 	@Column(name = "balance")
@@ -27,7 +27,7 @@ public class Account {
 	private BigDecimal cashBalance;
 	
 	@Column(nullable = false)
-	private LocalDateTime updatedAt;
+	private ZonedDateTime updatedAt;
 	
 	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Set<Asset> heldAssets;
@@ -46,12 +46,12 @@ public class Account {
 		this.accountType = null;
 		this.balance = BigDecimal.ZERO;
 		this.cashBalance = BigDecimal.ZERO;
-		this.updatedAt = LocalDateTime.now();
+		this.updatedAt = ZonedDateTime.now();
 		this.heldAssets = new LinkedHashSet<>();
 		this.orderHistory = new LinkedHashSet<>();
 	}
 
-	public Account(UUID accountId, LocalDateTime createdOn, AccountType accountType,
+	public Account(UUID accountId, ZonedDateTime createdOn, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
 				   Set<Asset> heldAssets, Set<Order> orderHistory) {
 		this.accountId = accountId;
@@ -59,7 +59,7 @@ public class Account {
 		this.accountType = accountType;
 		this.balance = balance == null ? BigDecimal.ZERO : balance;
 		this.cashBalance = cashBalance == null ? BigDecimal.ZERO : cashBalance;
-		this.updatedAt = LocalDateTime.now();
+		this.updatedAt = ZonedDateTime.now();
 		this.heldAssets = heldAssets == null ? new LinkedHashSet<>() : heldAssets;
 		this.orderHistory = orderHistory == null ? new LinkedHashSet<>() : orderHistory;
 	}
@@ -69,9 +69,9 @@ public class Account {
 	// Returns account type
 	public AccountType getAccountType() { return accountType; }
 	// Returns created date
-	public LocalDateTime getCreatedOn() { return createdOn; }
+	public ZonedDateTime getCreatedOn() { return createdOn; }
 	// Returns updated date
-	public LocalDateTime getUpdatedAt() { return updatedAt; }
+	public ZonedDateTime getUpdatedAt() { return updatedAt; }
 	
 	// Alias methods for compatibility
 	public UUID getAccountID() { return accountId; }
@@ -86,7 +86,7 @@ public class Account {
 			throw new IllegalArgumentException("Balance cannot be negative");
 		}
 		this.balance = new BigDecimal(newBalance);
-		this.updatedAt = LocalDateTime.now();
+		this.updatedAt = ZonedDateTime.now();
 	}
 
 	// Returns available cash
@@ -100,7 +100,7 @@ public class Account {
         	throw new IllegalArgumentException("Cash balance cannot be negative");
     	}
     	this.cashBalance = cashBalance;
-    	this.updatedAt = LocalDateTime.now();
+    	this.updatedAt = ZonedDateTime.now();
 	}
 
 	// Returns associated user

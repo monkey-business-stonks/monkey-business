@@ -3,7 +3,7 @@ package domain.entities;
 import java.util.UUID;
 import java.util.Set;
 import java.util.HashSet;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.LocalDate;
 import jakarta.persistence.*;
 
@@ -41,22 +41,22 @@ public class User {
     private Set<Account> accounts;
     
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
     
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private ZonedDateTime updatedAt;
 
     // No-arg constructor for JPA
     public User() {
         this.accounts = new HashSet<>();
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = ZonedDateTime.now();
+        this.updatedAt = ZonedDateTime.now();
     }
 
     // Full constructor
     public User(UUID userId, String username, String email, String passwordHash, String name,
                 String phone, LocalDate dob, AccessLevel accessLevel, Set<Account> accounts, 
-                LocalDateTime createdAt, LocalDateTime updatedAt) {
+                ZonedDateTime createdAt, ZonedDateTime updatedAt) {
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -66,8 +66,8 @@ public class User {
         this.dob = dob;
         this.accessLevel = accessLevel;
         this.accounts = accounts == null ? new HashSet<>() : new HashSet<>(accounts);
-        this.createdAt = createdAt == null ? LocalDateTime.now() : createdAt;
-        this.updatedAt = updatedAt == null ? LocalDateTime.now() : updatedAt;
+        this.createdAt = createdAt == null ? ZonedDateTime.now() : createdAt;
+        this.updatedAt = updatedAt == null ? ZonedDateTime.now() : updatedAt;
     }
 
     // Getters
@@ -80,8 +80,8 @@ public class User {
     public LocalDate getDob() { return this.dob; }
     public AccessLevel getAccessLevel() { return this.accessLevel; }
     public Set<Account> getAccounts() { return this.accounts; }
-    public LocalDateTime getCreatedAt() { return this.createdAt; }
-    public LocalDateTime getUpdatedAt() { return this.updatedAt; }
+    public ZonedDateTime getCreatedAt() { return this.createdAt; }
+    public ZonedDateTime getUpdatedAt() { return this.updatedAt; }
 
     // Record-style getters for backward compatibility
     public UUID userId() { return this.userId; }
@@ -93,8 +93,8 @@ public class User {
     public LocalDate dob() { return this.dob; }
     public AccessLevel accessLevel() { return this.accessLevel; }
     public Set<Account> accounts() { return this.accounts; }
-    public LocalDateTime createdAt() { return this.createdAt; }
-    public LocalDateTime updatedAt() { return this.updatedAt; }
+    public ZonedDateTime createdAt() { return this.createdAt; }
+    public ZonedDateTime updatedAt() { return this.updatedAt; }
 
     // Setters
     public void setUsername(String username) { this.username = username; }
@@ -105,12 +105,12 @@ public class User {
     public void setDob(LocalDate dob) { this.dob = dob; }
     public void setAccessLevel(AccessLevel level) { this.accessLevel = level; }
     public void setAccounts(Set<Account> accounts) { this.accounts = accounts; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public void setUpdatedAt(ZonedDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // Business logic methods
     public void changePassword(String newPassword) {
         this.passwordHash = newPassword;
-        this.updatedAt = LocalDateTime.now();
+        this.updatedAt = ZonedDateTime.now();
     }
 
     public boolean checkAccessLevel(AccessLevel required) {

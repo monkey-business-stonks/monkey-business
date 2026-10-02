@@ -1,7 +1,7 @@
 package domain.entities;
 
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import jakarta.persistence.*;
 
@@ -27,10 +27,10 @@ public class Asset {
     private BigDecimal averageCost;
     
     @Column(nullable = false)
-    private LocalDateTime createdAt;
+    private ZonedDateTime createdAt;
     
     @Column(nullable = false)
-    private LocalDateTime updatedAt;
+    private ZonedDateTime updatedAt;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
@@ -38,8 +38,8 @@ public class Asset {
 
     // No-arg constructor for JPA
     public Asset() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = ZonedDateTime.now();
+        this.updatedAt = ZonedDateTime.now();
     }
 
     // Full constructor
@@ -59,8 +59,8 @@ public class Asset {
         this.name = name;
         this.quantity = quantity;
         this.averageCost = averageCost;
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
+        this.createdAt = ZonedDateTime.now();
+        this.updatedAt = ZonedDateTime.now();
     }
 
     // Getters
@@ -70,20 +70,20 @@ public class Asset {
     public String getName() { return this.name; }
     public Double quantity() { return this.quantity; }
     public BigDecimal averageCost() { return this.averageCost; }
-    public LocalDateTime getCreatedAt() { return this.createdAt; }
-    public LocalDateTime getUpdatedAt() { return this.updatedAt; }
+    public ZonedDateTime getCreatedAt() { return this.createdAt; }
+    public ZonedDateTime getUpdatedAt() { return this.updatedAt; }
     public Account getAccount() { return this.account; }
     public String getId() { return this.assetId.toString(); }
 
     // Setters
     public void setAssetId(UUID assetId) { this.assetId = assetId; }
     public void setAssetClass(String assetClass) { this.assetClass = assetClass; }
-    public void setTicker(String ticker) { this.ticker = ticker; this.updatedAt = LocalDateTime.now(); }
+    public void setTicker(String ticker) { this.ticker = ticker; this.updatedAt = ZonedDateTime.now(); }
     public void setName(String name) { this.name = name; }
-    public void setQuantity(Double quantity) { this.quantity = quantity; this.updatedAt = LocalDateTime.now(); }
-    public void setAverageCost(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = LocalDateTime.now(); }
+    public void setQuantity(Double quantity) { this.quantity = quantity; this.updatedAt = ZonedDateTime.now(); }
+    public void setAverageCost(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = ZonedDateTime.now(); }
     public void setAccount(Account account) { this.account = account; }
-    public void setBoughtAverage(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = LocalDateTime.now(); }
+    public void setBoughtAverage(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = ZonedDateTime.now(); }
 
     // Creates a new Asset with updated quantity
     public Asset withQuantity(Double quantity) {
