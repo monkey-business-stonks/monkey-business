@@ -1,3 +1,8 @@
+:host {
+  display: block;
+  width: 100%;
+}
+
 .field-container {
   display: flex;
   flex-direction: column;
@@ -30,11 +35,11 @@
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-bold);
   outline: none;
-  transition: border-color var(--transition-duration);
+  transition: all var(--transition-duration);
+}
 
-  &:focus {
-    border-color: var(--background-tertiary);
-  }
+.custom-input:focus {
+  border-color: var(--background-tertiary);
 }
 
 .input-suffix {
@@ -45,8 +50,47 @@
   pointer-events: none;
 }
 
+/* Hide number spinners */
 .custom-input::-webkit-outer-spin-button,
 .custom-input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+
+/* Base autofill handling */
+.custom-input:-webkit-autofill,
+.custom-input:-webkit-autofill:hover, 
+.custom-input:-webkit-autofill:focus, 
+.custom-input:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px var(--background-tertiary) inset !important;
+  -webkit-text-fill-color: var(--text-primary) !important;
+  font-family: 'Inter', sans-serif !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ==========================================================================
+   Form Variant Overrides
+   ========================================================================== */
+:host(.variant-form) .field-container {
+  gap: var(--space-sm);
+}
+
+:host(.variant-form) .field-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+:host(.variant-form) .custom-input {
+  padding: var(--space-md) var(--space-md);
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-base);
+  font-weight: normal;
+  border-color: var(--background-tertiary);
+}
+
+:host(.variant-form) .custom-input::placeholder {
+  color: var(--text-secondary);
+}
+
+:host(.variant-form) .custom-input:focus {
+  border-color: var(--accent-primary);
 }

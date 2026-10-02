@@ -13,5 +13,5 @@ export const routes: Routes = [
   { path: 'history', component: History },
   { path: 'profile', component: Profile },
   { path: 'login', component: Login },
-  { path: 'create-account', component: CreateUser },
+  { path: 'create-user', component: CreateUser },
 ];
