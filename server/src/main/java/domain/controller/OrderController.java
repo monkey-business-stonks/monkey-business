@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,7 +31,7 @@ public class OrderController {
     @PostMapping
     public ResponseEntity<?> placeOrder(
             @PathVariable String accountId,
-            @RequestBody PlaceOrderRequest request) {
+            @Valid @RequestBody PlaceOrderRequest request) { //rejects invalid requests
         try {
             UUID id = UUID.fromString(accountId);
             logger.info("Placing order for account: {}, ticker: {}", accountId, request.getTicker());

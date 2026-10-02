@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -30,7 +31,7 @@ public class AccountController {
     @PostMapping
     public ResponseEntity<?> createAccount(
             @PathVariable String userId,
-            @RequestBody CreateAccountRequest request) {
+            @Valid @RequestBody CreateAccountRequest request) {
         try {
             UUID id = UUID.fromString(userId);
             logger.info("Creating account for user: {}", userId);

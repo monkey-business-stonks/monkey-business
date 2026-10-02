@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/accounts")
+@RequestMapping("/users/{userId}/accounts")
 @CrossOrigin(origins = "*")
 public class AccountDetailController {
 
@@ -26,8 +26,12 @@ public class AccountDetailController {
      * Get account by ID
      */
     @GetMapping("/{accountId}")
-    public ResponseEntity<?> getAccount(@PathVariable String accountId) {
+    public ResponseEntity<?> getAccount(
+            @PathVariable String userId,
+            @PathVariable String accountId) {
         try {
+            // TODO: Use userId_uuid to verify account ownership once auth is integrated
+            // UUID userId_uuid = UUID.fromString(userId);
             UUID id = UUID.fromString(accountId);
             AccountResponse account = accountService.getAccount(id);
             if (account == null) {
@@ -39,10 +43,10 @@ public class AccountDetailController {
             }
             return ResponseEntity.ok(account);
         } catch (IllegalArgumentException e) {
-            logger.warn("Invalid account ID format: {}", accountId);
+            logger.warn("Invalid ID format: userId: {}, accountId: {}", userId, accountId);
             return ResponseEntity.badRequest()
                 .body(new ErrorResponse()
-                    .message("Invalid account ID format")
+                    .message("Invalid user ID or account ID format")
                     .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             logger.warn("Account not found for ID: {}", accountId);

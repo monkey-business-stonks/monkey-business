@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import jakarta.validation.Valid;
 
 import java.util.NoSuchElementException;
 import java.util.UUID;
@@ -26,7 +27,7 @@ public class UserController {
      * Create a new user
      */
     @PostMapping
-    public ResponseEntity<?> createUser(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<?> createUser(@Valid @RequestBody CreateUserRequest request) {
         try {
             logger.info("Creating new user with email: {}", request.getEmail());
             UserResponse user = userService.createUser(request);
@@ -75,7 +76,7 @@ public class UserController {
      * Authenticate user (login)
      */
     @PostMapping("/authenticate")
-    public ResponseEntity<?> authenticate(@RequestBody AuthenticateRequest request) {
+    public ResponseEntity<?> authenticate(@Valid @RequestBody AuthenticateRequest request) {
         try {
             logger.info("User authentication attempt for email: {}", request.getEmail());
             AuthResponse authResponse = userService.authenticate(request);

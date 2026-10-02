@@ -13,7 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/accounts/{accountId}/orders")
 @CrossOrigin(origins = "*")
 public class OrderDetailController {
 
@@ -24,11 +24,15 @@ public class OrderDetailController {
 
     /**
      * Get order details by ID
-     * GET /api/orders/{orderId}
+     * GET /api/accounts/{accountId}/orders/{orderId}
      */
     @GetMapping("/{orderId}")
-    public ResponseEntity<?> getOrder(@PathVariable String orderId) {
+    public ResponseEntity<?> getOrder(
+            @PathVariable String accountId,
+            @PathVariable String orderId) {
         try {
+            // TODO: Use accountId_uuid to verify order ownership once auth is integrated
+            // UUID accountId_uuid = UUID.fromString(accountId);
             UUID id = UUID.fromString(orderId);
             OrderResponse order = orderService.getOrder(id);
             if (order == null) {
@@ -40,10 +44,10 @@ public class OrderDetailController {
             }
             return ResponseEntity.ok(order);
         } catch (IllegalArgumentException e) {
-            logger.warn("Invalid order ID format: {}", orderId);
+            logger.warn("Invalid ID format: accountId: {}, orderId: {}", accountId, orderId);
             return ResponseEntity.badRequest()
                 .body(new ErrorResponse()
-                    .message("Invalid order ID format")
+                    .message("Invalid account ID or order ID format")
                     .error("INVALID_ID"));
         } catch (NoSuchElementException e) {
             logger.warn("Order not found for ID: {}", orderId);

@@ -1,4 +1,5 @@
-import domain.entities.User;
+ Fix endpoint paths for AccountDetailController & OrderDetailController (2 minutes)
+✅ Add null checks to detail endpoints (1 minute)import domain.entities.User;
 import domain.entities.Account;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
