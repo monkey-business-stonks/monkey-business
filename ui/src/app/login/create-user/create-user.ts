@@ -19,16 +19,16 @@ import { Router } from '@angular/router';
  * - Navigation back to login page
  * 
  * @standalone true
- * @selector app-create-account
+ * @selector app-create-user
  */
 @Component({
-  selector: 'app-create-account',
-  templateUrl: './create-account.html',
-  styleUrl: './create-account.css',
+  selector: 'app-create-user',
+  templateUrl: './create-user.html',
+  styleUrl: './create-user.css',
   standalone: true,
   imports: [FormsModule, CommonModule],
 })
-export class CreateAccount {
+export class CreateUser {
   /**
    * First name input signal
    * @type {Signal<string>}
