@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { History } from './history';
+import { History } from '@/app/history/history/history';
 
 describe('History', () => {
   let component: History;

@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
-import { AccountOverview } from '../account-overview/account-overview';
-import { AccountSelect } from '../account-select/account-select';
-import { AccountDetails } from '../account-details/account-details';
+import { AccountOverview } from '@/app/dashboard/account-overview/account-overview';
+import { AccountSelect } from '@/app/dashboard/account-select/account-select';
+import { AccountDetails } from '@/app/dashboard/account-details/account-details';
 
 @Component({
   imports: [AccountOverview, AccountSelect, AccountDetails],

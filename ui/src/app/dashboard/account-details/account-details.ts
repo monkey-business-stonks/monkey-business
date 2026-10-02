@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Table, TableColumn } from '../../shared/table/table';
+import { Table, TableColumn } from '@/app/shared/table/table';
 
 @Component({
   imports: [Table, CommonModule],

@@ -1,6 +1,6 @@
 import { Component, Input } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { InstrumentChart } from './instrument-chart/instrument-chart';
+import { InstrumentChart } from '@/app/trade/instrument-details/instrument-chart/instrument-chart';
 
 @Component({
   selector: 'instrument-details',

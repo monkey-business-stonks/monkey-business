@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { Table } from './table';
+import { Table } from '@/app/shared/table/table';
 
 describe('Table', () => {
   let component: Table;

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { CreateUser } from './create-user';
+import { CreateUser } from '@/app/login/create-user/create-user';
 import { CommonModule } from '@angular/common';
 
 /**

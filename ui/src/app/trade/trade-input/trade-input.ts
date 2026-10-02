@@ -1,9 +1,9 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SegmentedControlComponent } from '../../shared/segmented-control/segmented-control';
-import { SelectInputComponent, SelectOption } from '../../shared/select-input/select-input';
-import { BaseInputComponent } from '../../shared/base-input/base-input';
-import { Button } from '../../shared/button/button';
+import { SegmentedControlComponent } from '@/app/shared/segmented-control/segmented-control';
+import { SelectInputComponent, SelectOption } from '@/app/shared/select-input/select-input';
+import { BaseInputComponent } from '@/app/shared/base-input/base-input';
+import { Button } from '@/app/shared/button/button';
 
 @Component({
   selector: 'trade-input',

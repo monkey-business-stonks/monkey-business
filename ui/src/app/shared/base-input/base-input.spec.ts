@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { BaseInput } from './base-input';
+import { BaseInput } from '@/app/shared/base-input/base-input';
 
 describe('BaseInput', () => {
   let component: BaseInput;

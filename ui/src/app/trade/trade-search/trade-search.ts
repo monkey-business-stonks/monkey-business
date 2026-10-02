@@ -1,8 +1,8 @@
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { TradeSearchRow } from './trade-search-row/trade-search-row';
-import { Button } from '../../shared/button/button';
-import { AssetRowData } from './trade-search-row/trade-search-row'
+import { TradeSearchRow } from '@/app/trade/trade-search/trade-search-row/trade-search-row';
+import { Button } from '@/app/shared/button/button';
+import { AssetRowData } from '@/app/trade/trade-search/trade-search-row/trade-search-row'
 
 @Component({
   imports: [Button, CommonModule, TradeSearchRow],
