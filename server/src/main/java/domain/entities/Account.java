@@ -14,8 +14,10 @@ public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
 	@Id
-	private UUID accountID;
-	private ZonedDateTime openedDate;
+	private UUID accountId;
+	
+	@Column(name = "createdOn")
+	private ZonedDateTime createdOn;
 	private AccountType accountType;
 	
 	@Column(name = "balance")
@@ -23,6 +25,9 @@ public class Account {
 	
 	@Column(name = "cash_balance")
 	private BigDecimal cashBalance;
+	
+	@Column(nullable = false)
+	private ZonedDateTime updatedAt;
 	
 	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
 	private Set<Asset> heldAssets;
@@ -36,38 +41,42 @@ public class Account {
 
 	// No-arg constructor for JPA
 	protected Account() {
-		this.accountID = null;
-		this.openedDate = null;
+		this.accountId = null;
+		this.createdOn = null;
 		this.accountType = null;
 		this.balance = BigDecimal.ZERO;
 		this.cashBalance = BigDecimal.ZERO;
+		this.updatedAt = ZonedDateTime.now();
 		this.heldAssets = new LinkedHashSet<>();
 		this.orderHistory = new LinkedHashSet<>();
 	}
 
-	public Account(UUID accountID, ZonedDateTime openedDate, AccountType accountType,
+	public Account(UUID accountId, ZonedDateTime createdOn, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
 				   Set<Asset> heldAssets, Set<Order> orderHistory) {
-		this.accountID = accountID;
-		this.openedDate = openedDate;
+		this.accountId = accountId;
+		this.createdOn = createdOn;
 		this.accountType = accountType;
 		this.balance = balance == null ? BigDecimal.ZERO : balance;
 		this.cashBalance = cashBalance == null ? BigDecimal.ZERO : cashBalance;
+		this.updatedAt = ZonedDateTime.now();
 		this.heldAssets = heldAssets == null ? new LinkedHashSet<>() : heldAssets;
 		this.orderHistory = orderHistory == null ? new LinkedHashSet<>() : orderHistory;
 	}
 
 	// Returns account ID
-	public UUID getAccountID() { return accountID; }
+	public UUID getAccountId() { return accountId; }
 	// Returns account type
 	public AccountType getAccountType() { return accountType; }
-	// Returns opened date
-	public ZonedDateTime getOpenedDate() { return openedDate; }
+	// Returns created date
+	public ZonedDateTime getCreatedOn() { return createdOn; }
+	// Returns updated date
+	public ZonedDateTime getUpdatedAt() { return updatedAt; }
 	
 	// Alias methods for compatibility
-	public UUID getAccID() { return accountID; }
+	public UUID getAccountID() { return accountId; }
+	public UUID getAccID() { return accountId; }
 	public AccountType getAccType() { return accountType; }
-	public ZonedDateTime getOpenDate() { return openedDate; }
 
 	// Returns total account value as double
 	public double getBalance() { return balance.doubleValue(); }
@@ -77,6 +86,7 @@ public class Account {
 			throw new IllegalArgumentException("Balance cannot be negative");
 		}
 		this.balance = new BigDecimal(newBalance);
+		this.updatedAt = ZonedDateTime.now();
 	}
 
 	// Returns available cash
@@ -90,6 +100,7 @@ public class Account {
         	throw new IllegalArgumentException("Cash balance cannot be negative");
     	}
     	this.cashBalance = cashBalance;
+    	this.updatedAt = ZonedDateTime.now();
 	}
 
 	// Returns associated user
