@@ -1,5 +1,4 @@
 /* ===== LOGIN CONTAINER ===== */
-/* Full viewport container with flexbox centering and dark gradient background */
 .login-container {
   display: flex;
   align-items: center;
@@ -9,7 +8,6 @@
 }
 
 /* ===== LOGIN CARD ===== */
-/* Central card container with dark theme and shadow effects */
 .login-card {
   width: 100%;
   max-width: 420px;
@@ -97,7 +95,7 @@ form {
 }
 
 .form-input::placeholder {
-  color: var(--text-secondary-transparent);
+  color: var(--text-secondary);
 }
 
 .form-input:focus {
@@ -110,17 +108,22 @@ form {
 .form-input:-webkit-autofill:hover, 
 .form-input:-webkit-autofill:focus, 
 .form-input:-webkit-autofill:active {
-  /* Retain your dark background using a large inset box-shadow */
   -webkit-box-shadow: 0 0 0 1000px var(--background-tertiary) inset !important;
-  
-  /* Retain text color */
   -webkit-text-fill-color: var(--text-primary) !important;
-  
-  /* Preserve custom font family */
   font-family: 'Inter', sans-serif !important;
-  
-  /* Prevent color transition delays on fill */
   transition: background-color 5000s ease-in-out 0s;
+}
+
+/* ===== ERROR MESSAGE ===== */
+.error-message {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+  text-align: center;
 }
 
 /* ===== SIGN IN BUTTON ===== */
@@ -146,7 +149,7 @@ form {
   cursor: not-allowed;
 }
 
-/* ===== CREATE ACCOUNT LINK ===== */
+/* ===== FORGOT PASSWORD LINK ===== */
 .forgot-password-link {
   display: block;
   background: none;

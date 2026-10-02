@@ -12,6 +12,10 @@
     </div>
 
     <form (ngSubmit)="onSignIn()">
+      <div *ngIf="error()" class="error-message">
+        {{ error() }}
+      </div>
+
       <div class="form-group">
         <label for="username" class="form-label">USERNAME</label>
         <input
@@ -21,6 +25,7 @@
           placeholder="trader@monkeybusiness.com"
           [(ngModel)]="username"
           name="username"
+          [disabled]="loading()"
           required
         />
       </div>
@@ -34,12 +39,13 @@
           placeholder="••••••••••"
           [(ngModel)]="password"
           name="password"
+          [disabled]="loading()"
           required
         />
       </div>
 
-      <button type="submit" class="sign-in-button" [disabled]="isFormInvalid()">
-        Sign In
+      <button type="submit" class="sign-in-button" [disabled]="loading()">
+        {{ loading() ? 'Signing In...' : 'Sign In' }}
       </button>
     </form>
 
