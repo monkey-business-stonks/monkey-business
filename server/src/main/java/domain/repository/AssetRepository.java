@@ -14,7 +14,7 @@ import java.util.UUID;
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, UUID> {
     // Get asset position for account+ticker
-    Optional<Asset> findByAccountAccountIDAndTicker(UUID accountID, String ticker);
+    Optional<Asset> findByAccountAccountIdAndTicker(UUID accountId, String ticker);
     
     // Get specific asset
     Optional<Asset> findById(UUID assetId);

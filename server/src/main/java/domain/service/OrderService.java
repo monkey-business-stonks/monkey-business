@@ -47,12 +47,14 @@ public class OrderService {
 
         Order order = new Order(
             orderId,
+            "EQUITY", // orderType - TODO: determine from ticker/market data
             request.getTicker().toUpperCase(),
             request.getQuantity() != null ? request.getQuantity().doubleValue() : 0.0,
             request.getAction().toString(),
             now,
             submittedValue,
-            Order.OrderStatus.PENDING,
+            Order.OrderStatus.SUBMITTED,
+            0, // statusCode - initial submission
             now
         );
 
@@ -62,10 +64,13 @@ public class OrderService {
             "user",
             "user@test.com",
             "password",
+            "Test User", // name
+            null, // phone
+            null, // dob
             User.AccessLevel.USER,
-            true,
             new HashSet<>(),
-            now.toLocalDateTime()
+            now,
+            now
         );
 
         // Step 6: Validate order using OrderValidator
@@ -73,14 +78,14 @@ public class OrderService {
         
         if (!isValid) {
             // Order rejected - mark it and return without updating account
-            order.updateExecution(now, null, Order.OrderStatus.REJECTED);
+            order.updateExecution(now, null, Order.OrderStatus.REJECTED, 1);
             order.setAccount(account);
             orderRepository.save(order);    // Save rejected order
             return toOrderResponse(order, accountId);
         }
 
         // Step 7: Update order with execution price
-        order.updateExecution(now, submittedValue, Order.OrderStatus.PENDING);
+        order.updateExecution(now, submittedValue, Order.OrderStatus.ACCEPTED, 0);
 
         // Step 8: Use TransactionManager to atomically update account and order status
         TransactionManager transactionManager = new TransactionManager(account, order);
@@ -134,7 +139,7 @@ public class OrderService {
      * List orders for an account
      */
     public List<OrderSummary> listOrdersForAccount(UUID accountId) {
-        return orderRepository.findByAccountAccountID(accountId).stream()
+        return orderRepository.findByAccountAccountId(accountId).stream()
             .map(this::toOrderSummary)
             .toList();
     }

@@ -22,7 +22,7 @@ public class OrderExecutor {
         
         // 3. Get current time + status
         ZonedDateTime zdt = ZonedDateTime.now();
-        OrderStatus status = (isValid) ? OrderStatus.SUCCEEDED : OrderStatus.REJECTED;
+        OrderStatus status = (isValid) ? OrderStatus.FILLED : OrderStatus.REJECTED;
         
         // 4. Ping Transaction manager
         // TransactionManager.updateStatus()

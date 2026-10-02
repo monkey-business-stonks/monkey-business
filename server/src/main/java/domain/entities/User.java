@@ -8,29 +8,29 @@ import java.time.LocalDate;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 public class User {
     public enum AccessLevel { USER, ANALYST, OPERATIONS }
 
     @Id
     private UUID userId;
     
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "username")
     private String username;
     
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "email")
     private String email;
     
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false, name = "password_hash")
     private String passwordHash;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "name")
     private String name;
     
-    @Column(nullable = true)
+    @Column(nullable = true, name = "phone")
     private String phone;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "dob")
     private LocalDate dob;
     
     @Enumerated(EnumType.STRING)

@@ -17,7 +17,18 @@ public class OrderManager {
         // PricingEngine.getCurrentPrice(ticker)
         UUID id = UUID.randomUUID();
         ZonedDateTime zdt = ZonedDateTime.now();
-        Order order = new Order(id, ticker, quantity, action, submittedOn, submittedValue, Order.OrderStatus.PENDING, zdt);
+        Order order = new Order(
+            id,
+            "EQUITY", // orderType - TODO: determine from ticker/market data
+            ticker,
+            quantity,
+            action,
+            submittedOn,
+            submittedValue,
+            Order.OrderStatus.SUBMITTED,
+            0, // statusCode
+            zdt
+        );
         orders.add(order);
         return order;
     }
@@ -27,7 +38,7 @@ public class OrderManager {
     //     order.updateExecution(null, null, status);
     // }
 
-    public void updateExecution(Order order, ZonedDateTime exectutedOn, BigDecimal executedValue, Order.OrderStatus status) {
-        order.updateExecution(exectutedOn, executedValue, status);
+    public void updateExecution(Order order, ZonedDateTime executedOn, BigDecimal executedValue, Order.OrderStatus status, Integer statusCode) {
+        order.updateExecution(executedOn, executedValue, status, statusCode);
     }
 }
