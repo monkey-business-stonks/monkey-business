@@ -35,29 +35,27 @@
   object-fit: cover;
 }
 
-.avatar-upload {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--space-sm);
-}
-
-.file-input {
-  display: none;
-}
-
-.upload-label {
-  padding: var(--space-sm) var(--space-md);
-  background-color: var(--accent-primary);
-  color: var(--background-primary);
-  border-radius: var(--radius-md);
-  font-size: var(--font-size-sm);
+.name {
+  color: var(--text-primary);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
-  cursor: pointer;
-  transition: opacity var(--transition-duration);
-  font-family: 'Inter', sans-serif;
 }
 
-.upload-label:hover {
-  opacity: 0.8;
+.email {
+  color: var(--text-secondary);
+  font-size: var(--font-size-s);
+  font-weight: var(--font-weight-semibold);
+}
+
+td {
+  color: var(--text-primary);
+}
+
+hr {
+  width: 100%;
+  border-color: var(--text-secondary);
+}
+
+.table-right {
+  text-align: end;
 }
