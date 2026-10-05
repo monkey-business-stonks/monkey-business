@@ -60,6 +60,34 @@ End-to-end tests for the Monkey Business trading platform order flow and account
 
 ---
 
+### 3. Data Retrieval Test (`retrieval_test.sh`)
+
+**What it tests:**
+- User creation and data validation (username, email, DOB, access level)
+- Account detail retrieval with all field validation
+- Multiple accounts listing endpoint
+- Asset retrieval embedded in account details
+- Balance and cash balance accuracy
+- Opened date timestamp validity
+- Error handling for non-existent accounts (404)
+- Consistency between list and detail endpoints
+- Multi-user isolation scenarios
+
+**Run:**
+```bash
+./retrieval_test.sh
+```
+
+**Expected Output:**
+- ✓ User created with auto-generated DOB (~25 years ago)
+- ✓ All user fields validated (username, email, access level)
+- ✓ Three account types created with correct metadata
+- ✓ Account detail retrieval returns all fields (ID, type, balance, opened date, assets)
+- ✓ Held assets array populated after order
+- ✓ Balance decreases correctly after order execution
+- ✓ Non-existent account returns 404 error
+- ✓ Account data consistent between list and detail endpoints
+
 ## Test Flow
 
 Both tests follow this general pattern:
