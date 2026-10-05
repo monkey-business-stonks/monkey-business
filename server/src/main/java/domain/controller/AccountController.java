@@ -70,4 +70,36 @@ public class AccountController {
                     .error("NOT_FOUND"));
         }
     }
+
+    /**
+     * Get specific account for a user
+     */
+    @GetMapping("/{accountId}")
+    public ResponseEntity<?> getAccount(
+            @PathVariable String userId,
+            @PathVariable String accountId) {
+        try {
+            UUID userIdUuid = UUID.fromString(userId);
+            UUID accountIdUuid = UUID.fromString(accountId);
+            AccountResponse account = accountService.getAccount(accountIdUuid);
+            // Verify the account belongs to the user
+            if (!account.getUserId().equals(userIdUuid)) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(new ErrorResponse()
+                        .message("Account does not belong to this user")
+                        .error("FORBIDDEN"));
+            }
+            return ResponseEntity.ok(account);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorResponse()
+                    .message("Invalid ID format")
+                    .error("INVALID_ID"));
+        } catch (NoSuchElementException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ErrorResponse()
+                    .message(e.getMessage())
+                    .error("NOT_FOUND"));
+        }
+    }
 }

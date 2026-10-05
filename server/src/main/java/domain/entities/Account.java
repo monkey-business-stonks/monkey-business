@@ -9,29 +9,31 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Accounts")
+@Table(name = "accounts")
 public class Account {
 	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
 
 	@Id
+	@Column(name = "accountid")
 	private UUID accountId;
 	
-	@Column(name = "userId")
+	@Column(name = "userid")
 	private UUID userId;
 	
-	@Column(name = "createdOn")
+	@Column(name = "createdon")
 	private ZonedDateTime createdOn;
 	
-	@Column(name = "accountType")
+	@Enumerated(EnumType.STRING)
+	@Column(name = "accounttype")
 	private AccountType accountType;
 	
 	@Column(name = "balance")
 	private BigDecimal balance;
 	
-	@Column(name = "cashBalance")
+	@Column(name = "cashbalance")
 	private BigDecimal cashBalance;
 	
-	@Column(name = "updatedAt")
+	@Column(name = "updatedat")
 	private ZonedDateTime updatedAt;
 	
 	@OneToMany(mappedBy = "account", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
@@ -41,7 +43,7 @@ public class Account {
 	private Set<Order> orderHistory;
 
 	@ManyToOne
-	@JoinColumn(name = "userId", insertable=false, updatable=false)
+	@JoinColumn(name = "userid", insertable=false, updatable=false)
 	private User user;
 
 	// No-arg constructor for JPA

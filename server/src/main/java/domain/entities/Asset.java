@@ -6,15 +6,16 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "Assets", uniqueConstraints = @UniqueConstraint(columnNames = {"accountId", "ticker"}))
+@Table(name = "assets", uniqueConstraints = @UniqueConstraint(columnNames = {"accountid", "ticker"}))
 public class Asset {
     @Id
+    @Column(name = "assetid")
     private UUID assetId;
     
-@Column(name = "accountId", insertable = false, updatable = false)
+@Column(name = "accountid", insertable = false, updatable = false)
     private UUID accountId;
     
-@Column(name = "assetClass")
+@Column(name = "assetclass")
 	private String assetClass;
 	
 	@Column(name = "ticker")
@@ -26,17 +27,17 @@ public class Asset {
 	@Column(name = "quantity")
 	private Double quantity;
 	
-	@Column(name = "averageCost")
+	@Column(name = "averagecost")
     private BigDecimal averageCost;
     
-@Column(name = "createdAt")
+@Column(name = "createdat")
 	private ZonedDateTime createdAt;
 	
-	@Column(name = "updatedAt")
+	@Column(name = "updatedat")
     private ZonedDateTime updatedAt;
 
     @ManyToOne
-	@JoinColumn(name = "accountId", insertable=false, updatable=false)
+	@JoinColumn(name = "accountid")
 	private Account account;
 
     // No-arg constructor for JPA

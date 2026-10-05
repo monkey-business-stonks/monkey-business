@@ -68,8 +68,11 @@ public class SecurityConfig {
                         "/users",
                         "/users/authenticate",
                         "/users/health",
+                        "/users/*/accounts",
+                        "/users/*/accounts/*",
                         "/market/health",
-                        "/market/price/**"
+                        "/market/price/**",
+                        "/accounts/*/orders"
                 )
                 // Disable CSRF for public endpoints
                 .csrf(csrf -> csrf.disable())
