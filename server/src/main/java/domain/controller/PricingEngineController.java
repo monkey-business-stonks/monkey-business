@@ -1,6 +1,6 @@
 package domain.controller;
 
-import domain.service.MarketDataService;
+import domain.service.PricingEngine;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -10,10 +10,10 @@ import java.util.Map;
 @RestController
 @RequestMapping("/market")
 @CrossOrigin(origins = "*")
-public class MarketDataController {
+public class PricingEngineController {
 
     @Autowired
-    private MarketDataService marketDataService;
+    private PricingEngine pricingEngine;
 
     /**
      * Get current market data for a ticker
@@ -27,7 +27,7 @@ public class MarketDataController {
         }
 
         try {
-            Map<String, Object> marketData = marketDataService.getMarketDataRaw(ticker);
+            Map<String, Object> marketData = pricingEngine.getMarketDataRaw(ticker);
             if (marketData == null || marketData.isEmpty()) {
                 return ResponseEntity.status(502).body(Map.of("error", "No data received from market API"));
             }
@@ -42,6 +42,6 @@ public class MarketDataController {
      */
     @GetMapping("/health")
     public ResponseEntity<String> health() {
-        return ResponseEntity.ok("Market Data Service is running");
+        return ResponseEntity.ok("Pricing Engine is running");
     }
 }

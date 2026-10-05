@@ -51,7 +51,7 @@ public class UserService {
             request.getPassword(),
             request.getUsername(), // name - use username as placeholder
             null, // phone
-            null, // dob - can be set later
+            LocalDateTime.now().minusYears(25).toLocalDate(), // dob - default to 25 years ago
             User.AccessLevel.USER,
             new HashSet<>(),
             ZonedDateTime.now(),
@@ -112,5 +112,12 @@ public class UserService {
      */
     public User getUserDirect(UUID userId) {
         return userRepository.findById(userId).orElse(null);
+    }
+
+    /**
+     * Get user by username (for auth context)
+     */
+    public User getUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
     }
 }
