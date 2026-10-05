@@ -1,0 +1,109 @@
+<!-- Create Investment Account Page Container -->
+<div class="account-container">
+  <!-- Create Account Card -->
+  <div class="account-card">
+    <!-- Header Section -->
+    <div class="header-section">
+      <h1 class="page-title">Create Investment Account</h1>
+      <p class="page-subtitle">
+        Set up a new account to start trading and investing
+      </p>
+    </div>
+
+    <!-- Success Message -->
+    @if (successMessage()) {
+      <div class="alert alert-success">
+        {{ successMessage() }}
+      </div>
+    }
+
+    <!-- Error Message -->
+    @if (errorMessage()) {
+      <div class="alert alert-error">
+        {{ errorMessage() }}
+      </div>
+    }
+
+    <!-- Account Type Selection -->
+    <div class="form-section">
+      <label class="form-label">Select Account Type *</label>
+      <p class="form-helper">Choose the type of account that best fits your trading needs</p>
+
+      <div class="account-type-grid">
+        @for (account of accountTypes; track account.value) {
+          <div
+            class="account-type-card"
+            [class.selected]="selectedAccountType() === account.value"
+            (click)="selectAccountType(account.value)"
+          >
+            <div class="account-type-content">
+              <h3 class="account-type-title">{{ account.label }}</h3>
+              <p class="account-type-description">
+                {{ account.description }}
+              </p>
+            </div>
+            @if (selectedAccountType() === account.value) {
+              <div class="account-type-checkmark">✓</div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+
+    <!-- Account Details Form -->
+    @if (selectedAccountType()) {
+      <form (ngSubmit)="onCreateAccount()" class="account-form">
+        <!-- Account Name Input -->
+        <div class="form-section">
+          <app-base-input
+            variant="form"
+            label="ACCOUNT NAME"
+            type="text"
+            [placeholder]="'My ' + getSelectedAccountLabel()"
+            [(value)]="accountName"
+            name="accountName"
+            [required]="true"
+          />
+          <p class="form-helper">Give your account a memorable name (e.g., 'Trading Account', 'Retirement Savings')</p>
+        </div>
+
+        <!-- Initial Balance Input (Optional) -->
+        <div class="form-section">
+          <app-base-input
+            variant="form"
+            label="INITIAL BALANCE (OPTIONAL)"
+            type="number"
+            placeholder="0.00"
+            [(value)]="initialBalance"
+            name="initialBalance"
+          />
+          <p class="form-helper">Fund your account with an initial deposit (you can add more later)</p>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+          <app-button
+            variant="secondary"
+            [disabled]="!isFormValid() || isLoading()"
+            type="submit"
+          >
+            {{ isLoading() ? 'Creating Account...' : 'Create Account' }}
+          </app-button>
+
+          <button
+            type="button"
+            class="cancel-button"
+            (click)="onCancel()"
+            [disabled]="isLoading()"
+          >
+            Cancel
+          </button>
+        </div>
+      </form>
+    } @else {
+      <div class="form-placeholder">
+        <p>Select an account type above to continue</p>
+      </div>
+    }
+  </div>
+</div>

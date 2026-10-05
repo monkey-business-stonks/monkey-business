@@ -1,0 +1,276 @@
+/**
+ * Create Investment Account Page Styles
+ * 
+ * Styling for the account creation page of the Monkey Business trading platform.
+ * Uses design tokens from main styles.css for consistent theming with the rest of the application.
+ * Implements account type selection grid, form inputs, and validation states.
+ * 
+ * Color Scheme:
+ * - Background: Dark theme (#161B21 primary, #202830 secondary)
+ * - Text: White (#ffffff) for primary, #8A99A5 for secondary
+ * - Accent: Green (#00E676) for primary actions and selected states
+ * - Error: Red (#FF3B30) for error messages
+ */
+
+/* ===== ACCOUNT CONTAINER ===== */
+/* Full viewport container with flexbox centering */
+.account-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: var(--space-md);
+  background-color: var(--background-primary);
+}
+
+/* ===== ACCOUNT CARD ===== */
+/* Central card container for account creation form */
+.account-card {
+  width: 100%;
+  max-width: 900px;
+  background-color: var(--background-secondary);
+  border: 1px solid var(--background-tertiary);
+  border-radius: 12px;
+  padding: var(--space-2xl);
+}
+
+/* ===== HEADER SECTION ===== */
+/* Title and subtitle container for page header */
+.header-section {
+  margin-bottom: var(--space-2xl);
+  text-align: center;
+}
+
+.page-title {
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-sm) 0;
+  letter-spacing: -0.5px;
+}
+
+.page-subtitle {
+  font-size: var(--font-size-base);
+  color: var(--text-secondary);
+  margin: 0;
+  font-weight: var(--font-weight-normal);
+}
+
+/* ===== ALERT MESSAGES ===== */
+.alert {
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-lg);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.alert-success {
+  background-color: rgba(0, 230, 118, 0.1);
+  border: 1px solid rgba(0, 230, 118, 0.3);
+  color: var(--accent-primary);
+}
+
+.alert-error {
+  background-color: rgba(255, 59, 48, 0.1);
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  color: var(--accent-negative);
+}
+
+/* ===== FORM SECTION ===== */
+.form-section {
+  margin-bottom: var(--space-2xl);
+}
+
+.form-label {
+  display: block;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.form-helper {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: var(--space-sm) 0 0 0;
+  font-weight: var(--font-weight-normal);
+}
+
+/* ===== ACCOUNT TYPE GRID ===== */
+.account-type-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.account-type-card {
+  position: relative;
+  padding: var(--space-md);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: all var(--transition-duration);
+  background: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  font-family: 'Inter', sans-serif;
+}
+
+.account-type-card:hover {
+  border-color: var(--text-secondary);
+  background: var(--background-tertiary);
+}
+
+.account-type-card.selected {
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-transparent);
+}
+
+.account-type-content {
+  flex: 1;
+  margin-bottom: var(--space-md);
+}
+
+.account-type-title {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xs) 0;
+}
+
+.account-type-description {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.account-type-checkmark {
+  position: absolute;
+  top: var(--space-xs);
+  right: var(--space-xs);
+  width: 24px;
+  height: 24px;
+  background: var(--accent-primary);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--background-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+}
+
+/* ===== ACCOUNT FORM ===== */
+.account-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.account-form .form-section {
+  margin-bottom: 0;
+}
+
+/* ===== FORM ACTIONS ===== */
+.form-actions {
+  display: flex;
+  gap: var(--space-md);
+  margin-top: var(--space-lg);
+}
+
+.form-actions app-button {
+  flex: 1;
+}
+
+.cancel-button {
+  flex: 1;
+  padding: var(--space-sm) var(--space-md);
+  border: 2px solid var(--background-tertiary);
+  background: transparent;
+  color: var(--text-secondary);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: all var(--transition-duration);
+  font-family: 'Inter', sans-serif;
+}
+
+.cancel-button:hover:not(:disabled) {
+  border-color: var(--text-secondary);
+  color: var(--text-primary);
+  background: var(--background-tertiary);
+}
+
+.cancel-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ===== FORM PLACEHOLDER ===== */
+.form-placeholder {
+  text-align: center;
+  padding: var(--space-2xl) var(--space-lg);
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+  .account-card {
+    padding: var(--space-lg);
+  }
+
+  .page-title {
+    font-size: var(--font-size-xl);
+  }
+
+  .account-type-grid {
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: var(--space-md);
+  }
+
+  .account-type-card {
+    padding: var(--space-xmd);
+  }
+
+  .account-type-title {
+    font-size: var(--font-size-xs);
+  }
+
+  .account-type-description {
+    font-size: 10px;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-container {
+    padding: var(--space-xmd);
+  }
+
+  .account-card {
+    padding: var(--space-md);
+  }
+
+  .account-type-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title {
+    font-size: var(--font-size-lg);
+  }
+
+  .header-section {
+    margin-bottom: var(--space-lg);
+  }
+}
