@@ -32,13 +32,12 @@ describe('CreateAccount', () => {
     expect(component.selectedAccountType()).toBeNull();
   });
 
-  it('should not be valid without account type and name', () => {
+  it('should not be valid without account type', () => {
     expect(component.isFormValid()).toBeFalsy();
   });
 
-  it('should be valid with account type and name', () => {
+  it('should be valid with account type selected', () => {
     component.selectedAccountType.set('BROKERAGE');
-    component.accountName.set('My Brokerage Account');
     expect(component.isFormValid()).toBeTruthy();
   });
 
@@ -64,14 +63,13 @@ describe('CreateAccount', () => {
     expect(component['router'].navigate).toHaveBeenCalledWith(['/dashboard']);
   });
 
-  it('should not allow form submission without account type', () => {
-    component.accountName.set('My Account');
-    expect(component.isFormValid()).toBeFalsy();
+  it('should store created account ID on success', () => {
+    component.createdAccountId.set('test-account-123');
+    expect(component.createdAccountId()).toBe('test-account-123');
   });
 
-  it('should not allow form submission with empty name', () => {
-    component.selectedAccountType.set('BROKERAGE');
-    component.accountName.set('');
-    expect(component.isFormValid()).toBeFalsy();
+  it('should set account name based on account type', () => {
+    component.selectedAccountType.set('ROTH_IRA');
+    expect(component.getSelectedAccountLabel()).toBe('Roth IRA');
   });
 });

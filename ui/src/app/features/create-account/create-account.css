@@ -71,6 +71,25 @@
   color: var(--accent-primary);
 }
 
+.success-message-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.success-title {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.success-account-id {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-normal);
+  color: var(--text-secondary);
+}
+
 .alert-error {
   background-color: rgba(255, 59, 48, 0.1);
   border: 1px solid rgba(255, 59, 48, 0.3);
@@ -97,6 +116,18 @@
   color: var(--text-secondary);
   margin: var(--space-sm) 0 0 0;
   font-weight: var(--font-weight-normal);
+}
+
+/* ===== ACCOUNT TYPE DISPLAY ===== */
+.account-type-display {
+  padding: var(--space-md);
+  background: var(--background-tertiary);
+  border: 1px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  text-align: center;
 }
 
 /* ===== ACCOUNT TYPE GRID ===== */

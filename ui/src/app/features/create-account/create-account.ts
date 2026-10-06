@@ -66,16 +66,16 @@ export class CreateAccount {
   selectedAccountType = signal<AccountType | null>(null);
 
   /**
-   * Account name input signal
-   * @type {Signal<string>}
-   */
-  accountName = signal('');
-
-  /**
    * Initial balance input signal (optional)
    * @type {Signal<string>}
    */
   initialBalance = signal('');
+
+  /**
+   * Created account ID/number to display
+   * @type {Signal<string | null>}
+   */
+  createdAccountId = signal<string | null>(null);
 
   /**
    * Loading state during account creation
@@ -97,10 +97,10 @@ export class CreateAccount {
 
   /**
    * Form validation state
-   * Checks if account type is selected and name is provided
+   * Checks if account type is selected
    */
   isFormValid = computed(() => {
-    return this.selectedAccountType() !== null && this.accountName().trim().length > 0;
+    return this.selectedAccountType() !== null;
   });
 
   constructor(
@@ -131,11 +131,11 @@ export class CreateAccount {
 
   /**
    * Submit account creation form
-   * Makes API call to create new account and navigates on success
+   * Makes API call to create new account and displays success message
    */
   onCreateAccount(): void {
     if (!this.isFormValid()) {
-      this.errorMessage.set('Please select an account type and provide an account name');
+      this.errorMessage.set('Please select an account type');
       return;
     }
 
@@ -148,10 +148,10 @@ export class CreateAccount {
     this.isLoading.set(true);
     this.errorMessage.set(null);
     this.successMessage.set(null);
+    this.createdAccountId.set(null);
 
     const createAccountRequest = {
       accountType,
-      accountName: this.accountName().trim(),
       initialBalance: this.initialBalance()
         ? parseFloat(this.initialBalance())
         : undefined
@@ -160,8 +160,9 @@ export class CreateAccount {
     this.accountService.createAccount(createAccountRequest).subscribe({
       next: (response) => {
         this.isLoading.set(false);
+        this.createdAccountId.set(response.accountId);
         this.successMessage.set(
-          `Account "${response.accountId}" created successfully!`
+          `${this.getSelectedAccountLabel()} account created successfully!`
         );
         // Navigate to dashboard after successful creation
         setTimeout(() => this.router.navigate(['/dashboard']), 2000);

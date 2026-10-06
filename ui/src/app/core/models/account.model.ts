@@ -10,7 +10,6 @@ export type AccountType = 'BROKERAGE' | '_401K' | 'ROTH_IRA' | 'CRYPTO' | 'FOREX
  */
 export interface CreateAccountRequest {
   accountType: AccountType;
-  accountName: string;
   initialBalance?: number;
 }
 

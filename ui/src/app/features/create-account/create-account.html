@@ -13,7 +13,12 @@
     <!-- Success Message -->
     @if (successMessage()) {
       <div class="alert alert-success">
-        {{ successMessage() }}
+        <div class="success-message-content">
+          <p class="success-title">{{ successMessage() }}</p>
+          @if (createdAccountId()) {
+            <p class="success-account-id">Account Number: <strong>{{ createdAccountId() }}</strong></p>
+          }
+        </div>
       </div>
     }
 
@@ -53,18 +58,13 @@
     <!-- Account Details Form -->
     @if (selectedAccountType()) {
       <form (ngSubmit)="onCreateAccount()" class="account-form">
-        <!-- Account Name Input -->
+        <!-- Account Type Display -->
         <div class="form-section">
-          <app-base-input
-            variant="form"
-            label="ACCOUNT NAME"
-            type="text"
-            [placeholder]="'My ' + getSelectedAccountLabel()"
-            [(value)]="accountName"
-            name="accountName"
-            [required]="true"
-          />
-          <p class="form-helper">Give your account a memorable name (e.g., 'Trading Account', 'Retirement Savings')</p>
+          <label class="form-label">Account Type</label>
+          <div class="account-type-display">
+            {{ getSelectedAccountLabel() }}
+          </div>
+          <p class="form-helper">Your account name will be automatically set to your account type</p>
         </div>
 
         <!-- Initial Balance Input (Optional) -->
