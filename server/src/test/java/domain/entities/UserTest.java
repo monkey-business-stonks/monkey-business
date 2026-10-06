@@ -83,4 +83,58 @@ class UserTest {
         user.addAccount(testAccount);
         assertTrue(user.getAccounts().contains(testAccount), "Account should be added to user");
     }
+
+    @Test
+    void testChangePasswordUpdatesTimestamp() {
+        ZonedDateTime beforeUpdate = user.getUpdatedAt();
+        try { Thread.sleep(10); } catch (InterruptedException e) {}
+        
+        user.changePassword("newpassword");
+        ZonedDateTime afterUpdate = user.getUpdatedAt();
+        
+        assertTrue(afterUpdate.isAfter(beforeUpdate), "updatedAt should be updated after password change");
+    }
+
+    @Test
+    void testAccessLevelHierarchy() {
+        // USER should not pass ANALYST check (ordinal: USER=0, ANALYST=1, OPERATIONS=2)
+        User analystUser = new User(
+            UUID.randomUUID(), "analyst", "analyst@test.com", "pass",
+            "Analyst User", "555-5678", LocalDate.of(1990, 1, 1),
+            User.AccessLevel.ANALYST, new HashSet<>(), now, now
+        );
+        
+        assertTrue(analystUser.checkAccessLevel(User.AccessLevel.USER), "ANALYST should have USER level access");
+        assertFalse(user.checkAccessLevel(User.AccessLevel.ANALYST), "USER should not have ANALYST level access");
+    }
+
+    @Test
+    void testAddDuplicateAccount() {
+        UUID accountId = UUID.randomUUID();
+        Account testAccount = new Account(
+            accountId, ZonedDateTime.now(), Account.AccountType.BROKERAGE,
+            new BigDecimal("10000.00"), new BigDecimal("10000.00"),
+            new HashSet<>(), new HashSet<>()
+        );
+        
+        user.addAccount(testAccount);
+        user.addAccount(testAccount);
+        
+        // HashSet behavior: duplicates should not increase size
+        long count = user.getAccounts().stream().filter(a -> a.getAccID().equals(accountId)).count();
+        assertEquals(1, count, "Duplicate accounts should not be added twice");
+    }
+
+    @Test
+    void testOperationsAccessLevel() {
+        User opsUser = new User(
+            UUID.randomUUID(), "ops", "ops@test.com", "pass",
+            "Ops User", "555-9999", LocalDate.of(1990, 1, 1),
+            User.AccessLevel.OPERATIONS, new HashSet<>(), now, now
+        );
+        
+        assertTrue(opsUser.checkAccessLevel(User.AccessLevel.USER), "OPERATIONS should have USER access");
+        assertTrue(opsUser.checkAccessLevel(User.AccessLevel.ANALYST), "OPERATIONS should have ANALYST access");
+        assertTrue(opsUser.checkAccessLevel(User.AccessLevel.OPERATIONS), "OPERATIONS should have OPERATIONS access");
+    }
 }
