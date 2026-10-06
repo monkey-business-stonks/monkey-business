@@ -1,0 +1,37 @@
+.accounts-panel-wrapper {
+  padding: 20px 20px 0px 20px;
+  height: 100%;
+}
+
+.label {
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sublabel {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  /* padding-top: var(--space-sm); */
+}
+
+.top-panel {
+  display: flex;
+  flex-direction: row;
+}
+
+.top-labels {
+  flex: 3;
+}
+
+.edit-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  background-color: var(--background-secondary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+}

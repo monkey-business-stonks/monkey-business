@@ -9,6 +9,7 @@ import { Component } from '@angular/core';
 })
 export class UserPanel {
   avatar: string = 'https://via.placeholder.com/150';
+  status: string = "ACTIVE"
 
   onAvatarUpload(event: any) {
     const file = event.target.files[0];
