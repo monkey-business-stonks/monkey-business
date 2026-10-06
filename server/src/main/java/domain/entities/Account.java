@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import jakarta.persistence.*;
+import domain.error.AccountException;
 
 @Entity
 @Table(name = "accounts")
@@ -61,11 +62,42 @@ public class Account {
 	public Account(UUID accountId, ZonedDateTime createdOn, AccountType accountType,
 				   BigDecimal balance, BigDecimal cashBalance,
 				   Set<Asset> heldAssets, Set<Order> orderHistory) {
+		// Validate required fields
+		if (accountId == null) {
+			throw AccountException.nullAccountId();
+		}
+		if (createdOn == null) {
+			throw new AccountException("Created on timestamp cannot be null", "ACCOUNT_NULL_CREATED_ON");
+		}
+		if (accountType == null) {
+			throw AccountException.nullAccountType();
+		}
+
+		// Validate balance
+		BigDecimal validatedBalance = balance == null ? BigDecimal.ZERO : balance;
+		if (validatedBalance.compareTo(BigDecimal.ZERO) < 0) {
+			throw AccountException.invalidBalance(validatedBalance.doubleValue());
+		}
+
+		// Validate cash balance
+		BigDecimal validatedCashBalance = cashBalance == null ? BigDecimal.ZERO : cashBalance;
+		if (validatedCashBalance.compareTo(BigDecimal.ZERO) < 0) {
+			throw AccountException.invalidCashBalance(validatedCashBalance.toPlainString());
+		}
+
+		// Cash balance cannot exceed total balance
+		if (validatedCashBalance.compareTo(validatedBalance) > 0) {
+			throw AccountException.cashExceedsBalance(
+				validatedCashBalance.doubleValue(),
+				validatedBalance.doubleValue()
+			);
+		}
+
 		this.accountId = accountId;
 		this.createdOn = createdOn;
 		this.accountType = accountType;
-		this.balance = balance == null ? BigDecimal.ZERO : balance;
-		this.cashBalance = cashBalance == null ? BigDecimal.ZERO : cashBalance;
+		this.balance = validatedBalance;
+		this.cashBalance = validatedCashBalance;
 		this.updatedAt = ZonedDateTime.now();
 		this.heldAssets = heldAssets == null ? new LinkedHashSet<>() : heldAssets;
 		this.orderHistory = orderHistory == null ? new LinkedHashSet<>() : orderHistory;
@@ -90,9 +122,14 @@ public class Account {
 	// Sets total balance (validates non-negative)
 	public void setBalance(double newBalance) {
 		if (newBalance < 0) {
-			throw new IllegalArgumentException("Balance cannot be negative");
+			throw AccountException.invalidBalance(newBalance);
 		}
-		this.balance = new BigDecimal(newBalance);
+		BigDecimal newBalanceBD = new BigDecimal(newBalance);
+		// Cash balance cannot exceed new total balance
+		if (cashBalance.compareTo(newBalanceBD) > 0) {
+			throw AccountException.cashExceedsBalance(cashBalance.doubleValue(), newBalance);
+		}
+		this.balance = newBalanceBD;
 		this.updatedAt = ZonedDateTime.now();
 	}
 
@@ -101,13 +138,20 @@ public class Account {
 	// Sets available cash (validates not null or negative)
 	public void setCashBalance(BigDecimal cashBalance) {
 		if (cashBalance == null) {
-       		throw new IllegalArgumentException("Cash balance cannot be null");
-    	}
-    	if (cashBalance.compareTo(BigDecimal.ZERO) < 0) {
-        	throw new IllegalArgumentException("Cash balance cannot be negative");
-    	}
-    	this.cashBalance = cashBalance;
-    	this.updatedAt = ZonedDateTime.now();
+			throw AccountException.invalidCashBalance("null");
+		}
+		if (cashBalance.compareTo(BigDecimal.ZERO) < 0) {
+			throw AccountException.invalidCashBalance(cashBalance.toPlainString());
+		}
+		// Cash balance cannot exceed total balance
+		if (cashBalance.compareTo(balance) > 0) {
+			throw AccountException.cashExceedsBalance(
+				cashBalance.doubleValue(),
+				balance.doubleValue()
+			);
+		}
+		this.cashBalance = cashBalance;
+		this.updatedAt = ZonedDateTime.now();
 	}
 
 	// Returns associated user

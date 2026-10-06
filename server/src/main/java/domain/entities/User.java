@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.time.ZonedDateTime;
 import java.time.LocalDate;
 import jakarta.persistence.*;
+import domain.error.UserException;
 
 @Entity
 @Table(name = "Users")
@@ -58,6 +59,23 @@ public class User {
     public User(UUID userId, String username, String email, String passwordHash, String name,
                 String phone, LocalDate dob, AccessLevel accessLevel, Set<Account> accounts, 
                 ZonedDateTime createdAt, ZonedDateTime updatedAt) {
+        // Validate required fields
+        if (userId == null) {
+            throw UserException.nullUserId();
+        }
+        if (username == null || username.isEmpty()) {
+            throw UserException.nullUsername();
+        }
+        if (email == null || email.isEmpty()) {
+            throw UserException.nullEmail();
+        }
+        if (passwordHash == null || passwordHash.isEmpty()) {
+            throw UserException.nullPassword();
+        }
+        if (accessLevel == null) {
+            throw UserException.nullAccessLevel();
+        }
+        
         this.userId = userId;
         this.username = username;
         this.email = email;
@@ -98,18 +116,44 @@ public class User {
     public ZonedDateTime updatedAt() { return this.updatedAt; }
 
     // Setters
-    public void setUsername(String username) { this.username = username; }
-    public void setEmail(String email) { this.email = email; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
+    public void setUsername(String username) { 
+        if (username == null || username.isEmpty()) {
+            throw UserException.nullUsername();
+        }
+        this.username = username;
+    }
+    public void setEmail(String email) { 
+        if (email == null || email.isEmpty()) {
+            throw UserException.nullEmail();
+        }
+        this.email = email;
+    }
+    public void setPasswordHash(String passwordHash) { 
+        if (passwordHash == null || passwordHash.isEmpty()) {
+            throw UserException.nullPassword();
+        }
+        this.passwordHash = passwordHash;
+    }
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }
     public void setDob(LocalDate dob) { this.dob = dob; }
-    public void setAccessLevel(AccessLevel level) { this.accessLevel = level; }
+    public void setAccessLevel(AccessLevel level) { 
+        if (level == null) {
+            throw UserException.nullAccessLevel();
+        }
+        this.accessLevel = level;
+    }
     public void setAccounts(Set<Account> accounts) { this.accounts = accounts; }
     public void setUpdatedAt(ZonedDateTime updatedAt) { this.updatedAt = updatedAt; }
 
     // Business logic methods
     public void changePassword(String newPassword) {
+        if (newPassword == null || newPassword.isEmpty()) {
+            throw UserException.nullPassword();
+        }
+        if (newPassword.length() < 8) {
+            throw UserException.invalidPasswordLength(newPassword.length());
+        }
         this.passwordHash = newPassword;
         this.updatedAt = ZonedDateTime.now();
     }

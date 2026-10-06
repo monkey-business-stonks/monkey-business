@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import jakarta.persistence.*;
+import domain.error.OrderException;
 
 @Entity
 @Table(name = "orders")
@@ -96,6 +97,35 @@ public class Order {
     public Order(UUID orderId, String orderType, String ticker, Double quantity, String action, 
                 ZonedDateTime submittedOn, BigDecimal submittedValue, 
                 OrderStatus status, Integer statusCode, ZonedDateTime createdAt) {
+        // Validate required fields
+        if (orderId == null) {
+            throw OrderException.nullOrderId();
+        }
+        if (ticker == null || ticker.isEmpty()) {
+            throw OrderException.nullTicker();
+        }
+        if (quantity == null || quantity <= 0) {
+            throw OrderException.invalidQuantity(quantity != null ? quantity : 0);
+        }
+        if (action == null) {
+            throw OrderException.nullAction();
+        }
+        if (!action.equals("BUY") && !action.equals("SELL")) {
+            throw OrderException.invalidAction(action);
+        }
+        if (orderType == null) {
+            throw OrderException.nullOrderType();
+        }
+        if (submittedOn == null) {
+            throw OrderException.nullSubmittedOn();
+        }
+        if (submittedValue != null && submittedValue.compareTo(BigDecimal.ZERO) < 0) {
+            throw OrderException.negativeSubmittedValue(submittedValue.doubleValue());
+        }
+        if (status == null) {
+            throw new OrderException("Order status cannot be null", "ORDER_NULL_STATUS");
+        }
+        
         this.orderId = orderId;
         this.orderType = orderType;
         this.ticker = ticker;
@@ -111,6 +141,13 @@ public class Order {
     }
 
     public void updateExecution(ZonedDateTime executedOn, BigDecimal executedValue, OrderStatus status, Integer statusCode) {
+        if (status == null) {
+            throw new OrderException("Order status cannot be null", "ORDER_NULL_STATUS");
+        }
+        if (executedValue != null && executedValue.compareTo(BigDecimal.ZERO) < 0) {
+            throw OrderException.negativeSubmittedValue(executedValue.doubleValue());
+        }
+        
         this.executedOn = executedOn;
         this.executedValue = executedValue;
         this.status = status;

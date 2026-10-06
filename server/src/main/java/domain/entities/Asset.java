@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.time.ZonedDateTime;
 import java.util.UUID;
 import jakarta.persistence.*;
+import domain.error.AssetException;
 
 @Entity
 @Table(name = "assets", uniqueConstraints = @UniqueConstraint(columnNames = {"accountid", "ticker"}))
@@ -48,14 +49,14 @@ public class Asset {
 
     // Full constructor
     public Asset(UUID assetId, String assetClass, String ticker, String name, Double quantity, BigDecimal averageCost) {
-        if (assetId == null) throw new IllegalArgumentException("assetId cannot be null");
-        if (assetClass == null) throw new IllegalArgumentException("assetClass cannot be null");
-        if (ticker == null) throw new IllegalArgumentException("ticker cannot be null");
-        if (name == null) throw new IllegalArgumentException("name cannot be null");
+        if (assetId == null) throw AssetException.nullAssetId();
+        if (assetClass == null) throw AssetException.nullAssetClass();
+        if (ticker == null) throw AssetException.nullTicker();
+        if (name == null) throw AssetException.nullName();
         if (quantity == null || quantity < 0) 
-            throw new IllegalArgumentException("quantity cannot be null or negative");
+            throw AssetException.invalidQuantity(quantity != null ? quantity : 0);
         if (averageCost == null || averageCost.compareTo(BigDecimal.ZERO) < 0) 
-            throw new IllegalArgumentException("averageCost cannot be null or negative");
+            throw AssetException.invalidAverageCost(averageCost != null ? averageCost.toPlainString() : "null");
         
         this.assetId = assetId;
         this.assetClass = assetClass;
@@ -84,10 +85,25 @@ public class Asset {
     public void setAssetClass(String assetClass) { this.assetClass = assetClass; }
     public void setTicker(String ticker) { this.ticker = ticker; this.updatedAt = ZonedDateTime.now(); }
     public void setName(String name) { this.name = name; }
-    public void setQuantity(Double quantity) { this.quantity = quantity; this.updatedAt = ZonedDateTime.now(); }
-    public void setAverageCost(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = ZonedDateTime.now(); }
+    public void setQuantity(Double quantity) { 
+        if (quantity == null || quantity < 0) 
+            throw AssetException.invalidQuantity(quantity != null ? quantity : 0);
+        this.quantity = quantity;
+        this.updatedAt = ZonedDateTime.now();
+    }
+    public void setAverageCost(BigDecimal averageCost) {
+        if (averageCost == null || averageCost.compareTo(BigDecimal.ZERO) < 0) 
+            throw AssetException.invalidAverageCost(averageCost != null ? averageCost.toPlainString() : "null");
+        this.averageCost = averageCost;
+        this.updatedAt = ZonedDateTime.now();
+    }
     public void setAccount(Account account) { this.account = account; }
-    public void setBoughtAverage(BigDecimal averageCost) { this.averageCost = averageCost; this.updatedAt = ZonedDateTime.now(); }
+    public void setBoughtAverage(BigDecimal averageCost) { 
+        if (averageCost == null || averageCost.compareTo(BigDecimal.ZERO) < 0) 
+            throw AssetException.invalidAverageCost(averageCost != null ? averageCost.toPlainString() : "null");
+        this.averageCost = averageCost;
+        this.updatedAt = ZonedDateTime.now();
+    }
 
     // Creates a new Asset with updated quantity
     public Asset withQuantity(Double quantity) {
