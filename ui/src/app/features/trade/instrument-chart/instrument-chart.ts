@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   imports: [],
@@ -6,4 +6,6 @@ import { Component } from '@angular/core';
   styleUrl: './instrument-chart.css',
   templateUrl: './instrument-chart.html',
 })
-export class InstrumentChart {}
+export class InstrumentChart {
+  @Input() selectedTicker: any;
+}
