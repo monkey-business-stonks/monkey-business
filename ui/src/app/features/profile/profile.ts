@@ -2,13 +2,13 @@ import { SharedModule } from '@/app/shared/shared.module';
 import { Component } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserPanel } from '@/app/features/profile/user-panel/user-panel';
-import { AccountsPanel } from '@/app/features/profile/accounts-panel/accounts-panel';
+import { EditPanel } from './edit-panel/edit-panel';
 
 // Profile component - displays and manages user profile information
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [SharedModule, UserPanel, AccountsPanel],
+  imports: [SharedModule, UserPanel, EditPanel],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })

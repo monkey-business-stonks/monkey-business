@@ -3,17 +3,26 @@
     <div class="avatar-container">
       <img [src]="avatar" alt="User Avatar" class="avatar-image" />
     </div>
-    <div *ngIf="isEditMode" class="avatar-upload">
-      <input 
-        type="file" 
-        id="avatar-input" 
-        (change)="onAvatarUpload($event)" 
-        accept="image/*"
-        class="file-input"
-      />
-      <label for="avatar-input" class="upload-label">
-        Change Avatar
-      </label>
-    </div>
+    <p class="name">Monkey Business Trader</p>
+    <p class="email">trader@monkeybusiness.com</p>
   </div>
+  <hr>
+  <table class="info-table">
+    <tr class="standard">
+      <td class="table-left">STATUS</td>
+      <td class="table-right">ACTIVE</td>
+    </tr>
+    <tr>
+      <td class="table-left">MEMBER SINCE</td>
+      <td class="table-right">JAN 2024</td>
+    </tr>
+    <tr>
+      <td class="table-left">REGISTRATION COUNTRY</td>
+      <td class="table-right">UNITED STATES</td>
+    </tr>
+    <tr>
+      <td class="table-left">FAVORITE INDEX</td>
+      <td class="table-right">NASDAQ 100</td>
+    </tr>
+  </table>
 </div>

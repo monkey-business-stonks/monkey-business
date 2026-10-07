@@ -1,6 +1,7 @@
 .profile-wrapper {
   display: flex;
   flex-direction: row;
+  padding: 20px;
 }
 
 .user-container {

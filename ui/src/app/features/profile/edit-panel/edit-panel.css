@@ -1,0 +1,93 @@
+.accounts-panel-wrapper {
+  padding-left: 20px;
+  height: 100%;
+}
+
+.label {
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sublabel {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--font-size-sm);
+  padding-bottom: 5px;
+}
+
+.top-panel {
+  display: flex;
+  flex-direction: row;
+}
+
+.top-labels {
+  flex: 3;
+}
+
+.edit-container {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: var(--space-lg);
+  background-color: var(--background-secondary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+hr {
+  width: 100%;
+  /* border-color: var(--background-tertiary); */
+}
+
+.buttons {
+  align-self: flex-end;
+  padding-top: 10px;
+}
+
+app-button {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+td {
+  padding: 5px;
+}
+
+/* Copied from base-input for the selectors, might have some
+unnessessary lines */
+.selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.selector-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selector {
+  width: 100%;
+  padding: var(--space-xmd) var(--space-md);
+  background-color: var(--background-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  outline: none;
+  transition: all var(--transition-duration);
+}
