@@ -27,7 +27,7 @@ public class OrderService {
     private OrderExecutor orderExecutor;
 
     @Autowired
-    private OrderExecutionEngine transactionManager;
+    private OrderExecutionEngine orderExecutionEngine;
 
     @Autowired
     private OrderRepository orderRepository;
@@ -41,8 +41,8 @@ public class OrderService {
      * 2. OrderValidator.isValidTrade() - Checks if trade is allowed
      * 3. If fails: Save rejected order, return with REJECTED status (422)
      * 4. If passes: OrderExecutor.processTrade() - Executes trade, sets FILLED status
-     * 5. TransactionManager.updateAccount() - Updates holdings and balance
-     * 6. TransactionManager.updateStatus() - Sets order to FILLED (201)
+     * 5. OrderExecutionEngine.updateAccount() - Updates holdings and balance
+     * 6. OrderExecutionEngine.updateStatus() - Sets order to FILLED (201)
      * 7. Persist account and order
      * 8. Return response with actual orderType
      */
@@ -104,10 +104,10 @@ public class OrderService {
         // - Deducts/adds cash
         // - Calls PricingEngine for each asset to calculate total balance
         // - Links order to account
-        transactionManager.updateAccount(account, order);
+        orderExecutionEngine.updateAccount(account, order);
 
         // Step 7: PERSIST: Order is already persisted by updateAccount, now update status
-        transactionManager.updateStatus(order);
+        orderExecutionEngine.updateStatus(order);
         order.setAccount(account);
         orderRepository.save(order);
         
