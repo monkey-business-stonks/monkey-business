@@ -1,3 +1,5 @@
+package domain.entities;
+
 import domain.entities.User;
 import domain.entities.Account;
 import org.junit.jupiter.api.Test;

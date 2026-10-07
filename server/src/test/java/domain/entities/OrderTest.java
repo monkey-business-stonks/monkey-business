@@ -1,3 +1,5 @@
+package domain.entities;
+
 import domain.entities.Order;
 import domain.entities.Account;
 import domain.entities.User;

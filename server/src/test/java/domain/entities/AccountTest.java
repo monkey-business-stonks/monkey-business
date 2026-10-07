@@ -1,3 +1,5 @@
+package domain.entities;
+
 import domain.entities.Account;
 import domain.entities.Asset;
 import domain.entities.Order;
