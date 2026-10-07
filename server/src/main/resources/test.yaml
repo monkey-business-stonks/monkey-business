@@ -446,6 +446,9 @@ components:
         openedDate: { type: string, format: date-time }
         balance: { type: number, example: 25000.00 }
         cashBalance: { type: number, example: 10000.00 }
+        heldAssets:
+          type: array
+          items: { $ref: '#/components/schemas/AssetResponse' }
 
     PlaceOrderRequest:
       type: object

@@ -6,35 +6,39 @@ import java.util.UUID;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "assets", uniqueConstraints = @UniqueConstraint(columnNames = {"account_id", "ticker"}))
+@Table(name = "assets", uniqueConstraints = @UniqueConstraint(columnNames = {"accountid", "ticker"}))
 public class Asset {
     @Id
+    @Column(name = "assetid")
     private UUID assetId;
     
-    @Column(nullable = false)
-    private String assetClass;
+@Column(name = "accountid", insertable = false, updatable = false)
+    private UUID accountId;
     
-    @Column(nullable = false)
-    private String ticker;
-    
-    @Column(nullable = false)
-    private String name;
-    
-    @Column(nullable = false)
-    private Double quantity;
-    
-    @Column(nullable = false)
+@Column(name = "assetclass")
+	private String assetClass;
+	
+	@Column(name = "ticker")
+	private String ticker;
+	
+	@Column(name = "name")
+	private String name;
+	
+	@Column(name = "quantity")
+	private Double quantity;
+	
+	@Column(name = "averagecost")
     private BigDecimal averageCost;
     
-    @Column(nullable = false)
-    private ZonedDateTime createdAt;
-    
-    @Column(nullable = false)
+@Column(name = "createdat")
+	private ZonedDateTime createdAt;
+	
+	@Column(name = "updatedat")
     private ZonedDateTime updatedAt;
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+	@JoinColumn(name = "accountid")
+	private Account account;
 
     // No-arg constructor for JPA
     public Asset() {

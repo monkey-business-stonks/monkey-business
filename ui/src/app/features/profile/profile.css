@@ -1,3 +1,17 @@
+.profile-wrapper {
+  display: flex;
+  flex-direction: row;
+  padding: 20px;
+}
+
+.user-container {
+  flex: 1;
+}
+
+.info-container {
+  flex: 2;
+}
+
 .profile-page-wrapper {
   display: flex;
   flex-direction: column;

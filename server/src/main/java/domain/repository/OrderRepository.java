@@ -14,10 +14,10 @@ import java.util.UUID;
 @Repository
 public interface OrderRepository extends JpaRepository<Order, UUID> {
     // Get all orders for account
-    List<Order> findByAccountAccountID(UUID accountID);
+    List<Order> findByAccountAccountId(UUID accountId);
     
     // Get orders by status
-    List<Order> findByAccountAccountIDAndStatus(UUID accountID, Order.OrderStatus status);
+    List<Order> findByAccountAccountIdAndStatus(UUID accountId, Order.OrderStatus status);
     
     // Get specific order
     Optional<Order> findById(UUID orderId);

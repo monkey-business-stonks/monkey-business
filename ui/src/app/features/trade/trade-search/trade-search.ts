@@ -1,7 +1,7 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
-import { AssetRowData } from '@/app/core/models'
+import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-search-row.model';
 
 @Component({
   imports: [SharedModule, TradeSearchRow],
@@ -9,38 +9,114 @@ import { AssetRowData } from '@/app/core/models'
   styleUrl: './trade-search.css',
   templateUrl: './trade-search.html',
 })
-
 export class TradeSearch implements OnInit {
-  @Input() selectedTickerFromParent: AssetRowData | null = null;
-  @Output() onTickerHighlighted = new EventEmitter<AssetRowData>();
-  @Output() onTickerSelected = new EventEmitter<AssetRowData>();
-  
-  assetList: AssetRowData[] = [
-    { symbol: 'AAPL', name: 'Apple Inc.', price: 187.42, changePercent: 0.92, changeAmount: 1.72, exchange: 'NASDAQ', type: 'EQUITY', bid: 187.40, ask: 187.45, spread: 0.05, selected: false },
-    { symbol: 'MSFT', name: 'Microsoft Corp.', price: 415.60, changePercent: -0.45, changeAmount: -1.87, exchange: 'NASDAQ', type: 'EQUITY', bid: 415.55, ask: 415.65, spread: 0.10, selected: false },
-    { symbol: 'NVDA', name: 'NVIDIA Corp.', price: 875.12, changePercent: 4.82, changeAmount: 40.23, exchange: 'NASDAQ', type: 'EQUITY', bid: 875.00, ask: 875.25, spread: 0.25, selected: false }
+  @Input() selectedTickerFromParent: TradeSearchRowData | null = null;
+
+  @Output() onTickerHighlighted =
+    new EventEmitter<TradeSearchRowData>();
+
+  @Output() onTickerSelected =
+    new EventEmitter<TradeSearchRowData>();
+
+  selectedAsset: TradeSearchRowData | null = null;
+
+  assetList: TradeSearchRowData[] = [
+    {
+      asset: {
+        assetId: 'asset-001',
+        assetClass: 'equity',
+        ticker: 'AAPL',
+        name: 'Apple Inc.',
+        quantity: 10,
+        averageCost: 175.25
+      },
+      quote: {
+        symbol: 'AAPL',
+        price: 187.42,
+        bid: 187.40,
+        ask: 187.45,
+        spreadBps: 2.67,
+        currency: 'USD',
+        change: 1.72,
+        changePercent: 0.92,
+        previousClose: 185.70,
+        asOf: '2026-10-05T15:30:00Z',
+        marketState: 'open'
+      },
+      selected: false
+    },
+    {
+      asset: {
+        assetId: 'asset-002',
+        assetClass: 'equity',
+        ticker: 'MSFT',
+        name: 'Microsoft Corp.',
+        quantity: 5,
+        averageCost: 390.50
+      },
+      quote: {
+        symbol: 'MSFT',
+        price: 415.60,
+        bid: 415.55,
+        ask: 415.65,
+        spreadBps: 2.40,
+        currency: 'USD',
+        change: -1.87,
+        changePercent: -0.45,
+        previousClose: 417.47,
+        asOf: '2026-10-05T15:30:00Z',
+        marketState: 'open'
+      },
+      selected: false
+    },
+    {
+      asset: {
+        assetId: 'asset-003',
+        assetClass: 'equity',
+        ticker: 'NVDA',
+        name: 'NVIDIA Corp.',
+        quantity: 8,
+        averageCost: 720.00
+      },
+      quote: {
+        symbol: 'NVDA',
+        price: 875.12,
+        bid: 875.00,
+        ask: 875.25,
+        spreadBps: 2.86,
+        currency: 'USD',
+        change: 40.23,
+        changePercent: 4.82,
+        previousClose: 834.89,
+        asOf: '2026-10-05T15:30:00Z',
+        marketState: 'open'
+      },
+      selected: false
+    }
   ];
 
-  selectedAsset: AssetRowData | null = null;
-
-  ngOnInit() {
-    // If returning from trade input, restore the selected asset
+  ngOnInit(): void {
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
+
       this.assetList = this.assetList.map(asset => ({
         ...asset,
-        selected: asset.symbol === this.selectedTickerFromParent?.symbol
+        selected:
+          asset.asset.ticker ===
+          this.selectedTickerFromParent?.asset.ticker
       }));
     }
   }
 
-  handleSelect(selectedAsset: AssetRowData): void {
+  handleSelect(selectedAsset: TradeSearchRowData): void {
     this.assetList = this.assetList.map(asset => ({
       ...asset,
-      selected: asset.symbol === selectedAsset.symbol
+      selected:
+        asset.asset.ticker === selectedAsset.asset.ticker
     }));
 
     this.selectedAsset = selectedAsset;
+
     this.onTickerHighlighted.emit(selectedAsset);
   }
 }
