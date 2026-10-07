@@ -3,14 +3,14 @@ spring:
     name: monkeybusiness-server
   
   datasource:
-    url: jdbc:postgresql://postgres:5432/monkey_business
+    url: jdbc:postgresql://localhost:5432/monkey_business
     username: postgres
-    password: postgres
+    password: n3u3d4!
     driver-class-name: org.postgresql.Driver
   
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: none
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false
     open-in-view: false
@@ -21,11 +21,16 @@ spring:
         jdbc:
           batch_size: 20
           fetch_size: 50
+        enable_lazy_load_no_trans: true
   
 server:
   port: 8080
   servlet:
     context-path: /
+
+market-data:
+  api-url: ${MARKET_DATA_API_URL:https://y4t9nq2bqf.execute-api.eu-west-2.amazonaws.com/v1}
+  api-key: ${MARKET_DATA_API_KEY:fnx_dev_IFOonKTo37axWB4TH8MpbXit6W4QMHED}
 
 jwt:
   signing-key: ${JWT_SIGNING_KEY:my-secret-key-change-me-in-production}

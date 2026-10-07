@@ -8,42 +8,43 @@ import java.time.LocalDate;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "users")
+@Table(name = "Users")
 public class User {
     public enum AccessLevel { USER, ANALYST, OPERATIONS }
 
     @Id
+    @Column(name = "userid")
     private UUID userId;
     
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "username")
     private String username;
     
-    @Column(unique = true, nullable = false)
+    @Column(unique = true, nullable = false, name = "email")
     private String email;
     
-    @Column(nullable = false)
+    @Column(unique = true, nullable = false, name = "passwordhash")
     private String passwordHash;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "name")
     private String name;
     
-    @Column(nullable = true)
+    @Column(nullable = true, name = "phone")
     private String phone;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "dob")
     private LocalDate dob;
     
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
+    @Column(nullable = false, name = "accesslevel")
     private AccessLevel accessLevel;
     
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL)
     private Set<Account> accounts;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "createdat")
     private ZonedDateTime createdAt;
     
-    @Column(nullable = false)
+    @Column(nullable = false, name = "updatedat")
     private ZonedDateTime updatedAt;
 
     // No-arg constructor for JPA

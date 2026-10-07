@@ -16,23 +16,49 @@ public class Order {
     }
 
     @Id
+    @Column(name = "orderid")
     private UUID orderId;
+    
+    @Column(name = "accountid", insertable = false, updatable = false)
+    private UUID accountId;
+    
+    @Column(name = "ordertype")
     private String orderType;
+    
+    @Column(name = "ticker")
     private String ticker;
+    
+    @Column(name = "quantity")
     private Double quantity;
+    
+    @Column(name = "action")
     private String action;
+    
+    @Column(name = "submittedon")
     private ZonedDateTime submittedOn;
+    
+    @Column(name = "executedon")
     private ZonedDateTime executedOn;
+    
+    @Column(name = "submittedvalue")
     private BigDecimal submittedValue;
+    
+    @Column(name = "executedvalue")
     private BigDecimal executedValue;
+    
     @Enumerated(EnumType.STRING)
+    @Column(name = "status")
     private OrderStatus status;
+    
+    @Column(name = "statuscode")
     private Integer statusCode;
+    
+    @Column(name = "createdat")
     private ZonedDateTime createdAt;
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+	@JoinColumn(name = "accountid")
+	private Account account;
 
     // No-arg constructor for JPA
     protected Order() {

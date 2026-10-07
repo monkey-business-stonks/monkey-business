@@ -26,14 +26,14 @@ public class AssetService {
         ticker = ticker.toUpperCase();
         
         // Query database to see if asset exists for this account + ticker
-        Optional<Asset> existing = assetRepository.findByAccountAccountIDAndTicker(account.getAccID(), ticker);
+        Optional<Asset> existing = assetRepository.findByAccountAccountIdAndTicker(account.getAccID(), ticker);
 
         if (existing.isPresent()) {
             // Asset exists - update it with new average cost basis
             Asset asset = existing.get();
             
             // Calculate new average cost: (old_qty * old_avg + new_qty * new_price) / new_qty
-            BigDecimal oldTotal = asset.boughtAverage().multiply(BigDecimal.valueOf(asset.quantity()));
+            BigDecimal oldTotal = asset.averageCost().multiply(BigDecimal.valueOf(asset.quantity()));
             BigDecimal newTotal = oldTotal.add(unitPrice.multiply(BigDecimal.valueOf(quantity)));
             Double newQuantity = asset.quantity() + quantity;
             BigDecimal newAverage = newTotal.divide(BigDecimal.valueOf(newQuantity), 2, java.math.RoundingMode.HALF_UP);
@@ -44,7 +44,14 @@ public class AssetService {
             return assetRepository.save(asset);
         } else {
             // Asset doesn't exist - create new one
-            Asset newAsset = new Asset(ticker, quantity, unitPrice);
+            Asset newAsset = new Asset(
+                java.util.UUID.randomUUID(),
+                "EQUITY", // assetClass - TODO: determine from ticker/market data
+                ticker,
+                ticker, // name - use ticker as placeholder
+                quantity,
+                unitPrice
+            );
             newAsset.setAccount(account);
             return assetRepository.save(newAsset);
         }
@@ -57,7 +64,7 @@ public class AssetService {
     public void updateAssetOnSell(Account account, String ticker, Double quantity) {
         ticker = ticker.toUpperCase();
         
-        Optional<Asset> existing = assetRepository.findByAccountAccountIDAndTicker(account.getAccID(), ticker);
+        Optional<Asset> existing = assetRepository.findByAccountAccountIdAndTicker(account.getAccID(), ticker);
 
         if (existing.isPresent()) {
             Asset asset = existing.get();
@@ -79,7 +86,7 @@ public class AssetService {
      * Get asset for account and ticker
      */
     public Asset getAsset(Account account, String ticker) {
-        return assetRepository.findByAccountAccountIDAndTicker(account.getAccID(), ticker.toUpperCase())
+        return assetRepository.findByAccountAccountIdAndTicker(account.getAccID(), ticker.toUpperCase())
             .orElse(null);
     }
 }

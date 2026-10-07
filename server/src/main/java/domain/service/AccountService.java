@@ -5,6 +5,7 @@ import domain.dto.AccountResponse;
 import domain.dto.CreateAccountRequest;
 import domain.entities.User;
 import domain.repository.AccountRepository;
+import domain.repository.AssetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,9 @@ public class AccountService {
     @Autowired
     private AccountRepository accountRepository;
 
+    @Autowired
+    private AssetRepository assetRepository;
+
     /**
      * Create account for user
      */
@@ -36,9 +40,9 @@ public class AccountService {
             throw new IllegalArgumentException("Account type is required");
         }
 
-        // Set default balances
-        BigDecimal balance = BigDecimal.ZERO;
-        BigDecimal cashBalance = balance;  // Default: all balance is cash
+        // Set default balances - accounts start with 10,000 cash
+        BigDecimal cashBalance = new BigDecimal("10000");
+        BigDecimal balance = cashBalance;  // Initially, all balance is cash (no holdings yet)
 
         // Create account
         UUID accountId = UUID.randomUUID();
@@ -107,12 +111,26 @@ public class AccountService {
      * Convert Account to AccountResponse
      */
     private AccountResponse toAccountResponse(Account account, UUID userId) {
+        // Load assets for this account
+        List<domain.dto.AssetResponse> heldAssets = new ArrayList<>();
+        for (domain.entities.Asset asset : assetRepository.findAssetsByAccountIdOrderByValue(account.getAccID())) {
+            heldAssets.add(new domain.dto.AssetResponse()
+                .assetId(asset.getAssetId())
+                .assetClass(domain.dto.AssetClass.valueOf(asset.getAssetClass()))
+                .ticker(asset.ticker())
+                .name(asset.getName())
+                .quantity(new BigDecimal(asset.quantity().toString()))
+                .boughtAverage(asset.averageCost())
+            );
+        }
+
         return new AccountResponse()
             .accountId(account.getAccID())
             .userId(userId)
             .accountType(domain.dto.AccountType.valueOf(account.getAccType().toString()))
-            .openedDate(account.getOpenDate().toOffsetDateTime())
+            .openedDate(account.getCreatedOn().toOffsetDateTime())
             .balance(new BigDecimal(account.getBalance()))
-            .cashBalance(account.getCashBalance());
+            .cashBalance(account.getCashBalance())
+            .heldAssets(heldAssets);
     }
 }
