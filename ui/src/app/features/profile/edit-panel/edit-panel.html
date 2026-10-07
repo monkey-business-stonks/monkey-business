@@ -11,26 +11,48 @@
         <td>
           <app-base-input label="Display Username"></app-base-input>
         </td>
-        <td>
-          <app-base-input label="Secure Password"></app-base-input>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <app-base-input label="Base Value Currency"></app-base-input>
-        </td>
-        <td>
+         <td>
           <app-base-input label="Primary Email Address"></app-base-input>
         </td>
       </tr>
       <tr>
         <td>
-          <app-base-input label="Mobile Phone Number"></app-base-input>
+          <app-base-input label="Secure Password"></app-base-input>
         </td>
         <td>
-          <app-base-input label="Favorite Index"></app-base-input>
+          <app-base-input label="Mobile Phone Number"></app-base-input>
+        </td>
+      </tr>
+      <tr>
+        <td>
+          <!-- TO BE REPLACED -->
+          <div class="selector-container">
+            <label class="selector-label">Base Valuation Currency</label>
+            <select name="cars" class="selector">
+              <option value="USD">USD ($) - United States Dollar</option>
+              <option value="EUR">EUR (€) - Euro</option>
+              <option value="GBP">GBP (£) - Great British Pound</option>
+              <option value="JPY">JPY (¥) - Japanese Yen</option>
+            </select>
+          </div>
+        </td>
+        <td>
+          <div class="selector-container">
+            <label class="selector-label">Favorite Index</label>
+            <select name="cars" class="selector">
+              <option value="S&P">S&P 500</option>
+              <option value="DJIA">Dow Jones Industrial Average</option>
+              <option value="N100">Nasdaq 100</option>
+              <option value="R2000">Russel 2000</option>
+            </select>
+          </div>
         </td>
       </tr>
     </table>
+    <hr>
+    <div class="buttons">
+      <app-button id="discard">Discard Changes</app-button>
+      <app-button id="save">Save Configuration</app-button>
+    </div>
   </div>
 </div>

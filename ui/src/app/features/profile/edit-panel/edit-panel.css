@@ -1,5 +1,5 @@
 .accounts-panel-wrapper {
-  padding: 20px 20px 0px 20px;
+  padding-left: 20px;
   height: 100%;
 }
 
@@ -13,7 +13,7 @@
   color: var(--text-secondary);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
-  /* padding-top: var(--space-sm); */
+  padding-bottom: 5px;
 }
 
 .top-panel {
@@ -34,4 +34,56 @@
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
+}
+
+hr {
+  width: 100%;
+  /* border-color: var(--background-tertiary); */
+}
+
+.buttons {
+  align-self: flex-end;
+  padding-top: 10px;
+}
+
+app-button {
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+/* Copied from base-input for the selectors, might have some
+unnessessary lines */
+.selector-container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  width: 100%;
+}
+
+.selector-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.selector-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.selector {
+  width: 100%;
+  padding: var(--space-xmd) var(--space-md);
+  background-color: var(--background-tertiary);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  outline: none;
+  transition: all var(--transition-duration);
 }
