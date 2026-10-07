@@ -48,7 +48,7 @@ public class UserController {
      */
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthenticateRequest request) {
-        logger.info("User authentication attempt for email: {}", request.getEmail());
+        logger.info("User authentication attempt for username: {}", request.getUsername());
         AuthResponse authResponse = userService.authenticate(request);
         return ResponseEntity.ok(authResponse);
     }
