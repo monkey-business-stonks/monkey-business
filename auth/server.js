@@ -20,13 +20,15 @@ app.get('/health', (req, res) => {
 });
 
 /**
- * POST /authenticate - Issue a JWT token
+ * POST /login - Issue a JWT token
  */
-app.post('/authenticate', (req, res) => {
+app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  if (!username) {
-    return res.status(400).json({ error: 'Username is required' });
+  // TODO: get user object via username from db 
+
+  if (!username || !password) {
+    return res.status(400).json({ error: 'Username and password are required' });
   }
 
   const payload = {

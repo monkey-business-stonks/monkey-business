@@ -74,7 +74,10 @@ export class JwtInterceptor implements HttpInterceptor {
    * @returns True if this is an auth request, false otherwise
    */
   private isAuthRequest(request: HttpRequest<any>): boolean {
-    return request.url.includes('/authenticate') || 
+    return request.url.includes('/register') || 
+           request.url.includes('/login') ||
+           request.url.includes('/refresh') ||
+           request.url.includes('/logout') ||
            request.url.includes('/health');
   }
 
