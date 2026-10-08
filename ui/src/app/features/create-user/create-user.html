@@ -21,6 +21,10 @@
       <p class="subtitle">Enterprise Trading Platform</p>
     </div>
 
+    <div *ngIf="error()" class="error-message">
+      {{ error() }}
+    </div>
+
     <!-- Account Creation Form -->
     <!-- Handles user registration with two-way data binding -->
     <form (ngSubmit)="onCreateAccount()">
@@ -41,6 +45,16 @@
         placeholder="Business"
         [(value)]="lastName"
         name="lastName"
+        [required]="true"
+      />
+
+      <app-base-input
+        variant="form"
+        label="USERNAME"
+        type="text"
+        placeholder="monkeybusiness"
+        [(value)]="username"
+        name="username"
         [required]="true"
       />
 
