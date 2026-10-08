@@ -34,3 +34,49 @@
   gap: var(--space-lg);
   align-items: center;
 }
+
+.profile-container {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.profile-icon-button {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: width 0.3s ease;
+  width: 60px;
+  overflow: hidden;
+  
+  &:hover {
+    width: 180px;
+  }
+}
+
+.profile-icon {
+  min-width: 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.profile-text {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.profile-icon-button:hover .profile-text {
+  opacity: 1;
+}
