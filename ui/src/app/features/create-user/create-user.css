@@ -85,6 +85,17 @@
   margin: 0;
 }
 
+.error-message {
+  background-color: rgba(255, 59, 48, 0.1);
+  color: #ff3b30;
+  border: 1px solid rgba(255, 59, 48, 0.3);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--space-md);
+  text-align: center;
+}
+
 /* ===== FORM STYLES ===== */
 /* Form container with vertical flexbox layout and spacing between groups */
 form {
