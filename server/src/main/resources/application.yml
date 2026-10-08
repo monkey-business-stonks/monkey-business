@@ -33,4 +33,4 @@ market-data:
   api-key: ${MARKET_DATA_API_KEY:fnx_dev_IFOonKTo37axWB4TH8MpbXit6W4QMHED}
 
 jwt:
-  signing-key: ${JWT_SIGNING_KEY:my-secret-key-change-me-in-production}
+  signing-key: ${JWT_SIGNING_KEY:your-secret-key-change-me}

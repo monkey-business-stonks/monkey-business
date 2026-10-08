@@ -41,6 +41,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '409': { $ref: '#/components/responses/Conflict' }
 
+  # TODO: remove redundancy between authenticate backend and auth endpoints 
   /users/authenticate:
     post:
       tags: [Users]
