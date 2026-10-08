@@ -214,12 +214,11 @@ Each event contains:
 - `quantity: BigDecimal`
 - `action: OrderAction` (BUY/SELL)
 - `orderType: OrderType` (EQUITY/CRYPTO/FOREX)
-- Metadata (correlation-id, timestamp, source)
+- Metadata (timestamp, source)
 
 #### 2.2 OrderEventPublisher
 New service that:
 - Accepts order events
-- Adds correlation ID for tracing
 - Sets Kafka headers (user-id, timestamp, source)
 - Publishes to appropriate topic
 - Handles errors (retry 3x, then DLQ)
@@ -260,6 +259,9 @@ public ResponseEntity<?> placeOrder(...) {
 #### 2.4 OrderValidator Consumer
 New consumer that:
 - Listens to `orders.submitted` topic
+- **Idempotency check**: Query Order table for `kafka_message_id`
+  - If found: skip (already processed this message)
+  - If not found: continue
 - Validates order business rules:
   - Account exists
   - Account type ↔ asset type compatibility
@@ -267,12 +269,16 @@ New consumer that:
   - Quantity > 0
   - Action is BUY/SELL
 - Uses Caffeine cache for prices (Phase 2)
+- Save `kafka_message_id` to Order table
 - Publishes to `orders.validated` topic
 - Handles errors (retry, then DLQ)
 
 #### 2.5 OrderExecutor Consumer
 New consumer that:
 - Listens to `orders.validated` topic
+- **Idempotency check**: Verify `kafka_message_id` in Order table
+  - If already processed: skip (don't execute twice)
+  - If not processed: continue
 - Checks if validation passed
 - Fetches FRESH price from API (not cache)
 - Calculates execution value
@@ -289,37 +295,12 @@ New consumer that:
   - Updates holdings (AssetService)
   - Recalculates portfolio balance
 - Saves to database
-- Publishes AuditEvent
 
 #### 2.7 Database Schema Changes
 Add to Order table:
 ```sql
 ALTER TABLE orders 
-ADD COLUMN kafka_message_id VARCHAR(200),
-ADD COLUMN correlation_id UUID,
-ADD UNIQUE INDEX idx_kafka_message_id ON orders(kafka_message_id);
-```
-
-Create new tables:
-```sql
-CREATE TABLE order_events (
-    event_id UUID PRIMARY KEY,
-    order_id UUID NOT NULL,
-    event_type VARCHAR(50),
-    event_payload JSONB,
-    kafka_message_id VARCHAR(200) UNIQUE,
-    created_at TIMESTAMP DEFAULT NOW()
-);
-
-CREATE TABLE audit_log (
-    audit_id UUID PRIMARY KEY,
-    user_id UUID,
-    action VARCHAR(50),
-    resource_id UUID,
-    details JSONB,
-    status VARCHAR(20),
-    created_at TIMESTAMP DEFAULT NOW()
-);
+ADD COLUMN kafka_message_id VARCHAR(200) UNIQUE;
 ```
 
 #### 2.8 Error Handling & DLQ
@@ -468,9 +449,11 @@ BigDecimal price = cachedPrice.orElseGet(() ->
 - Order history completely reconstructable
 
 ### 5. Idempotency
-- Use `kafka_message_id` to detect duplicates
-- Idempotent operations (safe to retry)
-- Prevents double-charging customers
+- Use `kafka_message_id` (unique per message) to detect duplicates
+- Before processing: check if `kafka_message_id` already exists in database
+- If exists: skip (already processed)
+- If not exists: process and save `kafka_message_id`
+- Prevents double-charging customers if message is redelivered
 
 ---
 
@@ -512,7 +495,6 @@ BigDecimal price = cachedPrice.orElseGet(() ->
 - [ ] Create OrderValidatorConsumer
 - [ ] Create OrderExecutorConsumer
 - [ ] Create OrderPersistenceConsumer
-- [ ] Create AuditLoggerConsumer
 - [ ] Create DLQConsumer
 - [ ] Test each consumer independently
 
@@ -523,10 +505,7 @@ BigDecimal price = cachedPrice.orElseGet(() ->
 - [ ] Verify 90% API reduction
 
 ### Database
-- [ ] Add kafka_message_id to Order table
-- [ ] Add correlation_id to Order table
-- [ ] Create order_events table
-- [ ] Create audit_log table
+- [ ] Add kafka_message_id to Order table (for idempotency)
 - [ ] Verify schema changes
 
 ### Testing
@@ -647,7 +626,13 @@ A: Minimal changes. Orders return HTTP 202 instead of 201. Frontend handles PEND
 A: Yes. Kafka is optional, can disable consumers and fall back to sync mode.
 
 **Q: Will this affect existing order history?**  
-A: No. Database schema unchanged (just new columns added). Old orders unaffected.
+A: No. Database schema only adds 2 tracking columns. Old orders unaffected.
+
+**Q: What about audit trails and event logging?**  
+A: Not needed for Phase 1. Can be derived from the 4 main tables (Users, Accounts, Orders, Assets) if needed later.
+
+**Q: Why do I need kafka_message_id if I already have order_id?**  
+A: `order_id` identifies the order, but `kafka_message_id` prevents duplicate processing. If a Kafka message is redelivered (e.g., consumer crashes before acknowledging), the `kafka_message_id` check prevents processing the same message twice, which could double-charge a customer. It's your safety mechanism against distributed system failures.
 
 **Q: When can we go to production?**  
 A: After Phase 2 (week 2) testing. Start with 10% of traffic, gradually increase.
