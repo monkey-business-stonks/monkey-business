@@ -1,39 +1,52 @@
 import { Injectable, UnauthorizedException, ConflictException } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
+import * as bcrypt from 'bcryptjs';
 
 interface StoredUser {
-  password: string;
+  passwordHash: string;
   refreshToken: string | null;
 }
 
 @Injectable()
 export class AuthService {
+  private readonly SALT_ROUNDS = 10;
+
   // TODO: replace in-memory map with db access 
   private readonly users = new Map<string, StoredUser>([
-    ["dave", { password: "mission123", refreshToken: null }],
+    [
+      "dave",
+      {
+        passwordHash: "$2b$10$Ep39f4XNfQp/8C6H/Qd7le0h9Gv7x1S5V8C9v4G/8d7le0h9Gv7x1", // Example hash for "mission123"
+        refreshToken: null,
+      },
+    ],
   ]);
 
   constructor(private readonly jwtService: JwtService) {}
 
-  register(username: string, password: string): { username: string; registered: true } {
+  async register(username: string, password: string): Promise<{ username: string; registered: true }> {
     if (this.users.has(username)) {
       throw new ConflictException(`${username} is already registered`);
     }
-    this.users.set(username, { password, refreshToken: null });
+
+    const passwordHash = await bcrypt.hash(password, this.SALT_ROUNDS);
+    this.users.set(username, { passwordHash, refreshToken: null });
+
     return { username, registered: true };
   }
 
-  login(username: string, password: string): { accessToken: string; refreshToken: string } {
+  async login(username: string, password: string): Promise<{ accessToken: string; refreshToken: string }> {
     const user = this.users.get(username);
-    if (!user || user.password !== password) {
+    
+    // Check user existence and compare plain text password against stored hash
+    if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new UnauthorizedException("invalid username or password");
     }
 
-    // Generate real JWTs with payloads
     const payload = { sub: username, username };
-    
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
+
+    const accessToken = this.jwtService.sign(payload, { expiresIn: "15m" });
+    const refreshToken = this.jwtService.sign(payload, { expiresIn: "7d" });
 
     user.refreshToken = refreshToken;
     return { accessToken, refreshToken };
@@ -41,7 +54,6 @@ export class AuthService {
 
   refresh(refreshToken: string): { accessToken: string } {
     try {
-      // Cryptographically verify the incoming refresh token
       const payload = this.jwtService.verify(refreshToken);
       const user = this.users.get(payload.username);
 
@@ -49,9 +61,8 @@ export class AuthService {
         throw new UnauthorizedException("invalid or expired refresh token");
       }
 
-      // Issue a fresh access token
       const newPayload = { sub: payload.username, username: payload.username };
-      const accessToken = this.jwtService.sign(newPayload, { expiresIn: '15m' });
+      const accessToken = this.jwtService.sign(newPayload, { expiresIn: "15m" });
 
       return { accessToken };
     } catch {
