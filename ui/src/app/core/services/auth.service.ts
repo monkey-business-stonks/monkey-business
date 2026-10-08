@@ -37,6 +37,8 @@ export class AuthService {
       password
     }).pipe(
       tap((response: any) => {
+        console.log('[AuthService] Raw login response from backend:', response);
+
         if (response && response.accessToken) {
           this.storeTokens(response.accessToken, response.refreshToken, response.userId);
         }
@@ -113,6 +115,8 @@ export class AuthService {
       localStorage.setItem(this.refreshTokenKey, refreshToken);
     }
     if (userId) {
+      console.log('[AuthService] Storing userId to localStorage:', userId);
+      
       localStorage.setItem(this.userIdKey, userId);
     }
     this.tokenSubject.next(accessToken);
