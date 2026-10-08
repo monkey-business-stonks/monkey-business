@@ -1,25 +1,8 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
+import { HttpClient } from '@angular/common/http';
 
-/**
- * Create Account Component
- * 
- * Handles user account registration and creation for the Monkey Business trading platform.
- * This is a standalone component that manages user registration data including personal
- * information, contact details, password, and legal agreement acceptance.
- * 
- * Features:
- * - User input validation and state management using Angular signals
- * - Form submission handling for account creation
- * - Terms of Service and Privacy Policy agreement tracking
- * - Two-way data binding for form inputs
- * - Form validation with computed signals
- * - Navigation back to login page
- * 
- * @standalone true
- * @selector app-create-user
- */
 @Component({
   selector: 'app-create-user',
   templateUrl: './create-user.html',
@@ -28,41 +11,19 @@ import { Router } from '@angular/router';
   imports: [SharedModule],
 })
 export class CreateUser {
-  /**
-   * First name input signal
-   * @type {Signal<string>}
-   */
+  username = signal(''); 
   firstName = signal('');
-
-  /**
-   * Last name input signal
-   * @type {Signal<string>}
-   */
   lastName = signal('');
-
-  /**
-   * Email address input signal
-   * @type {Signal<string>}
-   */
   email = signal('');
-
-  /**
-   * Password input signal
-   * @type {Signal<string>}
-   */
   password = signal('');
-
-  /**
-   * Terms of Service agreement checkbox signal
-   * @type {Signal<boolean>}
-   */
   agreedToTerms = signal(false);
+  
+  loading = signal(false);
+  error = signal<string | null>(null);
 
-  /**
-   * Evaluates to true if all required fields are filled and terms are accepted
-   */
   isFormValid = computed(() => {
     return (
+      this.username().trim().length > 0 &&
       this.firstName().trim().length > 0 &&
       this.lastName().trim().length > 0 &&
       this.email().trim().length > 0 &&
@@ -71,49 +32,43 @@ export class CreateUser {
     );
   });
 
-  /**
-   * Constructor - Injects Router service for navigation
-   * @param {Router} router - Angular Router service
-   */
-  constructor(private router: Router) {}
+  constructor(private router: Router, private http: HttpClient) {}
 
-  /**
-   * Handles the account creation form submission
-   * 
-   * This method is called when the user clicks the "Agree & Create Account" button.
-   * Currently logs registration data to console for debugging.
-   * Should be connected to a user service/backend API for production use.
-   * 
-   * TODO: Implement actual account creation logic with backend API
-   * TODO: Handle loading states and error responses
-   * TODO: Validate email format and password strength
-   * TODO: Navigate to dashboard or confirmation page on successful registration
-   * 
-   * @returns {void}
-   */
   onCreateAccount() {
     if (!this.isFormValid()) {
       return;
     }
 
-    console.log('Create account with:', {
-      firstName: this.firstName(),
-      lastName: this.lastName(),
-      email: this.email(),
+    this.loading.set(true);
+    this.error.set(null);
+
+    const payload = {
+      username: this.username().trim(),
+      name: `${this.firstName().trim()} ${this.lastName().trim()}`,
+      email: this.email().trim(),
       password: this.password(),
-      agreedToTerms: this.agreedToTerms(),
+      dob: '1998-01-01'
+    };
+
+    const backendUrl = `${window.location.protocol}//${window.location.hostname}:8080/users`;
+
+    this.http.post(backendUrl, payload).subscribe({
+      next: () => {
+        this.loading.set(false);
+        // Alert user or navigate to login with query param
+        this.router.navigate(['/login'], { queryParams: { registered: 'true' } });
+      },
+      error: (err) => {
+        this.loading.set(false);
+        if (err.status === 409 || err.status === 400) {
+          this.error.set(err.error?.message || 'Username or email already exists.');
+        } else {
+          this.error.set('Registration failed. Please check your details and try again.');
+        }
+      }
     });
-    // TODO: Implement account creation logic
   }
 
-  /**
-   * Handles the sign in link click
-   * 
-   * This method is called when the user clicks the "Sign In" link.
-   * Navigates back to the login page.
-   * 
-   * @returns {void}
-   */
   onSignIn() {
     this.router.navigate(['/login']);
   }

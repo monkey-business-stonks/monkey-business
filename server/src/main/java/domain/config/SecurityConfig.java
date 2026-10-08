@@ -67,6 +67,8 @@ public class SecurityConfig {
                 .securityMatcher(
                         "/users",
                         "/users/authenticate",
+                        "/users/refresh",
+                        "/users/logout",
                         "/users/health",
                         "/users/*/accounts",
                         "/users/*/accounts/*",

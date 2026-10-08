@@ -6,86 +6,77 @@ import {
   HttpEvent,
   HttpErrorResponse
 } from '@angular/common/http';
-import { Observable, throwError } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable, throwError, BehaviorSubject } from 'rxjs';
+import { catchError, switchMap, filter, take } from 'rxjs/operators';
 import { AuthService } from '@/app/core/services/auth.service';
 
-/**
- * JWT Interceptor
- * 
- * Automatically attaches JWT token to all HTTP requests:
- * - Extracts token from AuthService
- * - Adds "Authorization: Bearer <token>" header
- * - Handles 401 Unauthorized responses
- * 
- * PHASE 1 (current): Signature validation only
- * FUTURE: Will handle token refresh on 401, redirect to login
- */
 @Injectable()
 export class JwtInterceptor implements HttpInterceptor {
+  private isRefreshing = false;
+  private refreshTokenSubject = new BehaviorSubject<string | null>(null);
+
   constructor(private authService: AuthService) {}
 
-  /**
-   * Intercept HTTP requests to add JWT token
-   * 
-   * @param request The outgoing HTTP request
-   * @param next The next interceptor in the chain
-   * @returns Observable of the HTTP event
-   */
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
-    // Don't add token to auth service requests
-    if (this.isAuthRequest(request)) {
-      return next.handle(request).pipe(
-        catchError((error: HttpErrorResponse) => {
-          return this.handleAuthError(error);
-        })
-      );
+    // Exclude public endpoints from receiving Authorization header
+    if (this.isPublicRequest(request)) {
+      return next.handle(request);
     }
 
-    // Get token from AuthService
     const token = this.authService.getToken();
     if (token) {
-      // Clone request and add Authorization header
-      request = request.clone({
-        setHeaders: {
-          Authorization: `Bearer ${token}`
-        }
-      });
+      request = this.addTokenHeader(request, token);
     }
 
     return next.handle(request).pipe(
       catchError((error: HttpErrorResponse) => {
         if (error.status === 401) {
-          // Token invalid or expired
-          this.authService.logout();
-          console.error('JWT Token invalid or expired');
-          // FUTURE: Redirect to login page
+          return this.handle401Error(request, next);
         }
         return throwError(() => error);
       })
     );
   }
 
-  /**
-   * Check if this is a request to the auth service
-   * Don't add token to auth service requests
-   * 
-   * @param request The HTTP request
-   * @returns True if this is an auth request, false otherwise
-   */
-  private isAuthRequest(request: HttpRequest<any>): boolean {
-    return request.url.includes('/authenticate') || 
-           request.url.includes('/health');
+  private addTokenHeader(request: HttpRequest<any>, token: string): HttpRequest<any> {
+    return request.clone({
+      setHeaders: {
+        Authorization: `Bearer ${token}`
+      }
+    });
   }
 
-  /**
-   * Handle authentication errors
-   * 
-   * @param error The HTTP error response
-   * @returns Observable error
-   */
-  private handleAuthError(error: HttpErrorResponse): Observable<never> {
-    console.error('Auth error:', error);
-    return throwError(() => error);
+  private handle401Error(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    if (!this.isRefreshing) {
+      this.isRefreshing = true;
+      this.refreshTokenSubject.next(null);
+
+      return this.authService.refreshToken().pipe(
+        switchMap((response: any) => {
+          this.isRefreshing = false;
+          this.refreshTokenSubject.next(response.accessToken);
+          return next.handle(this.addTokenHeader(request, response.accessToken));
+        }),
+        catchError((err) => {
+          this.isRefreshing = false;
+          this.authService.logout().subscribe();
+          return throwError(() => err);
+        })
+      );
+    } else {
+      // Wait until refreshTokenSubject releases new token
+      return this.refreshTokenSubject.pipe(
+        filter(token => token !== null),
+        take(1),
+        switchMap(token => next.handle(this.addTokenHeader(request, token!)))
+      );
+    }
+  }
+
+  private isPublicRequest(request: HttpRequest<any>): boolean {
+    return request.url.endsWith('/users/authenticate') ||
+           request.url.endsWith('/users/refresh') ||
+           (request.url.endsWith('/users') && request.method === 'POST') ||
+           request.url.includes('/health');
   }
 }
