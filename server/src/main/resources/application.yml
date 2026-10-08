@@ -23,6 +23,90 @@ spring:
           fetch_size: 50
         enable_lazy_load_no_trans: true
   
+  # Kafka Configuration
+  cloud:
+    stream:
+      kafka:
+        binder:
+          brokers: ${KAFKA_BROKERS:localhost:9092}
+          zk-nodes: ${KAFKA_ZK_NODES:localhost:2181}
+          replication-factor: 3
+          min-partition-count: 10
+          auto-create-topics.enabled: false
+          configuration:
+            linger.ms: 10
+            batch.size: 32768
+        bindings:
+          publishOrderSubmitted-out-0:
+            producer:
+              partition-key-expression: headers['account-id']
+              use-native-encoding: true
+          orderValidatorConsumer-in-0:
+            consumer:
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 8000
+              use-native-decoding: true
+          orderExecutorConsumer-in-0:
+            consumer:
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 8000
+              use-native-decoding: true
+          orderPersistenceConsumer-in-0:
+            consumer:
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 8000
+              use-native-decoding: true
+      bindings:
+        # Order Processing Pipeline
+        publishOrderSubmitted-out-0:
+          destination: orders.submitted
+          contentType: application/json
+        orderValidatorConsumer-in-0:
+          destination: orders.submitted
+          group: order-validator-group
+          consumer:
+            max-concurrency: 5
+        publishOrderValidated-out-0:
+          destination: orders.validated
+          contentType: application/json
+        orderExecutorConsumer-in-0:
+          destination: orders.validated
+          group: order-executor-group
+          consumer:
+            max-concurrency: 3
+        publishOrderFilled-out-0:
+          destination: orders.filled
+          contentType: application/json
+        publishOrderRejected-out-0:
+          destination: orders.rejected
+          contentType: application/json
+        orderPersistenceConsumer-in-0:
+          destination: orders.filled
+          group: order-persistence-group
+          consumer:
+            max-concurrency: 10
+        orderRejectionConsumer-in-0:
+          destination: orders.rejected
+          group: order-persistence-group
+          consumer:
+            max-concurrency: 10
+  
+  # Caffeine Cache Configuration
+  cache:
+    type: caffeine
+    caffeine:
+      spec: expireAfterWrite=5m,maximumSize=10000
+  
+  task:
+    scheduling:
+      pool:
+        size: 5
+      thread-name-prefix: monkey-scheduler-
+      enable-async: true
+  
 server:
   port: 8080
   servlet:
