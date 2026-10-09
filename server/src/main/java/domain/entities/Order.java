@@ -56,7 +56,7 @@ public class Order {
     @Column(name = "createdat")
     private ZonedDateTime createdAt;
 
-    @Column(name = "kafka_message_id", unique = true)
+    @Column(name = "kafkamessageid", unique = true)
     private String kafkaMessageId;
 
     @ManyToOne
