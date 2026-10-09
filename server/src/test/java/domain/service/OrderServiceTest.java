@@ -44,6 +44,9 @@ class OrderServiceTest {
     @Mock
     private OrderRepository orderRepository;
 
+    @Mock
+    private OrderEventPublisher orderEventPublisher;
+
     @InjectMocks
     private OrderService orderService;
 
@@ -107,10 +110,10 @@ class OrderServiceTest {
 
     @Test
     void testPlaceOrder_ValidationFails() {
+        // Phase 3a: Async behavior - validation happens in consumer, not in OrderService
         // Arrange
         when(orderManager.createOrder(testAccountId, "EQUITY", "AAPL", 100.0, "BUY")).thenReturn(testOrder);
         when(accountService.getAccountDirect(testAccountId)).thenReturn(testAccount);
-        when(orderValidator.isValidTrade(testOrder, testAccount)).thenReturn(false);
         when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         // Act
@@ -118,33 +121,19 @@ class OrderServiceTest {
 
         // Assert
         assertNotNull(response);
-        assertEquals(Order.OrderStatus.REJECTED, testOrder.getStatus());
-        assertEquals(422, testOrder.getStatusCode());
-        verify(orderRepository, times(1)).save(any(Order.class));
+        // Order should be SUBMITTED, not REJECTED (validation happens async in consumer)
+        assertEquals(Order.OrderStatus.SUBMITTED, testOrder.getStatus());
+        // Event should be published for async processing
+        verify(orderEventPublisher, times(1)).publishOrderSubmitted(any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void testPlaceOrder_ExecutionFails() {
+        // Phase 3a: Async behavior - execution happens in consumer, not in OrderService
         // Arrange
-        Order rejectedOrder = new Order(
-            testOrder.getOrderId(),
-            "EQUITY",
-            "AAPL",
-            100.0,
-            "BUY",
-            ZonedDateTime.now(),
-            BigDecimal.valueOf(15000),
-            Order.OrderStatus.REJECTED,
-            503,
-            ZonedDateTime.now()
-        );
-        rejectedOrder.setAccount(testAccount);
-
         when(orderManager.createOrder(testAccountId, "EQUITY", "AAPL", 100.0, "BUY")).thenReturn(testOrder);
         when(accountService.getAccountDirect(testAccountId)).thenReturn(testAccount);
-        when(orderValidator.isValidTrade(testOrder, testAccount)).thenReturn(true);
-        when(orderExecutor.processTrade(testOrder, testAccount)).thenReturn(rejectedOrder);
-        when(orderRepository.save(any(Order.class))).thenReturn(rejectedOrder);
+        when(orderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         // Act
         OrderResponse response = orderService.placeOrder(testAccountId, validRequest);
@@ -205,6 +194,7 @@ class OrderServiceTest {
 
     @Test
     void testPlaceOrder_SellOrder() {
+        // Phase 3a: Async behavior - all orders return SUBMITTED status
         // Arrange
         Order sellOrder = new Order(
             UUID.randomUUID(),
@@ -214,8 +204,8 @@ class OrderServiceTest {
             "SELL",
             ZonedDateTime.now(),
             BigDecimal.valueOf(7500),
-            Order.OrderStatus.FILLED,
-            201,
+            Order.OrderStatus.SUBMITTED,
+            202,
             ZonedDateTime.now()
         );
         sellOrder.setAccount(testAccount);
@@ -228,9 +218,6 @@ class OrderServiceTest {
 
         when(orderManager.createOrder(testAccountId, "EQUITY", "AAPL", 50.0, "SELL")).thenReturn(sellOrder);
         when(accountService.getAccountDirect(testAccountId)).thenReturn(testAccount);
-        when(orderValidator.isValidTrade(sellOrder, testAccount)).thenReturn(true);
-        when(orderExecutor.processTrade(sellOrder, testAccount)).thenReturn(sellOrder);
-        doNothing().when(transactionManager).updateAccount(any(), any());
         when(orderRepository.save(any(Order.class))).thenReturn(sellOrder);
 
         // Act
@@ -238,11 +225,13 @@ class OrderServiceTest {
 
         // Assert
         assertNotNull(response);
-        verify(transactionManager, times(1)).updateAccount(testAccount, sellOrder);
+        assertEquals(Order.OrderStatus.SUBMITTED, sellOrder.getStatus());
+        verify(orderEventPublisher, times(1)).publishOrderSubmitted(any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void testPlaceOrder_CryptoOrder() {
+        // Phase 3a: Async behavior - all orders return SUBMITTED status
         // Arrange
         Order cryptoOrder = new Order(
             UUID.randomUUID(),
@@ -252,8 +241,8 @@ class OrderServiceTest {
             "BUY",
             ZonedDateTime.now(),
             BigDecimal.valueOf(45000),
-            Order.OrderStatus.FILLED,
-            201,
+            Order.OrderStatus.SUBMITTED,
+            202,
             ZonedDateTime.now()
         );
         cryptoOrder.setAccount(testAccount);
@@ -266,9 +255,6 @@ class OrderServiceTest {
 
         when(orderManager.createOrder(testAccountId, "CRYPTO", "BTC", 1.0, "BUY")).thenReturn(cryptoOrder);
         when(accountService.getAccountDirect(testAccountId)).thenReturn(testAccount);
-        when(orderValidator.isValidTrade(cryptoOrder, testAccount)).thenReturn(true);
-        when(orderExecutor.processTrade(cryptoOrder, testAccount)).thenReturn(cryptoOrder);
-        doNothing().when(transactionManager).updateAccount(any(), any());
         when(orderRepository.save(any(Order.class))).thenReturn(cryptoOrder);
 
         // Act
@@ -276,10 +262,13 @@ class OrderServiceTest {
 
         // Assert
         assertNotNull(response);
+        assertEquals(Order.OrderStatus.SUBMITTED, cryptoOrder.getStatus());
+        verify(orderEventPublisher, times(1)).publishOrderSubmitted(any(), any(), any(), any(), any(), any());
     }
 
     @Test
     void testPlaceOrder_LargeOrder() {
+        // Phase 3a: Async behavior - all orders return SUBMITTED status
         // Arrange
         Order largeOrder = new Order(
             UUID.randomUUID(),
@@ -289,8 +278,8 @@ class OrderServiceTest {
             "BUY",
             ZonedDateTime.now(),
             BigDecimal.valueOf(250000),
-            Order.OrderStatus.FILLED,
-            201,
+            Order.OrderStatus.SUBMITTED,
+            202,
             ZonedDateTime.now()
         );
         largeOrder.setAccount(testAccount);
@@ -313,9 +302,6 @@ class OrderServiceTest {
 
         when(orderManager.createOrder(testAccountId, "EQUITY", "TSLA", 1000.0, "BUY")).thenReturn(largeOrder);
         when(accountService.getAccountDirect(testAccountId)).thenReturn(largeAccount);
-        when(orderValidator.isValidTrade(largeOrder, largeAccount)).thenReturn(true);
-        when(orderExecutor.processTrade(largeOrder, largeAccount)).thenReturn(largeOrder);
-        doNothing().when(transactionManager).updateAccount(any(), any());
         when(orderRepository.save(any(Order.class))).thenReturn(largeOrder);
 
         // Act
@@ -323,6 +309,7 @@ class OrderServiceTest {
 
         // Assert
         assertNotNull(response);
-        verify(transactionManager, times(1)).updateAccount(largeAccount, largeOrder);
+        assertEquals(Order.OrderStatus.SUBMITTED, largeOrder.getStatus());
+        verify(orderEventPublisher, times(1)).publishOrderSubmitted(any(), any(), any(), any(), any(), any());
     }
 }
