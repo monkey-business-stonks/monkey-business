@@ -73,10 +73,11 @@ export class JwtInterceptor implements HttpInterceptor {
     }
   }
 
-  private isPublicRequest(request: HttpRequest<any>): boolean {
-    return request.url.endsWith('/users/authenticate') ||
-           request.url.endsWith('/users/refresh') ||
-           (request.url.endsWith('/users') && request.method === 'POST') ||
-           request.url.includes('/health');
-  }
+    private isPublicRequest(request: HttpRequest<any>): boolean {
+        return request.url.endsWith('/users/authenticate') ||
+               request.url.endsWith('/users/refresh') ||
+               (request.url.endsWith('/users') && request.method === 'POST') ||
+               request.url.includes('/market/price') ||
+               request.url.includes('/health');
+    }
 }

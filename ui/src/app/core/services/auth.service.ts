@@ -71,10 +71,27 @@ export class AuthService {
   }
 
   /**
-   * Logout user locally and inform backend to revoke refresh token
+   * Logout user locally and inform backend to revoke tokens
    */
   logout(): Observable<any> {
     const userId = localStorage.getItem(this.userIdKey);
+    const accessToken = this.getStoredAccessToken();
+    
+    // First, try to revoke the token on the auth service
+    if (accessToken && userId) {
+      this.http.post(`${this.getBackendUrl()}/auth/revoke`, {
+        token: accessToken,
+        username: userId
+      }).subscribe({
+        next: () => {
+          console.log('[AuthService] Token revoked on auth service');
+        },
+        error: (err) => {
+          console.warn('[AuthService] Failed to revoke token:', err);
+        }
+      });
+    }
+
     const logoutUrl = userId 
       ? `${this.getBackendUrl()}/users/logout?userId=${userId}`
       : `${this.getBackendUrl()}/users/logout`;
@@ -82,7 +99,7 @@ export class AuthService {
     return this.http.post(logoutUrl, {}).pipe(
       tap({
         next: () => this.clearTokens(),
-        error: () => this.clearTokens() // Clear locally even if server request fails
+        error: () => this.clearTokens() 
       })
     );
   }

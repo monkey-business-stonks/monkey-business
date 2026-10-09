@@ -2,6 +2,7 @@ package domain.controller;
 
 import domain.dto.AccountResponse;
 import domain.service.AccountService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,15 +21,11 @@ public class AccountDetailController {
     @Autowired
     private AccountService accountService;
 
-    /**
-     * Get account by ID
-     */
     @GetMapping("/{accountId}")
+    @PreAuthorize("(#userId == authentication.name and @securityService.isAccountOwner(authentication, T(java.util.UUID).fromString(#accountId))) or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<AccountResponse> getAccount(
             @PathVariable String userId,
             @PathVariable String accountId) {
-        // TODO: Use userId_uuid to verify account ownership once auth is integrated
-        // UUID userId_uuid = UUID.fromString(userId);
         UUID id = UUID.fromString(accountId);
         logger.debug("Retrieving account: {} for user: {}", accountId, userId);
         AccountResponse account = accountService.getAccount(id);
