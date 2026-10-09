@@ -56,3 +56,12 @@
     Review Order
   </app-button>
 </div>
+
+<!-- Order Confirmation Modal -->
+@if (showConfirmation) {
+  <app-confirmation 
+    [orderData]="orderData"
+    (onConfirm)="onConfirmTrade($event)"
+    (onCancel)="onCancelTrade()"
+  ></app-confirmation>
+}
