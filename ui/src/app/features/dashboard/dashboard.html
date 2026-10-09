@@ -1,5 +1,51 @@
 <div class="dashboard-container">
-  <account-select />
-  <account-overview />
-  <account-details />
+  <!-- Dynamic Account Selection Buttons -->
+  <div class="account-select-container">
+    <app-button 
+      variant="primary"
+      [class.active]="selectedAccountFilter() === 'ALL'"
+      (click)="selectAccountFilter('ALL')">
+      ALL
+    </app-button>
+
+    @for (acc of accounts(); track acc.accountId) {
+      <app-button 
+        variant="primary"
+        [class.active]="selectedAccountFilter() === acc.accountId"
+        (click)="selectAccountFilter(acc.accountId)">
+        {{ acc.accountType }}
+      </app-button>
+    }
+  </div>
+
+  <!-- Dynamic Account Overview -->
+  <div class="account-overview-container">
+    <p class="label">TOTAL BALANCE</p>
+    <p class="total-balance">
+      ${{ totalBalance() | number:'1.2-2' }}
+    </p>
+  </div>
+
+  <!-- Loading & Error States -->
+  @if (loading()) {
+    <p class="status-msg">Loading account data...</p>
+  }
+
+  @if (error()) {
+    <p class="error-msg">{{ error() }}</p>
+  }
+
+  <!-- Dynamic Table -->
+  <app-table [columns]="columns" [data]="tableHoldings()">
+    <ng-template #cellTemplate let-row let-column="column">
+      <ng-container *ngIf="column.key === 'ticker'; else standardCell">
+        <div class="ticker">{{ row.ticker }}</div>
+        <div class="asset-name">{{ row.assetName }}</div>
+      </ng-container>
+
+      <ng-template #standardCell>
+        {{ row[column.key] }}
+      </ng-template>
+    </ng-template>
+  </app-table>
 </div>

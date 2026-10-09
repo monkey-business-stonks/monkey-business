@@ -41,6 +41,7 @@ paths:
         '400': { $ref: '#/components/responses/BadRequest' }
         '409': { $ref: '#/components/responses/Conflict' }
 
+  # TODO: remove redundancy between authenticate backend and auth endpoints 
   /users/authenticate:
     post:
       tags: [Users]
@@ -68,6 +69,29 @@ paths:
       operationId: logoutUser
       responses:
         '204': { description: Logged out }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+
+  /users/refresh:
+    post:
+      tags: [Users]
+      summary: Refresh access token
+      operationId: refreshToken
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/RefreshTokenRequest' }
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken: { type: string }
+        '400': { $ref: '#/components/responses/BadRequest' }
         '401': { $ref: '#/components/responses/Unauthorized' }
 
   /users/{userId}:
@@ -425,6 +449,14 @@ components:
         userId: { type: string, format: uuid }
         isAuthenticated: { type: boolean }
         accessLevel: { $ref: '#/components/schemas/AccessLevel' }
+        accessToken: { type: string, nullable: true }
+        refreshToken: { type: string, nullable: true }
+
+    RefreshTokenRequest:
+      type: object
+      required: [refreshToken]
+      properties:
+        refreshToken: { type: string }
 
     CreateAccountRequest:
       type: object
@@ -501,7 +533,6 @@ components:
         name: { type: string, example: Apple Inc. }
         quantity: { type: number, example: 25 }
         boughtAverage: { type: number, description: Stored as averageCost in the database., example: 187.50 }
-
 
     ErrorResponse:
       type: object

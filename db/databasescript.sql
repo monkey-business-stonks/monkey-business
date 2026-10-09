@@ -17,6 +17,8 @@ CREATE TABLE Users (
 
     dob DATE NOT NULL,
 
+    refreshToken VARCHAR(512),
+
     accessLevel VARCHAR(20) NOT NULL
         CHECK (accessLevel IN ('USER', 'ANALYST', 'OPERATIONS')),
 
