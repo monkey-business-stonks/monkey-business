@@ -4,12 +4,18 @@
       <p class="monkey">MONKEY</p>
       <p class="business">BUSINESS</p>
     </div>
+    
     <div class="navbuttons">
-      <app-button variant="nav" routerLink="/dashboard">Dashboard</app-button>
-      <app-button variant="nav" routerLink="/trade">Trade</app-button>
-      <app-button variant="nav" routerLink="/history">History</app-button>
+      @if ((role$ | async) === 'ANALYST' || (role$ | async) === 'OPERATIONS') {
+        <span class="internal-workspace-text">Internal Workspace</span>
+      } @else {
+        <app-button variant="nav" routerLink="/dashboard">Dashboard</app-button>
+        <app-button variant="nav" routerLink="/trade">Trade</app-button>
+        <app-button variant="nav" routerLink="/history">History</app-button>
+      }
     </div>
   </div>
+
   <div class="profile-container">
     <button class="profile-icon-button" routerLink="/profile">
       <img class="profile-icon">

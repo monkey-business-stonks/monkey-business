@@ -35,6 +35,10 @@
   align-items: center;
 }
 
+.internal-workspace-text {
+    color: var(--text-secondary);
+}
+
 .profile-container {
   display: flex;
   align-items: center;

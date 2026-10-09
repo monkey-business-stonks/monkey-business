@@ -1,6 +1,7 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { AuthService } from '@/app/core/services/auth.service';
 
 @Component({
   selector: 'app-navigation-bar',
@@ -8,4 +9,7 @@ import { RouterLink } from '@angular/router';
   styleUrl: './navbar.css',
   imports: [SharedModule, RouterLink],
 })
-export class NavigationBar {}
+export class NavigationBar {
+  protected authService = inject(AuthService);
+  protected role$ = this.authService.role$;
+}
