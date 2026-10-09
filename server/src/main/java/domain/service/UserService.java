@@ -25,9 +25,6 @@ public class UserService {
     private final RestTemplate restTemplate = new RestTemplate();
     private final String authServiceUrl = "http://monkey_business_auth:3000/auth";
 
-    /**
-     * Create a new user (Registration) - hashes password with BCrypt
-     */
     public UserResponse createUser(CreateUserRequest request) {
         if (request.getUsername() == null || request.getUsername().isEmpty()) {
             throw new IllegalArgumentException("Username is required");
@@ -68,9 +65,6 @@ public class UserService {
         return toUserResponse(user);
     }
 
-    /**
-     * Authenticate user (Login) - verifies BCrypt hash, calls Auth Service, stores refresh token
-     */
     public AuthResponse authenticate(AuthenticateRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
             .orElseThrow(() -> new IllegalArgumentException("Invalid username or password"));
@@ -83,7 +77,8 @@ public class UserService {
             throw new IllegalArgumentException("Invalid username or password");
         }
 
-        Map<String, String> tokens = requestTokensFromAuthService(user.getUsername());
+        // Pass full user object to include userId and role
+        Map<String, String> tokens = requestTokensFromAuthService(user);
         String accessToken = tokens.get("accessToken");
         String refreshToken = tokens.get("refreshToken");
 
@@ -101,9 +96,6 @@ public class UserService {
         return authResponse;
     }
 
-    /**
-     * Refresh Access Token via NestJS Auth Service
-     */
     public Map<String, String> refreshToken(String refreshToken) {
         User user = userRepository.findByRefreshToken(refreshToken)
             .orElseThrow(() -> new IllegalArgumentException("Invalid or expired refresh token"));
@@ -115,45 +107,65 @@ public class UserService {
         authPayload.put("refreshToken", refreshToken);
 
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(authPayload, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(authServiceUrl + "/refresh", entity, Map.class);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(authServiceUrl + "/refresh", entity, Map.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            String newAccessToken = (String) response.getBody().get("accessToken");
-            Map<String, String> result = new HashMap<>();
-            result.put("accessToken", newAccessToken);
-            return result;
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                String newAccessToken = (String) response.getBody().get("accessToken");
+                Map<String, String> result = new HashMap<>();
+                result.put("accessToken", newAccessToken);
+                return result;
+            }
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Invalid or expired refresh token", e);
         }
 
         throw new IllegalArgumentException("Invalid or expired refresh token");
     }
 
-    /**
-     * Logout - removes stored refresh token
-     */
     public void logout(UUID userId) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+        try {
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
 
+            Map<String, String> revokePayload = new HashMap<>();
+            revokePayload.put("username", user.getUsername());
+
+            HttpEntity<Map<String, String>> entity = new HttpEntity<>(revokePayload, headers);
+            restTemplate.postForEntity(authServiceUrl + "/revoke-all", entity, Map.class);
+        } catch (Exception e) {
+            // TODO: log exception but continue with logout cleanup
+        }
         user.setRefreshToken(null);
         user.setUpdatedAt(ZonedDateTime.now());
         userRepository.save(user);
     }
 
-    private Map<String, String> requestTokensFromAuthService(String username) {
+    private Map<String, String> requestTokensFromAuthService(User user) {
         HttpHeaders headers = new HttpHeaders();
         headers.setContentType(MediaType.APPLICATION_JSON);
 
         Map<String, String> authPayload = new HashMap<>();
-        authPayload.put("username", username);
+        authPayload.put("userId", user.getUserId().toString());
+        authPayload.put("username", user.getUsername());
+        authPayload.put("role", user.getAccessLevel().name()); 
 
         HttpEntity<Map<String, String>> entity = new HttpEntity<>(authPayload, headers);
-        ResponseEntity<Map> response = restTemplate.postForEntity(authServiceUrl + "/login", entity, Map.class);
+        
+        try {
+            ResponseEntity<Map> response = restTemplate.postForEntity(authServiceUrl + "/login", entity, Map.class);
 
-        if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
-            Map<String, String> tokens = new HashMap<>();
-            tokens.put("accessToken", (String) response.getBody().get("accessToken"));
-            tokens.put("refreshToken", (String) response.getBody().get("refreshToken"));
-            return tokens;
+            if (response.getStatusCode().is2xxSuccessful() && response.getBody() != null) {
+                Map<String, String> tokens = new HashMap<>();
+                tokens.put("accessToken", (String) response.getBody().get("accessToken"));
+                tokens.put("refreshToken", (String) response.getBody().get("refreshToken"));
+                return tokens;
+            }
+        } catch (Exception e) {
+            throw new IllegalStateException("Auth Service error: " + e.getMessage(), e);
         }
 
         throw new IllegalStateException("Failed to retrieve tokens from Auth Service");

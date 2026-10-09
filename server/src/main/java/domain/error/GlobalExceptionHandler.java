@@ -1,7 +1,6 @@
 package domain.error;
 
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -170,6 +169,28 @@ public class GlobalExceptionHandler {
         
         logger.warn("Validation error: {}", errors);
         return new ErrorResponse(400, "Bad Request", errors);
+    }
+
+    /**
+     * Handle Spring Security AccessDeniedException (e.g. failed @PreAuthorize checks)
+     * Returns 403 Forbidden
+     */
+    @ExceptionHandler(org.springframework.security.access.AccessDeniedException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse handleSpringAccessDeniedException(org.springframework.security.access.AccessDeniedException ex, WebRequest request) {
+        logger.warn("Spring Security access denied: {}", ex.getMessage());
+        return new ErrorResponse(403, "Forbidden", "Access denied: You do not have permission to access or modify this resource.");
+    }
+
+    /**
+     * Handle Spring Security AuthenticationException (e.g. bad or missing JWT)
+     * Returns 401 Unauthorized
+     */
+    @ExceptionHandler(org.springframework.security.core.AuthenticationException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse handleSpringAuthenticationException(org.springframework.security.core.AuthenticationException ex, WebRequest request) {
+        logger.warn("Spring Security authentication failed: {}", ex.getMessage());
+        return new ErrorResponse(401, "Unauthorized", "Authentication failed: " + ex.getMessage());
     }
 
     /**
