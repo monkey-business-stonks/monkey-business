@@ -56,6 +56,9 @@ public class Order {
     @Column(name = "createdat")
     private ZonedDateTime createdAt;
 
+    @Column(name = "kafka_message_id", unique = true)
+    private String kafkaMessageId;
+
     @ManyToOne
 	@JoinColumn(name = "accountid")
 	private Account account;
@@ -92,6 +95,10 @@ public class Order {
     public void setAccount(Account account) { this.account = account; }
     public UUID getOrderID() { return this.orderId; }
     public ZonedDateTime getCreatedOn() { return this.createdAt; }
+
+    // Kafka idempotency tracking
+    public String getKafkaMessageId() { return this.kafkaMessageId; }
+    public void setKafkaMessageId(String kafkaMessageId) { this.kafkaMessageId = kafkaMessageId; }
 
     public Order(UUID orderId, String orderType, String ticker, Double quantity, String action, 
                 ZonedDateTime submittedOn, BigDecimal submittedValue, 

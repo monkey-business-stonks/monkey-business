@@ -32,88 +32,76 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
+    @Autowired
+    private OrderEventPublisher orderEventPublisher;
+
     /**
-     * Place an order - PRIMARY ENTRY POINT
-     * Orchestrates: Create → Validate → Execute → Transaction
+     * Place an order - ASYNC EVENT-DRIVEN APPROACH (Phase 3a)
      * 
-     * Flow:
+     * NEW Flow (Asynchronous):
      * 1. OrderManager.createOrder() - Creates order with SUBMITTED status
-     * 2. OrderValidator.isValidTrade() - Checks if trade is allowed
-     * 3. If fails: Save rejected order, return with REJECTED status (422)
-     * 4. If passes: OrderExecutor.processTrade() - Executes trade, sets FILLED status
-     * 5. OrderExecutionEngine.updateAccount() - Updates holdings and balance
-     * 6. OrderExecutionEngine.updateStatus() - Sets order to FILLED (201)
-     * 7. Persist account and order
-     * 8. Return response with actual orderType
+     * 2. Save order to database
+     * 3. Publish OrderSubmittedEvent to Kafka
+     * 4. Return 202 ACCEPTED immediately (don't wait for validation/execution)
+     * 5. Consumers process async:
+     *    - OrderValidatorConsumer validates
+     *    - OrderExecutorConsumer executes
+     *    - OrderPersistenceConsumer updates final status
+     * 
+     * Benefits:
+     * - API returns immediately (low latency)
+     * - Validation/execution happens in parallel
+     * - Better resource utilization
+     * - Handles high throughput
+     * 
+     * Trade-off:
+     * - Client gets 202 (not final status)
+     * - Must poll /orders/{orderId} to get final status
+     * - Need to handle distributed failures (DLQ)
      */
     @Transactional
     public OrderResponse placeOrder(UUID accountId, PlaceOrderRequest request) {
         // Step 1: Validate input
         validateOrderRequest(request);
 
-        // Step 2: ORCHESTRATOR CALL: Create order with real user/account
-        // OrderManager extracts user from JWT context, validates ownership, sets status=SUBMITTED
+        // Step 2: Create order with SUBMITTED status
         Order order = orderManager.createOrder(
             accountId,
-            request.getOrderType().toString(),      // Convert enum to String: EQUITY, CRYPTO, or FOREX
+            request.getOrderType().toString(),      // EQUITY, CRYPTO, FOREX
             request.getTicker(),
             request.getQuantity().doubleValue(),
-            request.getAction().toString()          // Convert enum to String: BUY or SELL
+            request.getAction().toString()          // BUY or SELL
         );
 
-        // Step 3: Get account (already verified by OrderManager, but get fresh copy)
+        // Step 3: Persist order to database
         Account account = accountService.getAccountDirect(accountId);
         if (account == null) {
             throw new NoSuchElementException("Account not found with ID: " + accountId);
         }
-
-        // Step 4: VALIDATION: Check if trade is allowed
-        boolean isValidTrade = orderValidator.isValidTrade(order, account);
-        
-        if (!isValidTrade) {
-            // Trade rejected - mark order as REJECTED with statusCode 422
-            order.updateExecution(
-                null,  // executedon must be NULL for rejected orders
-                null,  // executedvalue must be NULL for rejected orders
-                Order.OrderStatus.REJECTED,
-                422  // Unprocessable Entity
-            );
-            order.setAccount(account);
-            orderRepository.save(order);
-            orderManager.removeActiveOrder(order);
-            
-            return toOrderResponse(order, accountId);
-        }
-
-        // Step 5: EXECUTION: Process trade with current market price
-        // OrderExecutor gets current price, verifies affordability, sets status=FILLED
-        order = orderExecutor.processTrade(order, account);
-        
-        // If execution failed (price retrieval error, etc.), order status is already REJECTED
-        if (order.getStatus() == Order.OrderStatus.REJECTED) {
-            order.setAccount(account);
-            orderRepository.save(order);
-            orderManager.removeActiveOrder(order);
-            
-            return toOrderResponse(order, accountId);
-        }
-
-        // Step 6: TRANSACTION: Update account holdings, cash, and total balance
-        // TransactionManager:
-        // - Calls AssetService to update holdings (BUY/SELL)
-        // - Deducts/adds cash
-        // - Calls PricingEngine for each asset to calculate total balance
-        // - Links order to account
-        orderExecutionEngine.updateAccount(account, order);
-
-        // Step 7: PERSIST: Order is already persisted by updateAccount, now update status
-        orderExecutionEngine.updateStatus(order);
         order.setAccount(account);
         orderRepository.save(order);
-        
-        // Remove from active orders (successfully processed)
-        orderManager.removeActiveOrder(order);
 
+        // Step 4: Publish OrderSubmittedEvent to Kafka
+        // This triggers async validation → execution → persistence pipeline
+        try {
+            orderEventPublisher.publishOrderSubmitted(
+                order.getOrderId().toString(),
+                accountId.toString(),
+                "", // username - will be extracted from JWT in controller
+                order.getTicker(),
+                BigDecimal.valueOf(order.getQuantity()),
+                order.getSubmittedValue()
+            );
+        } catch (Exception e) {
+            // Log error but don't fail the order creation
+            // Order is in database with SUBMITTED status
+            // If Kafka publishing fails, order can be retried later
+            org.slf4j.LoggerFactory.getLogger(this.getClass())
+                .error("Failed to publish OrderSubmittedEvent for order: " + order.getOrderId(), e);
+        }
+
+        // Step 5: Return 202 ACCEPTED (processing async)
+        // Client must poll /orders/{orderId} to check status
         return toOrderResponse(order, accountId);
     }
 

@@ -2,6 +2,7 @@ package domain.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -151,13 +152,22 @@ public class PricingEngine {
     }
 
     /**
-     * Get current price for a ticker
-     * Extracts the price from the quote response
+     * Get current price for a ticker (CACHED)
+     * Extracts the price from the quote response.
+     * 
+     * Caching Strategy (Phase 3c):
+     * - Cache key: ticker symbol
+     * - TTL: 5 minutes (configured in application.yml: expireAfterWrite=5m)
+     * - Max entries: 10,000
+     * - Target: 90% reduction in Fauxnance API calls
+     * 
      * @param ticker Stock ticker symbol
-     * @return BigDecimal price
+     * @return BigDecimal price (cached for 5 minutes)
      */
+    @Cacheable(value = "prices", key = "#ticker")
     public BigDecimal getPrice(String ticker) {
         try {
+            logger.debug("Fetching price from API (not cached) for ticker: {}", ticker);
             Map<String, Object> quoteData = getMarketDataRaw(ticker);
             if (quoteData != null && quoteData.containsKey("data")) {
                 @SuppressWarnings("unchecked")
@@ -165,7 +175,9 @@ public class PricingEngine {
                 if (data != null && data.containsKey("price")) {
                     Object price = data.get("price");
                     if (price instanceof Number) {
-                        return new BigDecimal(price.toString());
+                        BigDecimal result = new BigDecimal(price.toString());
+                        logger.debug("Cached price for {}: {}", ticker, result);
+                        return result;
                     }
                 }
             }
