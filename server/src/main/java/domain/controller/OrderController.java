@@ -2,6 +2,7 @@ package domain.controller;
 
 import domain.dto.*;
 import domain.service.OrderService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,11 +24,8 @@ public class OrderController {
     @Autowired
     private OrderService orderService;
 
-    /**
-     * Place a new order
-     * POST /api/accounts/{accountId}/orders
-     */
     @PostMapping
+    @PreAuthorize("@securityService.isAccountOwner(authentication, T(java.util.UUID).fromString(#accountId))")
     public ResponseEntity<OrderResponse> placeOrder(
             @PathVariable String accountId,
             @Valid @RequestBody PlaceOrderRequest request) {
@@ -37,11 +35,8 @@ public class OrderController {
         return ResponseEntity.status(HttpStatus.CREATED).body(order);
     }
 
-    /**
-     * Get order history for an account
-     * GET /api/accounts/{accountId}/orders
-     */
     @GetMapping
+    @PreAuthorize("@securityService.isAccountOwner(authentication, T(java.util.UUID).fromString(#accountId)) or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<List<OrderSummary>> listOrders(
             @PathVariable String accountId,
             @RequestParam(required = false) String status,
@@ -49,15 +44,13 @@ public class OrderController {
         UUID id = UUID.fromString(accountId);
         logger.debug("Listing orders for account: {}, filters - status: {}, ticker: {}", accountId, status, ticker);
         List<OrderSummary> orders = orderService.listOrdersForAccount(id);
-        
-        // Filter by status if provided
+
         if (status != null && !status.isEmpty()) {
             orders = orders.stream()
                 .filter(o -> o.getStatus().toString().equalsIgnoreCase(status))
                 .toList();
         }
         
-        // Filter by ticker if provided
         if (ticker != null && !ticker.isEmpty()) {
             orders = orders.stream()
                 .filter(o -> o.getTicker().equalsIgnoreCase(ticker))

@@ -2,6 +2,7 @@ package domain.controller;
 
 import domain.dto.*;
 import domain.service.AccountService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,10 +24,8 @@ public class AccountController {
     @Autowired
     private AccountService accountService;
 
-    /**
-     * Create account for user
-     */
     @PostMapping
+    @PreAuthorize("#userId == authentication.name or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<AccountResponse> createAccount(
             @PathVariable String userId,
             @Valid @RequestBody CreateAccountRequest request) {
@@ -40,6 +39,7 @@ public class AccountController {
      * List all accounts for a user
      */
     @GetMapping
+    @PreAuthorize("#userId == authentication.name or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<List<AccountResponse>> listAccounts(@PathVariable String userId) {
         UUID id = UUID.fromString(userId);
         logger.debug("Listing accounts for user: {}", userId);

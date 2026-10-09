@@ -2,6 +2,7 @@ package domain.controller;
 
 import domain.dto.*;
 import domain.service.UserService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -31,6 +32,7 @@ public class UserController {
     }
 
     @GetMapping("/{userId}")
+    @PreAuthorize("#userId == authentication.name or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<UserResponse> getUser(@PathVariable String userId) {
         UUID id = UUID.fromString(userId);
         logger.debug("Retrieving user: {}", userId);
@@ -46,9 +48,10 @@ public class UserController {
     }
 
     @PostMapping("/logout")
-    public ResponseEntity<Void> logout(@RequestParam UUID userId) {
+    public ResponseEntity<Void> logout(@RequestParam String userId) {
         logger.info("Logout attempt for user: {}", userId);
-        userService.logout(userId);
+        UUID id = UUID.fromString(userId);
+        userService.logout(id);
         return ResponseEntity.noContent().build();
     }
 

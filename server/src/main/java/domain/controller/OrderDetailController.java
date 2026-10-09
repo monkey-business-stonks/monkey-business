@@ -2,6 +2,7 @@ package domain.controller;
 
 import domain.dto.OrderResponse;
 import domain.service.OrderService;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -20,16 +21,11 @@ public class OrderDetailController {
     @Autowired
     private OrderService orderService;
 
-    /**
-     * Get order details by ID
-     * GET /api/accounts/{accountId}/orders/{orderId}
-     */
     @GetMapping("/{orderId}")
+    @PreAuthorize("@securityService.isOrderOwner(authentication, T(java.util.UUID).fromString(#orderId)) or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<OrderResponse> getOrder(
             @PathVariable String accountId,
             @PathVariable String orderId) {
-        // TODO: Use accountId_uuid to verify order ownership once auth is integrated
-        // UUID accountId_uuid = UUID.fromString(accountId);
         UUID id = UUID.fromString(orderId);
         logger.debug("Retrieving order: {} for account: {}", orderId, accountId);
         OrderResponse order = orderService.getOrder(id);
