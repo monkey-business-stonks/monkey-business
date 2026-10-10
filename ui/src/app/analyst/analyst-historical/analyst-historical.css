@@ -1,0 +1,50 @@
+.historical-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg); /* or var(--space-md) to match sidebar gap */
+}
+
+.historical-layout-grid {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: var(--space-lg);
+}
+
+.historical-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.historical-sidebar app-select-input {
+  margin-bottom: var(--space-md); 
+  display: block;
+}
+
+.metrics-summary-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  margin-top: var(--space-sm);
+}
+
+.metric-item {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xxs);
+}
+
+.metric-val {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: 1.2;
+}
+
+.footer-metadata {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-md);
+  border-top: 1px solid var(--background-tertiary);
+  padding-top: var(--space-md);
+  margin-top: var(--space-md);
+}

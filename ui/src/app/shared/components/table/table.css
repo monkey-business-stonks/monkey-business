@@ -1,9 +1,10 @@
 .table-wrapper {
   width: 100%;
-  overflow-x: auto; /* Enables horizontal scrolling when columns are wide */
+  box-sizing: border-box; 
+  overflow-x: auto;
   border-radius: var(--radius-md);
   background-color: var(--background-secondary); 
-  border: 2px solid var(--background-tertiary); 
+  border: var(--width-xs) solid var(--background-tertiary); 
   color: var(--text-primary);
 }
 

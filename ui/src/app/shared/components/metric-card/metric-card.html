@@ -1,0 +1,12 @@
+<div class="metric-card">
+    <div class="metric-header">
+    <span class="metric-title">{{ title }}</span>
+    @if (badge) {
+        <span class="metric-badge" [ngClass]="'badge-' + badgeType">{{ badge }}</span>
+    }
+    </div>
+    <div class="metric-value">{{ value }}</div>
+    @if (subtext) {
+    <div class="metric-subtext">{{ subtext }}</div>
+    }
+</div>

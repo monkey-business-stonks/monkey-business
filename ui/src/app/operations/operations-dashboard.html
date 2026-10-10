@@ -1,1 +1,8 @@
-<div>Operations dashboard works!</div>
+<app-sub-nav
+  activeWorkspaceId="operations"
+  [activeTabId]="activeTabId"
+  (activeWorkspaceIdChange)="onWorkspaceChange($event)"
+  (activeTabIdChange)="onTabChange($event)">
+</app-sub-nav>
+
+<router-outlet></router-outlet>

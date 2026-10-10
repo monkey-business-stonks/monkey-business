@@ -1,1 +1,8 @@
-<div>Analyst dashboard works!</div>
+<app-sub-nav
+  activeWorkspaceId="analyst"
+  [activeTabId]="activeTabId"
+  (activeWorkspaceIdChange)="onWorkspaceChange($event)"
+  (activeTabIdChange)="onTabChange($event)">
+</app-sub-nav>
+
+<router-outlet></router-outlet>

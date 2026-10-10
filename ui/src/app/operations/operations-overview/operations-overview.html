@@ -1,0 +1,89 @@
+<div class="page-container">
+  <header class="header-section">
+    <div class="header-title-area">
+      <span class="breadcrumb">OPERATIONS / OVERVIEW</span>
+      <h1>Trading records overview</h1>
+      <p class="subtitle">Every order request and accepted order, from admission to its final outcome.</p>
+    </div>
+    <div class="header-actions"></div>
+  </header>
+
+  <app-banner-message 
+    title="Order event archive · read-only" 
+    detail="As of 2026-09-30 16:00:00 UTC" 
+    tag="SAMPLE DATA">
+  </app-banner-message>
+
+  <div class="metrics-grid">
+    <app-metric-card title="ACCEPTED ORDERS · COUNT" value="8,462" subtext="8,520 requests · 58 rejected before acceptance"></app-metric-card>
+    <app-metric-card title="SETTLED · COUNT" value="8,126" subtext="Filled and settled · Terminal outcome"></app-metric-card>
+    <app-metric-card title="AWAITING SETTLEMENT · COUNT" value="224" subtext="Filled · Includes 3 overdue settlements"></app-metric-card>
+    <app-metric-card title="OPEN EXCEPTIONS · COUNT" value="7" badge="Review" badgeType="warning" subtext="3 settlement · 2 pricing · 2 recording lag"></app-metric-card>
+  </div>
+
+  <!-- Search & Filters Container -->
+  <div class="filter-card">
+    
+    <div class="search-bar-wrapper">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"></circle>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+      </svg>
+      
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Search order ID, trade ID, client, account or external reference" 
+        [(ngModel)]="searchQuery" />
+
+      <button type="button" class="exact-id-tag">
+        Exact ID or reference
+      </button>
+    </div>
+
+    <div class="filter-row">
+      <app-select-input label="Event time range · UTC" [options]="timeRangeOptions" [(value)]="selectedTimeRange"></app-select-input>
+      <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
+      <app-select-input label="Execution status" [options]="executionOptions" [(value)]="selectedExecution"></app-select-input>
+      <app-select-input label="Settlement status" [options]="settlementOptions" [(value)]="selectedSettlement"></app-select-input>
+      <app-select-input label="Exception" [options]="exceptionOptions" [(value)]="selectedException"></app-select-input>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <app-table [columns]="tableColumns" [data]="ordersData"></app-table>
+  </div>
+
+  @if (selectedOrder) {
+    <div class="selection-footer">
+      <div class="selection-content">
+        <!-- Green File/Search Icon Container -->
+        <div class="selection-icon-wrapper">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+            <circle cx="11.5" cy="14.5" r="2.5"></circle>
+            <line x1="13.25" y1="16.25" x2="15" y2="18"></line>
+          </svg>
+        </div>
+
+        <!-- Text Block -->
+        <div class="selection-info">
+          <div class="selection-title">
+            <span class="selection-label">Selected</span>
+            <span class="selection-separator">·</span>
+            <span class="selection-id mono">{{ selectedOrder.id }}</span>
+            <span class="selection-separator">·</span>
+            <span class="selection-details">{{ selectedOrder.details }}</span>
+          </div>
+          <p class="selection-summary">{{ selectedOrder.summary }}</p>
+        </div>
+      </div>
+
+      <!-- Primary Green Action Button -->
+      <app-button variant="primary">
+        → View trade lifecycle
+      </app-button>
+    </div>
+  }
+</div>

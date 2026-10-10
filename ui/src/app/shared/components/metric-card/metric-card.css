@@ -1,0 +1,48 @@
+.metric-card {
+    background-color: var(--background-secondary);
+    border: var(--width-xs) solid var(--background-tertiary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-md);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+}
+.metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+}
+.metric-title {
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.metric-badge {
+    padding: var(--space-xxs) var(--space-xs);
+    border-radius: var(--radius-sm);
+}
+.badge-positive {
+    background-color: var(--accent-primary-transparent);
+    color: var(--accent-primary);
+}
+.badge-negative {
+    background-color: rgba(255, 59, 48, 0.1);
+    color: var(--accent-negative);
+}
+.badge-warning {
+    background-color: rgba(234, 179, 8, 0.15);
+    color: #eab308;
+}
+.metric-value {
+    font-family: 'Roboto Mono';
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+}
+.metric-subtext {
+    color: var(--text-secondary);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+}
