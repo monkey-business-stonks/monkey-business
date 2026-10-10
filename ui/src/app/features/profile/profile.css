@@ -30,7 +30,7 @@
   padding: var(--space-sm) var(--space-md);
   background-color: transparent;
   color: var(--accent-primary);
-  border: 1px solid var(--accent-primary);
+  border: var(--width-xs) solid var(--accent-primary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
@@ -52,7 +52,7 @@
   margin: 0 auto;
   padding: var(--space-lg);
   background-color: var(--background-secondary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -103,7 +103,7 @@
 .cancel-btn-header {
   background-color: var(--background-tertiary);
   color: var(--text-primary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
 }
 
 .cancel-btn-header:hover {
@@ -286,7 +286,7 @@
 
 .form-group input {
   padding: var(--space-xmd) var(--space-md);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-md);
   font-size: var(--font-size-base);
   font-family: 'Inter', sans-serif;
@@ -343,7 +343,7 @@
 .cancel-btn {
   background-color: var(--background-tertiary);
   color: var(--text-primary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
 }
 
 .cancel-btn:hover {
@@ -439,7 +439,7 @@
   padding: var(--space-md);
   background-color: var(--background-primary);
   border-radius: var(--radius-md);
-  border: 1px solid var(--background-tertiary);
+  border: var(--width-xs) solid var(--background-tertiary);
 }
 
 .toggle-label {

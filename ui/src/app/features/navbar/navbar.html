@@ -16,10 +16,12 @@
     </div>
   </div>
 
+  @if ((role$ | async) === 'USER') {
   <div class="profile-container">
     <button class="profile-icon-button" routerLink="/profile">
       <img class="profile-icon">
       <span class="profile-text">Edit Profile</span>
     </button>
   </div>
+  }
 </div>

@@ -17,7 +17,7 @@
 
 .account-overview-container {
   background-color: var(--background-secondary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   padding: var(--space-lg);
 }

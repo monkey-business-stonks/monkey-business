@@ -28,12 +28,12 @@
     color: var(--accent-primary);
 }
 .badge-negative {
-    background-color: rgba(255, 59, 48, 0.1);
+    background-color: var(--accent-negative-transparent-secondary);
     color: var(--accent-negative);
 }
 .badge-warning {
-    background-color: rgba(234, 179, 8, 0.15);
-    color: #eab308;
+    background-color: var(--accent-warning-transparent);
+    color: var(--accent-warning);
 }
 .metric-value {
     font-family: 'Roboto Mono';
