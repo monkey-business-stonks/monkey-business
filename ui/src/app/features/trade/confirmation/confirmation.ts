@@ -1,5 +1,6 @@
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { ButtonComponent } from '@/app/shared/components/button/button';
 
 export interface OrderReviewData {
@@ -12,8 +13,14 @@ export interface OrderReviewData {
   ticker?: string;
 }
 
+// enum tradeState {
+//   PENDING,
+//   SUCCESS,
+//   FAILURE,
+// }
+
 @Component({
-  imports: [CommonModule, ButtonComponent],
+  imports: [CommonModule, ButtonComponent, RouterLink],
   selector: 'app-confirmation',
   styleUrl: './confirmation.css',
   templateUrl: './confirmation.html',
@@ -24,10 +31,18 @@ export class Confirmation {
   @Output() onConfirm = new EventEmitter<OrderReviewData>();
   @Output() onClose = new EventEmitter<void>();
 
+  showSuccessState: boolean = false;
+  // currentState: tradeState = tradeState.PENDING;
+
   confirm(): void {
+    this.showSuccessState = true;
+  }
+
+  completeOrder(): void {
     if (this.orderData) {
       this.onConfirm.emit(this.orderData);
     }
+    this.closeModal();
   }
 
   closeModal(): void {
