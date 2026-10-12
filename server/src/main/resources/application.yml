@@ -25,6 +25,8 @@ spring:
   
   # Kafka Configuration
   cloud:
+    function:
+      definition: orderValidatorConsumer;orderExecutorConsumer;orderFilledEventConsumer;orderRejectedEventConsumer
     stream:
       kafka:
         binder:
@@ -53,7 +55,13 @@ spring:
               back-off-initial-interval: 1000
               back-off-max-interval: 8000
               use-native-decoding: true
-          orderPersistenceConsumer-in-0:
+          orderFilledEventConsumer-in-0:
+            consumer:
+              max-attempts: 3
+              back-off-initial-interval: 1000
+              back-off-max-interval: 8000
+              use-native-decoding: true
+          orderRejectedEventConsumer-in-0:
             consumer:
               max-attempts: 3
               back-off-initial-interval: 1000
@@ -73,7 +81,7 @@ spring:
           destination: orders.validated
           contentType: application/json
         orderExecutorConsumer-in-0:
-          destination: orders.validated
+          destination: orders.submitted
           group: order-executor-group
           consumer:
             max-concurrency: 3
@@ -83,12 +91,12 @@ spring:
         publishOrderRejected-out-0:
           destination: orders.rejected
           contentType: application/json
-        orderPersistenceConsumer-in-0:
+        orderFilledEventConsumer-in-0:
           destination: orders.filled
           group: order-persistence-group
           consumer:
             max-concurrency: 10
-        orderRejectionConsumer-in-0:
+        orderRejectedEventConsumer-in-0:
           destination: orders.rejected
           group: order-persistence-group
           consumer:

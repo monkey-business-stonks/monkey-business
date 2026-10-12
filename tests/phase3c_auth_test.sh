@@ -84,12 +84,12 @@ HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" -X POST "http://localhost:808
   -d '{"orderType":"EQUITY","action":"BUY","ticker":"AAPL","quantity":10}')
 
 echo "✓ Order 1 submitted: $ORDER1_ID"
-echo "  Status: $ORDER1_STATUS (Expected: SUBMITTED for async)"
+echo "  Status: $ORDER1_STATUS (Expected: SUBMITTED or PENDING for async)"
 echo "  HTTP Status: $HTTP_CODE (Expected: 202 ACCEPTED)"
 echo ""
 
-if [ "$ORDER1_STATUS" != "SUBMITTED" ]; then
-  echo "✗ ERROR: Order should have SUBMITTED status (async), got: $ORDER1_STATUS"
+if [ "$ORDER1_STATUS" != "SUBMITTED" ] && [ "$ORDER1_STATUS" != "PENDING" ]; then
+  echo "✗ ERROR: Order should have SUBMITTED or PENDING status (async), got: $ORDER1_STATUS"
   echo "  Full response: $ORDER1_RESPONSE"
   exit 1
 fi

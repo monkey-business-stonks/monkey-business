@@ -21,8 +21,10 @@ fi
 echo "  ✓ Backend is healthy"
 echo ""
 
-# Find and sort tests
-TEST_FILES=(full_order_test.sh multi_account_test.sh retrieval_test.sh)
+# Find and sort all shell test scripts except this runner itself
+mapfile -t TEST_FILES < <(
+  find . -maxdepth 1 -type f -name "*.sh" ! -name "run_all_tests.sh" -printf "%f\n" | sort
+)
 TEST_COUNT=${#TEST_FILES[@]}
 
 if [ "$TEST_COUNT" -eq 0 ]; then
