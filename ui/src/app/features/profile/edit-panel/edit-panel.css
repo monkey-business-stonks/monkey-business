@@ -30,7 +30,7 @@
   margin: 0 auto;
   padding: var(--space-lg);
   background-color: var(--background-secondary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;
@@ -82,7 +82,7 @@ unnessessary lines */
   width: 100%;
   padding: var(--space-xmd) var(--space-md);
   background-color: var(--background-tertiary);
-  border: 1px solid transparent;
+  border: var(--width-xs) solid transparent;
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: inherit;

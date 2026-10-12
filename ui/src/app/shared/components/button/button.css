@@ -25,6 +25,13 @@
   padding: var(--space-sm) var(--space-md);
 }
 
+/* Active state for primary filter buttons */
+.btn-primary.active {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary-transparent);
+}
+
 .btn-primary:hover:not(:disabled) {
   color: var(--accent-primary);
   border-color: var(--accent-primary);

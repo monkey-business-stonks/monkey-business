@@ -1,0 +1,15 @@
+<div class="banner-container">
+    <div class="banner-left">
+    <span class="banner-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent-primary)" stroke-width="2">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+    </span>
+    <span class="banner-text">
+        <strong>{{ title }}</strong> · {{ detail }}
+    </span>
+    </div>
+    @if (tag) {
+    <span class="banner-tag">{{ tag }}</span>
+    }
+</div>

@@ -30,6 +30,9 @@ public class User {
     
     @Column(nullable = true, name = "phone")
     private String phone;
+
+    @Column(nullable = true, name = "refreshtoken")
+    private String refreshToken;
     
     @Column(nullable = false, name = "dob")
     private LocalDate dob;
@@ -64,6 +67,7 @@ public class User {
         this.passwordHash = passwordHash;
         this.name = name;
         this.phone = phone;
+        this.refreshToken = null;
         this.dob = dob;
         this.accessLevel = accessLevel;
         this.accounts = accounts == null ? new HashSet<>() : new HashSet<>(accounts);
@@ -78,6 +82,7 @@ public class User {
     public String getPasswordHash() { return this.passwordHash; }
     public String getName() { return this.name; }
     public String getPhone() { return this.phone; }
+    public String getRefreshToken() { return this.refreshToken; }
     public LocalDate getDob() { return this.dob; }
     public AccessLevel getAccessLevel() { return this.accessLevel; }
     public Set<Account> getAccounts() { return this.accounts; }
@@ -91,6 +96,7 @@ public class User {
     public String passwordHash() { return this.passwordHash; }
     public String name() { return this.name; }
     public String phone() { return this.phone; }
+    public String refreshToken() { return this.refreshToken; }
     public LocalDate dob() { return this.dob; }
     public AccessLevel accessLevel() { return this.accessLevel; }
     public Set<Account> accounts() { return this.accounts; }
@@ -103,6 +109,7 @@ public class User {
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public void setName(String name) { this.name = name; }
     public void setPhone(String phone) { this.phone = phone; }
+    public void setRefreshToken(String refreshToken) { this.refreshToken = refreshToken; }
     public void setDob(LocalDate dob) { this.dob = dob; }
     public void setAccessLevel(AccessLevel level) { this.accessLevel = level; }
     public void setAccounts(Set<Account> accounts) { this.accounts = accounts; }

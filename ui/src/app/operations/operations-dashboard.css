@@ -1,0 +1,150 @@
+/* ==========================================================================
+   GLOBAL LAYOUT & HEADER STYLES (Shared across Register & Trade Lifecycle)
+   ========================================================================== */
+.page-container { 
+  padding: var(--space-lg); 
+  background: var(--background-primary); 
+  min-height: 100vh; 
+  color: var(--text-primary); 
+}
+
+.header-section { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: flex-start; 
+  margin-bottom: var(--space-lg); 
+}
+
+.header-title-area {
+  display: flex;
+  flex-direction: column;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+}
+
+.breadcrumb { 
+  color: var(--text-secondary); 
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.5px; 
+}
+
+h1 { 
+  margin: var(--space-xs) 0; 
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+}
+
+.subtitle { 
+  color: var(--text-secondary); 
+  font-size: var(--font-size-xs);
+}
+
+/* ==========================================================================
+   SHARED CARD & CONTAINER SHELLS
+   ========================================================================== */
+.card-box {
+  background-color: var(--background-secondary);
+  border: var(--width-xs) solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  flex-direction: column;
+}
+
+.card-box-header {
+  margin-bottom: var(--space-md);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.card-title {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--space-xxs) 0;
+}
+
+.card-subtitle {
+  font-size: var(--font-size-xs);
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.card-footnote {
+  color: var(--text-secondary);
+  margin: var(--space-sm) 0 0 0;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   SHARED BADGES & STATUS TAGS
+   ========================================================================== */
+.status-badge {
+  padding: var(--space-xxs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+}
+
+.status-badge.complete,
+.status-badge.reconciled {
+  background-color: var(--accent-primary-transparent);
+  color: var(--accent-primary);
+}
+
+.status-badge.neutral {
+  background-color: var(--background-tertiary);
+  color: var(--text-secondary);
+}
+
+/* ==========================================================================
+   SHARED DATA TABLES
+   ========================================================================== */
+.embedded-table-wrapper {
+  border: var(--width-xs) solid var(--background-tertiary);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: var(--space-md);
+}
+
+.dashboard-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.dashboard-table th {
+  background-color: var(--background-tertiary);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-semibold);
+  padding: var(--space-sm) var(--space-md);
+  border-bottom: 1px solid var(--background-tertiary);
+}
+
+.dashboard-table td {
+  padding: var(--space-xmd) var(--space-md);
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--background-tertiary);
+}
+
+.dashboard-table tr:last-child td {
+  border-bottom: none;
+}
+
+/* ==========================================================================
+   SHARED UTILITIES
+   ========================================================================== */
+.align-left { text-align: left; }
+.align-right { text-align: right; }
+.mono { font-family: 'Roboto Mono', monospace; }
+.text-success { color: var(--accent-primary); }
+.text-negative { color: var(--accent-negative); }
+.text-muted { color: var(--text-secondary); }

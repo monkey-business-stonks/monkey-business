@@ -24,7 +24,7 @@
   padding: var(--space-xmd) var(--space-md);
   padding-right: var(--space-xl);
   background-color: var(--background-tertiary);
-  border: 1px solid transparent;
+  border: var(--width-xs) solid transparent;
   border-radius: var(--radius-md);
   color: var(--text-primary);
   font-family: inherit;
