@@ -1,0 +1,67 @@
+<div class="confirmation-overlay" (click)="closeModal()">
+  <div class="confirmation-content" (click)="$event.stopPropagation()">
+    <div class="confirmation-header">
+      @if (!showSuccessState) {
+        <h2 class="title">Review Order</h2>
+      } @else {
+        <div class="success-header">
+          <span class="success-checkmark">✓</span>
+          <h2 class="title">Order Confirmed</h2>
+        </div>
+      }
+    </div>
+
+    @if (orderData) {
+      <div class="confirmation-body">
+        <div class="order-detail">
+          <span class="detail-label">Asset</span>
+          <span class="detail-value">{{ orderData.ticker }}</span>
+        </div>
+
+        <hr class="inner-line">
+
+        <div class="order-detail">
+          <span class="detail-label">Action</span>
+          <span class="detail-value">{{ orderData.action }}</span>
+        </div>
+
+        <div class="order-detail">
+          <span class="detail-label">Account</span>
+          <span class="detail-value">{{ orderData.account | uppercase }}</span>
+        </div>
+
+        <div class="order-detail">
+          <span class="detail-label">Quantity</span>
+          <span class="detail-value">{{ orderData.quantity }} shares</span>
+        </div>
+
+        <div class="order-detail">
+          <span class="detail-label">Order Type</span>
+          <span class="detail-value">{{ orderData.orderType | titlecase }} Order</span>
+        </div>
+
+        <div class="order-detail">
+          <span class="detail-label">Share Price</span>
+          <span class="detail-value">{{ orderData.sharePrice | currency:'USD':'symbol':'1.2-2' }}</span>
+        </div>
+
+        <hr class="inner-line">
+
+        <div class="order-detail total-detail">
+          <span class="detail-label">Total</span>
+          <span class="detail-value">{{ orderData.estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+        </div>
+      </div>
+    }
+
+    <div class="confirmation-footer">
+      @if (!showSuccessState) {
+        <app-button variant="secondary" (click)="confirm()">Confirm {{ orderData?.action }}</app-button>
+        <app-button variant="secondary" (click)="closeModal()">Edit Order</app-button>
+      } @else {
+        <app-button variant="secondary" routerLink="/dashboard">View Portfolio</app-button>
+        <app-button variant="secondary" (click)="completeOrder()">Make Another Trade</app-button>
+      }
+    </div>
+  </div>
+</div>
