@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, throwError, map } from 'rxjs';
 import { tap, catchError } from 'rxjs/operators';
 
 @Injectable({
@@ -13,6 +13,10 @@ export class AuthService {
 
   private tokenSubject = new BehaviorSubject<string | null>(this.getStoredAccessToken());
   public token$ = this.tokenSubject.asObservable();
+
+  public role$ = this.token$.pipe(
+    map(token => this.getRoleFromToken(token))
+  );
 
   constructor(private http: HttpClient) {
     const storedToken = this.getStoredAccessToken();
@@ -28,9 +32,6 @@ export class AuthService {
     return `${protocol}//${hostname}:${backendPort}`;
   }
 
-  /**
-   * Authenticate user against Spring Boot backend (/users/authenticate)
-   */
   authenticate(username: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.getBackendUrl()}/users/authenticate`, {
       username,
@@ -46,9 +47,6 @@ export class AuthService {
     );
   }
 
-  /**
-   * Request a new access token using stored refresh token
-   */
   refreshToken(): Observable<any> {
     const refreshToken = this.getStoredRefreshToken();
     if (!refreshToken) {
@@ -72,14 +70,10 @@ export class AuthService {
     );
   }
 
-  /**
-   * Logout user locally and inform backend to revoke tokens
-   */
   logout(): Observable<any> {
     const userId = localStorage.getItem(this.userIdKey);
     const accessToken = this.getStoredAccessToken();
     
-    // First, try to revoke the token on the auth service
     if (accessToken && userId) {
       this.http.post(`${this.getBackendUrl()}/auth/revoke`, {
         token: accessToken,
@@ -104,6 +98,38 @@ export class AuthService {
         error: () => this.clearTokens() 
       })
     );
+  }
+
+  getUserRole(): string | null {
+    return this.getRoleFromToken(this.getToken());
+  }
+
+  private getRoleFromToken(token: string | null): string | null {
+    if (!token) return null;
+    try {
+      const payloadBase64 = token.split('.')[1];
+      const decoded = JSON.parse(atob(payloadBase64));
+      return decoded.role || null;
+    } catch {
+      return null;
+    }
+  }
+
+  hasAnyRole(allowedRoles: string[]): boolean {
+    const role = this.getUserRole();
+    return role ? allowedRoles.includes(role) : false;
+  }
+
+  getDefaultRouteForRole(): string {
+    const role = this.getUserRole();
+    switch (role) {
+      case 'ANALYST':
+        return '/analyst-dashboard';
+      case 'OPERATIONS':
+        return '/operations-dashboard';
+      default:
+        return '/dashboard';
+    }
   }
 
   getToken(): string | null {

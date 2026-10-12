@@ -1,0 +1,137 @@
+<div class="page-container">
+  <!-- Shared Header Section -->
+  <header class="header-section">
+    <div class="header-title-area">
+      <span class="breadcrumb">BUSINESS INTELLIGENCE / HISTORICAL REPORTS</span>
+      <h1>Monthly trading & client activity</h1>
+      <p class="subtitle">Executive committee report · September 2026 · Saved report RPT-MONTH-004 · Version 3</p>
+    </div>
+  </header>
+
+  <!-- Shared Banner Component -->
+  <app-banner-message 
+    title="Reporting warehouse · isolated from live trading"
+    detail="Complete through 2026-09-30 23:59:59 UTC · As of Oct 01, 2026 06:00 UTC"
+    tag="SAMPLE DATA">
+  </app-banner-message>
+
+  <div class="historical-layout-grid">
+    <!-- Sidebar Controls -->
+    <aside class="historical-sidebar">
+      <div class="card-box">
+        <div class="card-box-header">
+          <div>
+            <h3 class="card-title">Report builder</h3>
+            <p class="card-subtitle">Saved configuration · Changes not applied</p>
+          </div>
+        </div>
+
+        <app-select-input label="Period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod"></app-select-input>
+        <app-select-input label="Instrument scope" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
+        <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment"></app-select-input>
+        <app-select-input label="Comparison" [options]="comparisonOptions" [(value)]="selectedComparison"></app-select-input>
+
+        <div class="form-group">
+          <label class="form-label">Group by · Ordered dimensions</label>
+          <div class="draggable-pill"><span>Month</span> <span class="drag-handle">:::</span></div>
+          <div class="draggable-pill"><span>Instrument</span> <span class="drag-handle">:::</span></div>
+          <div class="draggable-pill"><span>Client segment</span> <span class="drag-handle">:::</span></div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Metrics</label>
+          <p class="text-xs text-muted">USD notional · Filled order count<br>Volume share · Month-on-month change</p>
+        </div>
+
+        <app-button variant="primary">Generate report</app-button>
+
+        <p class="card-footnote">Runs on historical reporting data only. No live trading queries or execution actions.</p>
+      </div>
+
+
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="historical-content">
+      <!-- Summary Card -->
+      <div class="card-box">
+        <div class="card-box-header">
+          <div>
+            <h3 class="card-title">September 2026 · Report summary</h3>
+            <p class="card-subtitle">01 Sep 00:00:00 – 30 Sep 23:59:59 UTC · All instruments and segments</p>
+          </div>
+          <span class="status-badge complete">Complete</span>
+        </div>
+
+        <div class="metrics-summary-row">
+          <div class="metric-item">
+            <span class="card-subtitle">USD NOTIONAL</span>
+            <span class="metric-val">$128.40M</span>
+            <span class="text-xs text-success">+12.6% vs $114.00M in August</span>
+          </div>
+          <div class="metric-item">
+            <span class="card-subtitle">FILLED ORDERS</span>
+            <span class="metric-val">18,420</span>
+            <span class="text-xs text-success">+9.6% vs 16,800 in August</span>
+          </div>
+          <div class="metric-item">
+            <span class="card-subtitle">DISTINCT ACTIVE CLIENTS</span>
+            <span class="metric-val">1,248</span>
+            <span class="text-xs text-success">+5.8% vs 1,180 in August</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Grouped Results Table Card -->
+      <div class="card-box">
+        <div class="card-box-header">
+          <div>
+            <h3 class="card-title">Grouped results</h3>
+            <p class="card-subtitle">Month → Instrument → Client segment · 15 rows · USD reporting currency</p>
+          </div>
+          <span class="text-xs text-muted">Generated 01 Oct 2026 · 06:04 UTC</span>
+        </div>
+
+        <div class="embedded-table-wrapper">
+          <table class="dashboard-table">
+            <thead>
+              <tr>
+                <th class="align-left">Period (UTC)</th>
+                <th class="align-left">Instrument</th>
+                <th class="align-left">Client segment</th>
+                <th class="align-right">USD notional</th>
+                <th class="align-right">Filled orders</th>
+                <th class="align-right">Volume share</th>
+                <th class="align-right">Volume vs Aug</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of reportRows; track $index) {
+                <tr>
+                  <td class="align-left text-muted">{{ row.period }}</td>
+                  <td class="align-left font-semibold">{{ row.instrument }}</td>
+                  <td class="align-left text-muted">{{ row.segment }}</td>
+                  <td class="align-right mono">{{ row.notional }}</td>
+                  <td class="align-right mono">{{ row.orders }}</td>
+                  <td class="align-right mono">{{ row.share }}</td>
+                  <td class="align-right mono text-success">{{ row.vsAug }}</td>
+                </tr>
+              }
+              <tr class="table-summary-row">
+                <td colspan="3" class="align-left">Grand total · September 2026</td>
+                <td class="align-right mono">$128,400,000.00</td>
+                <td class="align-right mono">18,420 orders</td>
+                <td class="align-right mono">100.00%</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <p class="card-footnote">
+          Notional = filled quantity × execution price, converted at the recorded USD rate; excludes fees. Order count = distinct orders with ≥1 fill. Active clients are deduplicated across groups. Segment is recorded at trade time; cancelled and rejected orders excluded.
+        </p>
+      </div>
+    </main>
+  </div>
+</div>

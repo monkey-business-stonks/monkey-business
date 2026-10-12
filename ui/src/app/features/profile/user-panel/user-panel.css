@@ -3,7 +3,7 @@
   margin: 0 auto;
   padding: var(--space-lg);
   background-color: var(--background-secondary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   display: flex;
   flex-direction: column;

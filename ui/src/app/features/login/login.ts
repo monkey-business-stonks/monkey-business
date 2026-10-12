@@ -45,18 +45,16 @@ export class Login {
         console.log('Authentication successful:', response);
         this.loading.set(false);
         
-        // Clear sensitive inputs
         this.username.set('');
         this.password.set('');
         
-        // Navigate to the main dashboard
-        this.router.navigate(['/dashboard']);
+        const targetRoute = this.authService.getDefaultRouteForRole();
+        this.router.navigate([targetRoute]);
       },
       error: (err) => {
         console.error('Authentication failed:', err);
         this.loading.set(false);
 
-        // Handle specific Spring Boot error responses
         if (err.status === 401 || err.status === 400) {
           this.error.set('Invalid username or password.');
         } else if (err.status === 0) {

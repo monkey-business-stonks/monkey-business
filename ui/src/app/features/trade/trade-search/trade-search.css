@@ -4,7 +4,7 @@
   height: calc(100vh - 130px);
   padding: var(--space-lg);
   background-color: var(--background-secondary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-md);
   box-sizing: border-box;
 }
@@ -14,7 +14,7 @@
   height: var(--space-xl);
   flex-shrink: 0; /* Prevents the search bar from squishing when rows overflow */
   background-color: var(--background-tertiary);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-md);
   font-family: 'Inter', sans-serif;
   font-size: var(--font-size-sm);
@@ -31,7 +31,7 @@
 
   &:focus {
     outline: none;
-    border-color: var(--text-secondary); /* Fixed rgba invalid usage */
+    border-color: var(--text-secondary); 
   }
 }
 
