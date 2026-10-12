@@ -25,7 +25,7 @@ public class AccountController {
     private AccountService accountService;
 
     @PostMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("@securityService.isUserOwner(authentication, T(java.util.UUID).fromString(#userId)) or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<AccountResponse> createAccount(
             @PathVariable String userId,
             @Valid @RequestBody CreateAccountRequest request) {
@@ -39,7 +39,7 @@ public class AccountController {
      * List all accounts for a user
      */
     @GetMapping
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("@securityService.isUserOwner(authentication, T(java.util.UUID).fromString(#userId)) or hasAuthority('ROLE_OPERATIONS')")
     public ResponseEntity<List<AccountResponse>> listAccounts(@PathVariable String userId) {
         UUID id = UUID.fromString(userId);
         logger.debug("Listing accounts for user: {}", userId);

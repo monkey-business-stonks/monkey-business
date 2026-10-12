@@ -40,4 +40,14 @@ public class SecurityService {
             return false;
         }
     }
+
+    public boolean isUserOwner(Authentication authentication, UUID userId) {
+        if (authentication == null) return false;
+        try {
+            UUID principalUserId = UUID.fromString(authentication.getName());
+            return principalUserId.equals(userId);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
 }
