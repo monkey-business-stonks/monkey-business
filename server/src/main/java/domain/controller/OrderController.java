@@ -31,7 +31,7 @@ public class OrderController {
         UUID id = UUID.fromString(accountId);
         logger.info("Placing order for account: {}, ticker: {}", accountId, request.getTicker());
         OrderResponse order = orderService.placeOrder(id, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(order);
     }
 
     @GetMapping
