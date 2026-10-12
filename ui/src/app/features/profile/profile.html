@@ -3,7 +3,15 @@
     <user-panel></user-panel>
   </div>
   <div class="info-container">
-    <edit-panel></edit-panel>
+    @if (isEditMode) {
+      <edit-panel (saveConfiguration)="saveAndReturnToAccounts()"></edit-panel>
+    } @else {
+      <accounts-panel
+        [autoOpenAccountFlow]="autoOpenAccountFlow"
+        [showEditProfileButton]="true"
+        (editProfile)="toggleEditMode()"
+      ></accounts-panel>
+    }
   </div>
 </div>
 <!-- 

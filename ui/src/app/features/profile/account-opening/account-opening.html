@@ -1,0 +1,94 @@
+<div class="account-opening-panel">
+  @if (errorMessage) {
+    <div class="error-banner">
+      {{ errorMessage }}
+    </div>
+  }
+
+  @if (currentStep === 'select-type') {
+    <div class="header-row">
+      <div>
+        <p class="label">Open Investment Account</p>
+        <p class="sublabel">Select one account type to continue.</p>
+      </div>
+      <app-button variant="primary" (click)="close()">Back</app-button>
+    </div>
+
+    <div class="account-options-grid">
+      @for (option of accountTypes; track option.value) {
+        <button
+          type="button"
+          class="account-option-card"
+          [class.selected]="selectedAccountType === option.value"
+          (click)="selectType(option.value)">
+          <p class="account-title">{{ option.label }}</p>
+          <p class="account-description">{{ option.description }}</p>
+        </button>
+      }
+    </div>
+
+    @if (selectedAccountType) {
+      <div class="confirm-row">
+        <app-button variant="secondary" [disabled]="isLoading" (click)="confirmType()">
+          @if (!isLoading) { Confirm Account Type } @else { Verifying... }
+        </app-button>
+      </div>
+    }
+  }
+
+  @if (currentStep === 'deposit') {
+    <div class="header-row">
+      <div>
+        <p class="label">Fund New {{ getSelectedLabel() }} Account</p>
+        <p class="sublabel">Enter an opening deposit to finish account creation.</p>
+      </div>
+      <app-button variant="primary" (click)="goBackToType()" [disabled]="isLoading">Back</app-button>
+    </div>
+
+    <div class="deposit-form">
+      <label class="deposit-label" for="depositAmount">Deposit Amount (USD)</label>
+      <input
+        id="depositAmount"
+        type="number"
+        min="1"
+        step="0.01"
+        [(ngModel)]="depositAmount"
+        [disabled]="isLoading"
+        placeholder="Enter amount" />
+    </div>
+
+    <div class="confirm-row">
+      <app-button variant="secondary" [disabled]="isLoading" (click)="confirmDeposit()">
+        @if (!isLoading) { Confirm Deposit } @else { Creating Account... }
+      </app-button>
+    </div>
+  }
+
+  @if (currentStep === 'confirmation') {
+    <div class="header-row">
+      <div>
+        <p class="label">Account Opened</p>
+        <p class="sublabel">Your account has been created and linked to your profile.</p>
+      </div>
+    </div>
+
+    <div class="confirmation-card">
+      <div class="confirmation-row">
+        <span class="confirmation-key">Account Type</span>
+        <span class="confirmation-value">{{ getSelectedLabel() }}</span>
+      </div>
+      <div class="confirmation-row">
+        <span class="confirmation-key">Account ID</span>
+        <span class="confirmation-value mono">{{ createdAccountId }}</span>
+      </div>
+      <div class="confirmation-row">
+        <span class="confirmation-key">Opened On</span>
+        <span class="confirmation-value">{{ openedDate | date:'medium' }}</span>
+      </div>
+    </div>
+
+    <div class="confirm-row">
+      <app-button variant="secondary" (click)="finish()">Back To Trading Accounts</app-button>
+    </div>
+  }
+</div>
