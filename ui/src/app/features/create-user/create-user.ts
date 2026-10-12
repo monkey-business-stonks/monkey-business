@@ -1,7 +1,7 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
-import { HttpClient } from '@angular/common/http';
+import { AuthService } from '@/app/core/services/auth.service';
 
 @Component({
   selector: 'app-create-user',
@@ -27,15 +27,18 @@ export class CreateUser {
       this.firstName().trim().length > 0 &&
       this.lastName().trim().length > 0 &&
       this.email().trim().length > 0 &&
-      this.password().trim().length > 0 &&
+      this.password().length >= 8 &&
       this.agreedToTerms()
     );
   });
 
-  constructor(private router: Router, private http: HttpClient) {}
+  constructor(private router: Router, private authService: AuthService) {}
 
   onCreateAccount() {
     if (!this.isFormValid()) {
+      if (this.password().length > 0 && this.password().length < 8) {
+        this.error.set('Password must be at least 8 characters.');
+      }
       return;
     }
 
@@ -50,9 +53,7 @@ export class CreateUser {
       dob: '1998-01-01'
     };
 
-    const backendUrl = `${window.location.protocol}//${window.location.hostname}:8080/users`;
-
-    this.http.post(backendUrl, payload).subscribe({
+    this.authService.register(payload).subscribe({
       next: () => {
         this.loading.set(false);
         // Alert user or navigate to login with query param
@@ -60,8 +61,16 @@ export class CreateUser {
       },
       error: (err) => {
         this.loading.set(false);
-        if (err.status === 409 || err.status === 400) {
-          this.error.set(err.error?.message || 'Username or email already exists.');
+        const backendMessage = err?.error?.message || err?.error?.error || null;
+
+        if (err.status === 0) {
+          this.error.set('Unable to reach the registration service. Verify backend is running and reachable on port 8080.');
+        } else if (err.status === 409) {
+          this.error.set(backendMessage || 'Username or email already exists.');
+        } else if (err.status === 400) {
+          this.error.set(backendMessage || 'Please verify all fields and try again.');
+        } else if (backendMessage) {
+          this.error.set(`Registration failed: ${backendMessage}`);
         } else {
           this.error.set('Registration failed. Please check your details and try again.');
         }

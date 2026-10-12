@@ -26,10 +26,7 @@ export class AuthService {
   }
 
   private getBackendUrl(): string {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    const backendPort = '8080';
-    return `${protocol}//${hostname}:${backendPort}`;
+    return `${window.location.origin}/api`;
   }
 
   authenticate(username: string, password: string): Observable<any> {
@@ -45,6 +42,17 @@ export class AuthService {
         }
       })
     );
+  }
+
+  register(payload: {
+    username: string;
+    name: string;
+    email: string;
+    password: string;
+    dob: string;
+    phone?: string;
+  }): Observable<any> {
+    return this.http.post<any>(`${this.getBackendUrl()}/users`, payload);
   }
 
   refreshToken(): Observable<any> {
