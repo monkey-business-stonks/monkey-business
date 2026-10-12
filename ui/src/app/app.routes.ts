@@ -25,7 +25,7 @@ export const routes: Routes = [
   { 
     path: 'analyst-dashboard', 
     component: AnalystDashboard,
-    // canActivate: [roleGuard(['ANALYST', 'OPERATIONS'])],
+    canActivate: [roleGuard(['ANALYST', 'OPERATIONS'])],
     children: [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', component: AnalystOverviewComponent },
@@ -35,7 +35,7 @@ export const routes: Routes = [
   { 
     path: 'operations-dashboard', 
     component: OperationsDashboard,
-    // canActivate: [roleGuard(['OPERATIONS'])],
+    canActivate: [roleGuard(['OPERATIONS'])],
     children: [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', component: OperationsOverviewComponent },
