@@ -132,7 +132,7 @@ CREATE TABLE Orders (
 
     statusCode INTEGER NOT NULL,
 
-    kafkaMessageId VARCHAR(200) UNIQUE,
+    kafka_message_id VARCHAR(200) UNIQUE,
 
     createdAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -268,8 +268,8 @@ CREATE INDEX idx_orders_account_status
 CREATE INDEX idx_orders_account_submitted
     ON Orders(accountId, submittedOn);
 
-CREATE INDEX idx_orders_kafkaMessageId
-    ON Orders(kafkaMessageId);
+CREATE INDEX idx_orders_kafka_message_id
+    ON Orders(kafka_message_id);
 
 
 -- Assets
