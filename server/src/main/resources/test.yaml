@@ -460,9 +460,14 @@ components:
 
     CreateAccountRequest:
       type: object
-      required: [accountType]
+      required: [accountType, initialDeposit]
       properties:
         accountType: { $ref: '#/components/schemas/AccountType' }
+        initialDeposit:
+          type: number
+          minimum: 0
+          exclusiveMinimum: true
+          example: 5000.00
 
     UpdateAccountRequest:
       type: object
