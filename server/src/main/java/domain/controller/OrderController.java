@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import jakarta.validation.Valid;
-
 import java.util.List;
 import java.util.UUID;
 
@@ -32,7 +31,7 @@ public class OrderController {
         UUID id = UUID.fromString(accountId);
         logger.info("Placing order for account: {}, ticker: {}", accountId, request.getTicker());
         OrderResponse order = orderService.placeOrder(id, request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(order);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(order);
     }
 
     @GetMapping
