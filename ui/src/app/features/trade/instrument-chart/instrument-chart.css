@@ -5,5 +5,5 @@
   height: calc(100vh - 340px);
   background-color: var(--background-primary);
   border-radius: var(--radius-md);
-  border: 2px solid var(--background-tertiary);
+  border: var(--width-sm) solid var(--background-tertiary);
 }

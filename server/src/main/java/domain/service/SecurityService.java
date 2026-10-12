@@ -19,19 +19,35 @@ public class SecurityService {
 
     public boolean isAccountOwner(Authentication authentication, UUID accountId) {
         if (authentication == null) return false;
-        String currentUserId = authentication.getName(); 
-        
-        return accountRepository.findById(accountId)
-                .map(account -> account.getUserId().toString().equals(currentUserId))
-                .orElse(false);
+        try {
+            UUID principalUserId = UUID.fromString(authentication.getName());
+            return accountRepository.findById(accountId)
+                    .map(account -> account.getUserId().equals(principalUserId))
+                    .orElse(false);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 
     public boolean isOrderOwner(Authentication authentication, UUID orderId) {
         if (authentication == null) return false;
-        String currentUserId = authentication.getName();
-        
-        return orderRepository.findById(orderId)
-                .map(order -> order.getAccount().getUserId().toString().equals(currentUserId))
-                .orElse(false);
+        try {
+            UUID principalUserId = UUID.fromString(authentication.getName());
+            return orderRepository.findById(orderId)
+                    .map(order -> order.getAccount().getUserId().equals(principalUserId))
+                    .orElse(false);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
+    }
+
+    public boolean isUserOwner(Authentication authentication, UUID userId) {
+        if (authentication == null) return false;
+        try {
+            UUID principalUserId = UUID.fromString(authentication.getName());
+            return principalUserId.equals(userId);
+        } catch (IllegalArgumentException ex) {
+            return false;
+        }
     }
 }

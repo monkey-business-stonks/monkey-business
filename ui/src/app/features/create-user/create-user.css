@@ -28,7 +28,7 @@
   width: 100%;
   max-width: 420px;
   background-color: var(--background-secondary);
-  border: 1px solid var(--background-tertiary);
+  border: var(--width-xs) solid var(--background-tertiary);
   border-radius: 12px;
   padding: var(--space-2xl);
 }
@@ -86,9 +86,9 @@
 }
 
 .error-message {
-  background-color: rgba(255, 59, 48, 0.1);
-  color: #ff3b30;
-  border: 1px solid rgba(255, 59, 48, 0.3);
+  background-color: var(--accent-negative-transparent-secondary);
+  color: var(--accent-negative);
+  border: var(--width-xs) solid var(--accent-negative-transparent-primary);
   border-radius: var(--radius-md);
   padding: var(--space-md);
   font-size: var(--font-size-sm);

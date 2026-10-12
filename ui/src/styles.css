@@ -26,6 +26,10 @@
   --accent-primary: #00E676;
   --accent-primary-transparent: #00E67610;
   --accent-negative: #FF3B30;
+  --accent-negative-transparent-primary: rgba(255, 59, 48, 0.3);
+  --accent-negative-transparent-secondary: rgba(255, 59, 48, 0.1);
+  --accent-warning: #eab308;
+  --accent-warning-transparent: rgba(234, 179, 8, 0.15);
 
   /* Spacing */
   --space-xxs: 2px;
@@ -54,6 +58,10 @@
   --radius-sm: 6px;
   --radius-md: 8px;
   --radius-lg: 10px;
+
+  /* Border Width */
+  --width-xs: 1px;
+  --width-sm: 2px;
 
   /* Transitions */
   --transition-duration: 0.4s;

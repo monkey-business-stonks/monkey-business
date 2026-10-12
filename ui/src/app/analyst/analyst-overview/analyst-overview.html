@@ -1,0 +1,112 @@
+<div class="page-container">
+  <header class="header-section">
+    <div class="header-title-area">
+      <span class="breadcrumb">BUSINESS INTELLIGENCE / OVERVIEW</span>
+      <h1>Trading activity overview</h1>
+      <p class="subtitle">Monthly visibility into volumes, instruments and client participation.</p>
+    </div>
+  </header>
+
+  <app-banner-message 
+    title="Reporting warehouse · isolated from live trading"
+    detail="Complete through 2026-09-30 23:59:59 UTC · As of Oct 01, 2026 06:00 UTC"
+    tag="SAMPLE DATA">
+  </app-banner-message>
+
+  <!-- Filter Row -->
+  <div class="filter-grid">
+    <app-select-input label="Reporting period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod"></app-select-input>
+    <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
+    <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment"></app-select-input>
+    <app-select-input label="Comparison period" [options]="comparisonOptions" [(value)]="selectedComparison"></app-select-input>
+  </div>
+
+  <!-- KPI Grid -->
+  <div class="metrics-grid">
+    <app-metric-card title="TRADED VOLUME · USD NOTIONAL" value="$128.40M" badge="+12.6%" subtext="Filled quantity × execution price, in USD"></app-metric-card>
+    <app-metric-card title="FILLED ORDERS · COUNT" value="18,420" badge="+9.6%" subtext="Distinct orders with ≥1 fill · vs 16,800 in Aug"></app-metric-card>
+    <app-metric-card title="ACTIVE CLIENTS · COUNT" value="1,248" badge="+5.8%" subtext="Distinct clients with ≥1 fill · vs 1,180 in Aug"></app-metric-card>
+    <app-metric-card title="AVG. NOTIONAL / FILLED ORDER" value="$6,970.68" badge="+2.7%" subtext="USD notional ÷ filled orders · vs $6,785.71"></app-metric-card>
+  </div>
+
+  <!-- Charts & Instruments Section -->
+  <div class="dashboard-grid">
+    <!-- Client Activity by Segment Card -->
+    <div class="card-box segment-card">
+      <div class="card-box-header">
+        <div>
+          <h3 class="card-title">Client activity by segment</h3>
+          <p class="card-subtitle">Distinct active clients and trading activity · Change vs August 2026</p>
+        </div>
+      </div>
+
+      <!-- Embedded Table Shell -->
+      <div class="embedded-table-wrapper">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th class="align-left">Client segment</th>
+              <th class="align-right">USD notional</th>
+              <th class="align-right">Filled orders</th>
+              <th class="align-right">Active clients</th>
+              <th class="align-right">Clients vs Aug</th>
+              <th class="align-right">Volume vs Aug</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of segmentData; track row.segment) {
+              <tr>
+                <td class="align-left font-semibold">{{ row.segment }}</td>
+                <td class="align-right mono">{{ row.notional }}</td>
+                <td class="align-right mono">{{ row.orders }}</td>
+                <td class="align-right mono">{{ row.clients }}</td>
+                <td class="align-right mono text-success">{{ row.clientsVsAug }}</td>
+                <td class="align-right mono text-success">{{ row.volumeVsAug }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="card-footnote">
+        Segment at trade time · Filled activity only; cancelled/rejected orders excluded. Clients counted once per month. Notional is volume, not revenue.
+      </p>
+    </div>
+
+    <!-- Most Active Instruments Card -->
+    <div class="card-box instruments-card">
+      <div class="card-box-header">
+        <div>
+          <h3 class="card-title">Most active instruments</h3>
+          <p class="card-subtitle">Ranked by USD notional · Share of monthly total</p>
+        </div>
+      </div>
+
+      <div class="instrument-list">
+        @for (item of topInstruments; track item.symbol; let isFirst = $first) {
+          <div class="instrument-item">
+            <div class="instrument-info-row">
+              <div class="meta-left">
+                <span class="instrument-symbol font-bold">{{ item.symbol }}</span>
+                <span class="order-count text-xs">{{ item.orders }}</span>
+              </div>
+              <div class="meta-right">
+                <span class="notional-val mono font-bold">{{ item.notional }}</span>
+                <span class="share-pct text-xs mono">{{ item.percentage.toFixed(1) }}%</span>
+              </div>
+            </div>
+            
+            <!-- Progress Bar Track -->
+            <div class="progress-track">
+              <div 
+                class="progress-fill" 
+                [class.highlight-first]="isFirst"
+                [style.width.%]="item.percentage">
+              </div>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,264 @@
+<div class="page-container">
+  <!-- Shared Header -->
+  <header class="header-section">
+    <div class="header-title-area">
+      <span class="breadcrumb">OPERATIONS / OVERVIEW / TRADE DETAILS</span>
+      <h1>APX-928731-NASDAQ</h1>
+      <p class="subtitle">AAPL · Apple Inc. · NASDAQ · Buy Market · 50 shares · Individual account</p>
+    </div>
+  </header>
+
+  <!-- Shared Banner -->
+  <app-banner-message 
+    title="Order event archive · read-only" 
+    detail="As of 2026-09-30 16:00:00 UTC" 
+    tag="SAMPLE DATA">
+  </app-banner-message>
+
+  <!-- Metadata Header Card -->
+  <div class="card-box" style="margin-bottom: var(--space-lg);">
+    <div class="metadata-grid-5">
+      <div class="meta-block">
+        <span class="card-subtitle">Client / Account</span>
+        <p class="text-xs mono font-bold">CL-001042 / AC-IND-0421</p>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">Trade ID</span>
+        <p class="text-xs mono font-bold">TRD-260929-8731</p>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">Client reference</span>
+        <p class="text-xs mono font-bold">CREF-260929-0142</p>
+      </div>
+      <div class="meta-block" style="grid-column: span 2;">
+        <span class="card-subtitle">Execution / Settlement</span>
+        <div>
+          <span class="status-badge complete" style="margin-right: var(--space-xs);">Filled</span>
+          <span class="status-badge complete" style="margin-right: var(--space-xs);">Settled · T+1</span>
+          <span class="status-badge neutral">No exceptions</span>
+        </div>
+      </div>
+    </div>
+
+    <hr style="border: none; border-top: 1px solid var(--background-tertiary); margin: var(--space-md) 0;" />
+
+    <div class="metadata-grid-5">
+      <div class="meta-block">
+        <span class="card-subtitle">EXECUTION PRICE · USD / SHARE</span>
+        <span class="meta-block-val">$187.42</span>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">PRINCIPAL · USD</span>
+        <span class="meta-block-val">$9,371.00</span>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">FEES · USD</span>
+        <span class="meta-block-val">$0.00</span>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">NET CASH CHANGE · USD</span>
+        <span class="meta-block-val text-negative">-$9,371.00</span>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">SETTLED HOLDING CHANGE</span>
+        <span class="meta-block-val text-success">+50 AAPL</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two-Column Lifecycle & Pricing Evidence -->
+  <div class="lifecycle-two-col">
+    <!-- Recorded Lifecycle Table -->
+    <div class="card-box">
+      <div class="card-box-header">
+        <div>
+          <h3 class="card-title">Recorded lifecycle</h3>
+          <p class="card-subtitle">Ordered by event time · All timestamps include milliseconds, in UTC</p>
+        </div>
+        <span class="status-badge neutral">6 events</span>
+      </div>
+
+      <div class="embedded-table-wrapper">
+        <table class="dashboard-table">
+          <thead>
+            <tr>
+              <th class="align-left">Lifecycle event</th>
+              <th class="align-left">Event time · UTC</th>
+              <th class="align-left">Recorded time · UTC</th>
+              <th class="align-left">Actor / Service</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (event of lifecycleEvents; track event.event) {
+              <tr>
+                <td class="align-left">
+                  <span [class.text-success]="event.isSuccess" class="font-semibold">{{ event.event }}</span>
+                  <p class="text-xs text-muted mono">{{ event.id }}</p>
+                </td>
+                <td class="align-left mono text-xs">{{ event.eventTime }}</td>
+                <td class="align-left mono text-xs">{{ event.recTime }}</td>
+                <td class="align-left text-xs">
+                  <span>{{ event.actor }}</span>
+                  <p class="text-xs text-muted">{{ event.detail }}</p>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+
+      <p class="card-footnote">
+        Event time = when the action occurred; Recorded time = when the event was persisted. Each event retains actor, service and linked evidence. Settlement reference: SET-260930-015 · No manual intervention recorded.
+      </p>
+    </div>
+
+    <!-- Pricing Evidence -->
+    <div class="card-box">
+      <div class="card-box-header">
+        <div>
+          <h3 class="card-title">Pricing evidence</h3>
+          <p class="card-subtitle">Captured at decision time · Not a current market quote</p>
+        </div>
+      </div>
+
+      <div class="pricing-meta-grid" style="margin-bottom: var(--space-md);">
+        <div class="meta-block">
+          <span class="card-subtitle">Quote ID</span>
+          <p class="text-xs mono font-bold">Q-NQ-260929-143210-882</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Quote source</span>
+          <p class="text-xs font-bold">NASDAQ SIP · NBBO (sample)</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Quote event time · UTC</span>
+          <p class="text-xs mono font-bold">2026-09-29 14:32:10.160</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Quote recorded time · UTC</span>
+          <p class="text-xs mono font-bold">2026-09-29 14:32:10.165</p>
+        </div>
+      </div>
+
+      <!-- Darker Inset Card: Bid / Ask / Spread -->
+      <div class="inset-card-box quote-comparison-grid" style="margin-bottom: var(--space-md);">
+        <div class="meta-block">
+          <span class="card-subtitle">Bid · USD / share</span>
+          <span class="meta-block-val">$187.38</span>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Ask · USD / share</span>
+          <span class="meta-block-val">$187.45</span>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Spread · USD</span>
+          <span class="meta-block-val">$0.07</span>
+        </div>
+      </div>
+
+      <div class="pricing-meta-grid" style="margin-bottom: var(--space-md);">
+        <div class="meta-block">
+          <span class="card-subtitle">Pricing method / Rule version</span>
+          <p class="text-xs font-bold">NBBO-guarded market<br>PR-EQ-MKT · v4.2</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Decision / Attribution</span>
+          <p class="text-xs font-bold">Approved · Within bid/ask<br>pricing-engine · svc-prc-02</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Decision price · USD / share</span>
+          <p class="text-xs mono font-bold">$187.42</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Actual execution · USD / share</span>
+          <p class="text-xs mono font-bold text-success">$187.42</p>
+        </div>
+      </div>
+
+      <!-- Darker Inset Card: Age & Reservation Basis -->
+      <div class="inset-card-box pricing-meta-grid" style="margin-bottom: var(--space-md);">
+        <div class="meta-block">
+          <span class="card-subtitle">Quote age at decision</span>
+          <p class="text-xs font-bold">8 ms · Within rule threshold</p>
+        </div>
+        <div class="meta-block">
+          <span class="card-subtitle">Acceptance reservation basis</span>
+          <p class="text-xs font-bold mono">$187.42 × 50 = $9,371.00</p>
+        </div>
+      </div>
+
+      <p class="card-footnote">
+        50 shares · Single fill · $0.03/share improvement vs captured ask. Decision-to-fill slippage $0.00. Execution actor: execution-router / svc-exe-01. Pricing record linked to EVT-0731-03.
+      </p>
+    </div>
+  </div>
+
+  <!-- Cash & Holding Ledger Section -->
+  <div class="card-box" style="margin-top: var(--space-lg);">
+    <div class="card-box-header">
+      <div>
+        <h3 class="card-title">Cash & holding ledger</h3>
+        <p class="card-subtitle">Account AC-IND-0421 · Every balance movement linked to its lifecycle event</p>
+      </div>
+      <span class="status-badge reconciled">7 postings · Reconciled</span>
+    </div>
+
+    <div class="embedded-table-wrapper">
+      <table class="dashboard-table">
+        <thead>
+          <tr>
+            <th class="align-left">Posting / Balance dimension</th>
+            <th class="align-left">Linked event ID</th>
+            <th class="align-left">Event time · UTC</th>
+            <th class="align-right">Before</th>
+            <th class="align-right">Delta</th>
+            <th class="align-right">After</th>
+            <th class="align-left">Unit</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (posting of ledgerPostings; track posting.dimension) {
+            <tr>
+              <td class="align-left">
+                <span class="font-semibold">{{ posting.dimension }}</span>
+                <p class="text-xs text-muted mono">{{ posting.id }} · {{ posting.desc }}</p>
+              </td>
+              <td class="align-left mono text-xs text-muted">{{ posting.eventId }}</td>
+              <td class="align-left mono text-xs text-muted">{{ posting.time }}</td>
+              <td class="align-right mono">{{ posting.before }}</td>
+              <td class="align-right mono" [class.text-negative]="posting.isNegative" [class.text-success]="posting.isPositive">
+                {{ posting.delta }}
+              </td>
+              <td class="align-right mono">{{ posting.after }}</td>
+              <td class="align-left text-xs text-muted">{{ posting.unit }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Darker Inset Card Summary Row -->
+    <div class="inset-card-box ledger-summary-row" style="margin-bottom: var(--space-md);">
+      <div class="meta-block">
+        <span class="card-subtitle">Settled / Available cash · USD</span>
+        <p class="text-xs mono font-bold">$15,629.00 / $15,629.00</p>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">Reserved cash · USD</span>
+        <p class="text-xs mono font-bold">$0.00</p>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">Settled AAPL · Shares</span>
+        <p class="text-xs mono font-bold text-success">50</p>
+      </div>
+      <div class="meta-block">
+        <span class="card-subtitle">Pending AAPL · Shares</span>
+        <p class="text-xs mono font-bold">0</p>
+      </div>
+    </div>
+
+    <p class="card-footnote">
+      Cash reservation is a balance location, not an additional debit. Available cash = settled cash – reserved cash. At settlement: the reservation is consumed, principal is debited once, and 50 shares move from pending to settled. Fees $0.00: no fee posting. Acceptance/fill postings recorded with EVT-0731-02/04; settlement batch recorded 2026-09-30 15:00:00.008 UTC.
+    </p>
+  </div>
+</div>
