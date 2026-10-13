@@ -5,6 +5,12 @@
 
 BASE_URL="http://localhost:8080"
 
+if ! curl -sS --max-time 5 -o /dev/null "$BASE_URL/"; then
+  echo "✗ API is unavailable at $BASE_URL"
+  echo "  Start the backend stack before running this test."
+  exit 1
+fi
+
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║  COMPREHENSIVE DATA RETRIEVAL TEST                            ║"
 echo "║  Validating User and Account retrieval endpoints              ║"
@@ -337,12 +343,12 @@ if [ "$FINAL_ORDER_STATUS" = "SUCCEEDED" ]; then
   fi
   echo "  ✓ Asset Average Cost: $ASSET_AVG_COST"
 
-  if echo "$UPDATED_BALANCE" | grep -qE '^10000'; then
-    echo "  ✗ Balance should have decreased after FILLED order!"
+  if echo "$UPDATED_CASH" | grep -qE '^10000(\.0+)?$'; then
+    echo "  ✗ Cash balance should have decreased after FILLED order!"
     exit 1
   fi
-  echo "  ✓ Updated Balance: $UPDATED_BALANCE (correctly decreased)"
-  echo "  ✓ Updated Cash Balance: $UPDATED_CASH"
+  echo "  ✓ Updated Balance: $UPDATED_BALANCE (includes current asset value)"
+  echo "  ✓ Updated Cash Balance: $UPDATED_CASH (correctly decreased)"
 elif [ "$FINAL_ORDER_STATUS" = "REJECTED" ]; then
   echo "  ✓ Order was rejected; account holdings remain unchanged as expected"
   echo "  ✓ Held Assets Count: $ASSET_COUNT"

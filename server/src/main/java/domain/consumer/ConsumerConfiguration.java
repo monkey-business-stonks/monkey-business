@@ -83,6 +83,8 @@ public class ConsumerConfiguration {
                 
                 if (!isValidTrade) {
                     log.warn("Order validation failed: orderId={}, user={}", orderId, submittedEvent.getUsername());
+                    order.updateExecution(null, null, Order.OrderStatus.REJECTED, 422);
+                    orderRepository.save(order);
                     orderEventPublisher.publishOrderRejected(
                         orderId, 
                         submittedEvent.getAccountId(), 
@@ -92,7 +94,7 @@ public class ConsumerConfiguration {
                     );
                 } else {
                     log.info("Order validation passed: orderId={}, user={}", orderId, submittedEvent.getUsername());
-                    // Executor consumer will take over from here
+                    orderEventPublisher.publishOrderValidated(submittedEvent);
                 }
             } catch (Exception e) {
                 log.error("Error validating order: orderId={}, error={}", orderId, e.getMessage(), e);
@@ -103,7 +105,7 @@ public class ConsumerConfiguration {
     
     /**
      * Consumer for order execution.
-     * Listens to: orders.submitted (after validation passes)
+        * Listens to: orders.validated
      * Uses existing OrderExecutor service to execute orders.
      * Publishes: orders.filled (if success) or orders.rejected (if failure)
      * 
