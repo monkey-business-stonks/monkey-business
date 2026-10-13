@@ -5,13 +5,13 @@
 
 .label {
   color: var(--text-primary);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
 }
 
 .sublabel {
   color: var(--text-secondary);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-thin);
   font-size: var(--font-size-sm);
   padding-bottom: 5px;
 }
@@ -19,6 +19,7 @@
 .top-panel {
   display: flex;
   flex-direction: row;
+  padding-bottom: var(--space-md);
 }
 
 .top-labels {
@@ -38,7 +39,8 @@
 
 hr {
   width: 100%;
-  /* border-color: var(--background-tertiary); */
+  border: var(--width-xs) solid transparent;
+  border-color: var(--background-tertiary);
 }
 
 .buttons {

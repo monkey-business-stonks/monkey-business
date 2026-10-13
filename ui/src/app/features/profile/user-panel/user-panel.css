@@ -14,7 +14,7 @@
   flex-direction: column;
   align-items: center;
   margin-bottom: var(--space-lg);
-  gap: var(--space-md);
+  gap: var(--space-xxs);
 }
 
 .avatar-container {
@@ -36,6 +36,7 @@
 }
 
 .name {
+  padding-top: var(--space-md);
   color: var(--text-primary);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
@@ -44,11 +45,7 @@
 .email {
   color: var(--text-secondary);
   font-size: var(--font-size-s);
-  font-weight: var(--font-weight-semibold);
-}
-
-td {
-  color: var(--text-primary);
+  font-weight: var(--font-weight-thin);
 }
 
 hr {
@@ -56,6 +53,21 @@ hr {
   border-color: var(--text-secondary);
 }
 
+th, td {
+  padding-top: var(--space-sm);
+  padding-bottom: var(--space-sm);
+}
+
+.table-left {
+  text-align: start;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
 .table-right {
   text-align: end;
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
