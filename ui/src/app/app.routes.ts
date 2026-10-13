@@ -20,7 +20,6 @@ export const routes: Routes = [
   { path: 'trade', component: Trade, canActivate: [standardUserGuard] },
   { path: 'history', component: History, canActivate: [standardUserGuard] },
   { path: 'profile', component: Profile, canActivate: [standardUserGuard] },
-  { path: 'create-user', component: CreateUser },
 
   { 
     path: 'analyst-dashboard', 
@@ -44,4 +43,5 @@ export const routes: Routes = [
   },
 
   { path: 'login', component: Login },
+  { path: 'create-user', component: CreateUser },
 ];
