@@ -10,9 +10,7 @@ export class AccountService {
   constructor(private http: HttpClient) {}
 
   private getBackendUrl(): string {
-    const protocol = window.location.protocol;
-    const hostname = window.location.hostname;
-    return `${protocol}//${hostname}:8080`;
+    return `${window.location.origin}/api`;
   }
 
   getUserAccounts(userId: string): Observable<Account[]> {

@@ -79,6 +79,32 @@ public class OrderEventPublisher {
             log.error("Error publishing order.submitted: orderId={}, error={}", orderId, e.getMessage(), e);
         }
     }
+
+    /**
+     * Publishes an order after validation so execution only sees validated orders.
+     */
+    public void publishOrderValidated(OrderSubmittedEvent event) {
+        try {
+            Message<OrderSubmittedEvent> message = MessageBuilder
+                .withPayload(event)
+                .setHeader("kafka-message-id", event.getKafkaMessageId())
+                .setHeader("account-id", event.getAccountId())
+                .build();
+
+            boolean result = streamBridge.send("publishOrderValidated-out-0", message);
+
+            if (result) {
+                log.info("Published order.validated: orderId={}, kafkaMessageId={}",
+                         event.getOrderId(), event.getKafkaMessageId());
+            } else {
+                log.error("Failed to publish order.validated: orderId={}", event.getOrderId());
+            }
+        } catch (Exception e) {
+            log.error("Error publishing order.validated: orderId={}, error={}",
+                      event.getOrderId(), e.getMessage(), e);
+            throw new RuntimeException(e);
+        }
+    }
     
     /**
      * Publishes order.filled event to Kafka.

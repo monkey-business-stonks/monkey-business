@@ -55,8 +55,8 @@ public class OrderExecutionEngine {
                 throw new IllegalArgumentException("Executed value cannot be negative");
             }
             
-            // CRITICAL: Link order to account
-            account.addOrder(order);
+            // Order is already linked to the account when initially persisted.
+            // Re-adding it here can trigger a duplicate detached-entity merge conflict.
             
             // Update holdings via AssetService
             if (action.equalsIgnoreCase("BUY")) {
@@ -68,7 +68,9 @@ public class OrderExecutionEngine {
                 );
                 
                 // Use AssetService to update holdings (handles deduplication and DB persistence)
-                assetService.updateAssetOnBuy(account, ticker, quantity, unitPrice);
+                Asset updatedAsset = assetService.updateAssetOnBuy(account, ticker, quantity, unitPrice);
+                // Keep account's in-memory holdings in sync to avoid stale cascade overwrites.
+                account.updateAsset(updatedAsset);
                 
                 // Deduct cash from account
                 BigDecimal newCash = account.getCashBalance().subtract(executedValue);

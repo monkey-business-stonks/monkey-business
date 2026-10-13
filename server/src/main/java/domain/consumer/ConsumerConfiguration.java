@@ -6,6 +6,7 @@ import domain.event.OrderRejectedEvent;
 import domain.service.OrderValidator;
 import domain.service.OrderExecutor;
 import domain.service.OrderEventPublisher;
+import domain.service.OrderExecutionEngine;
 import domain.entities.Order;
 import domain.entities.Account;
 import domain.repository.OrderRepository;
@@ -47,6 +48,9 @@ public class ConsumerConfiguration {
     
     @Autowired
     private OrderEventPublisher orderEventPublisher;
+
+    @Autowired
+    private OrderExecutionEngine orderExecutionEngine;
     
     /**
      * Consumer for order validation.
@@ -79,6 +83,8 @@ public class ConsumerConfiguration {
                 
                 if (!isValidTrade) {
                     log.warn("Order validation failed: orderId={}, user={}", orderId, submittedEvent.getUsername());
+                    order.updateExecution(null, null, Order.OrderStatus.REJECTED, 422);
+                    orderRepository.save(order);
                     orderEventPublisher.publishOrderRejected(
                         orderId, 
                         submittedEvent.getAccountId(), 
@@ -88,7 +94,7 @@ public class ConsumerConfiguration {
                     );
                 } else {
                     log.info("Order validation passed: orderId={}, user={}", orderId, submittedEvent.getUsername());
-                    // Executor consumer will take over from here
+                    orderEventPublisher.publishOrderValidated(submittedEvent);
                 }
             } catch (Exception e) {
                 log.error("Error validating order: orderId={}, error={}", orderId, e.getMessage(), e);
@@ -99,7 +105,7 @@ public class ConsumerConfiguration {
     
     /**
      * Consumer for order execution.
-     * Listens to: orders.submitted (after validation passes)
+        * Listens to: orders.validated
      * Uses existing OrderExecutor service to execute orders.
      * Publishes: orders.filled (if success) or orders.rejected (if failure)
      * 
@@ -119,6 +125,12 @@ public class ConsumerConfiguration {
                 // Fetch order and account from database
                 Order order = orderRepository.findById(UUID.fromString(orderId))
                     .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
+
+                // Idempotency guard for retries/replays
+                if (order.getStatus() == Order.OrderStatus.FILLED || order.getStatus() == Order.OrderStatus.REJECTED) {
+                    log.info("Skipping already-terminal order: orderId={}, status={}", orderId, order.getStatus());
+                    return;
+                }
                 
                 Account account = accountRepository.findById(UUID.fromString(submittedEvent.getAccountId()))
                     .orElseThrow(() -> new RuntimeException("Account not found: " + submittedEvent.getAccountId()));
@@ -127,6 +139,10 @@ public class ConsumerConfiguration {
                 order = orderExecutor.processTrade(order, account);
                 
                 if (order.getStatus() == Order.OrderStatus.FILLED) {
+                    // Persist account and asset changes first, then persist terminal order status
+                    orderExecutionEngine.updateAccount(account, order);
+                    orderRepository.save(order);
+
                     log.info("Order executed successfully: orderId={}, user={}", orderId, submittedEvent.getUsername());
                     orderEventPublisher.publishOrderFilled(
                         orderId,
@@ -134,6 +150,9 @@ public class ConsumerConfiguration {
                         kafkaMessageId
                     );
                 } else if (order.getStatus() == Order.OrderStatus.REJECTED) {
+                    // Persist terminal rejected status for polling clients
+                    orderRepository.save(order);
+
                     log.warn("Order execution rejected: orderId={}, user={}, code={}", 
                              orderId, submittedEvent.getUsername(), order.getStatusCode());
                     orderEventPublisher.publishOrderRejected(

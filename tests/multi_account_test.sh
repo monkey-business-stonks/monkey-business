@@ -47,7 +47,8 @@ echo "▶ STEP 1: Creating user..."
 TIMESTAMP=$(date +%s%N | cut -b1-13)
 USERNAME="multitest_$TIMESTAMP"
 PASSWORD="TestPass999"
-
+echo $USERNAME
+echo $PASSWORD
 USER_RESPONSE=$(curl -s -X POST "$BASE_URL/users" \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"$USERNAME\",\"email\":\"$USERNAME@test.com\",\"password\":\"$PASSWORD\",\"name\":\"Multi Account Tester\",\"dob\":\"1998-01-01\"}")
@@ -266,9 +267,11 @@ echo "╔═══════════════════════�
 echo "║ ✓ TEST COMPLETED                                               ║"
 echo "╠════════════════════════════════════════════════════════════════╣"
 echo "║ Summary:                                                       ║"
-echo "║ • User: $USER_ID                        ║"
-echo "║ • Accounts Created: 3 (BROKERAGE, CRYPTO, FOREX)             ║"
+echo "║ • Username: $USERNAME                                          ║"
+echo "║ • Password: $PASSWORD                                          ║"
+echo "║ • User: $USER_ID                                               ║"
+echo "║ • Accounts Created: 3 (BROKERAGE, CRYPTO, FOREX)               ║"
 echo "║ • BROKERAGE Status: $BROKERAGE_FINAL_STATUS                                 ║"
 echo "║ • CRYPTO Status:    $CRYPTO_FINAL_STATUS                                 ║"
-echo "║ • Account Isolation: ✓ Verified                              ║"
+echo "║ • Account Isolation: ✓ Verified                                ║"
 echo "╚════════════════════════════════════════════════════════════════╝"
