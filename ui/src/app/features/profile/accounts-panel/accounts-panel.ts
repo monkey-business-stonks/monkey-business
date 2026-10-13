@@ -1,5 +1,5 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, signal } from '@angular/core';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { Account } from '@/app/core/models';
@@ -17,10 +17,10 @@ export class AccountsPanel implements OnInit, OnChanges {
   @Output() editProfile = new EventEmitter<void>();
 
   userId: string | null = null;
-  accounts: Account[] = [];
+  accounts = signal<Account[]>([]);
   showAccountOpening = false;
-  isLoading = false;
-  errorMessage = '';
+  isLoading = signal(false);
+  errorMessage = signal<string>('');
 
   constructor(
     private authService: AuthService,
@@ -28,7 +28,6 @@ export class AccountsPanel implements OnInit, OnChanges {
   ) {}
 
   ngOnInit(): void {
-    this.userId = this.authService.getUserId();
     this.loadAccounts();
 
     if (this.autoOpenAccountFlow) {
@@ -43,22 +42,25 @@ export class AccountsPanel implements OnInit, OnChanges {
   }
 
   loadAccounts(): void {
-    if (!this.userId) {
-      this.errorMessage = 'User not found. Please log in again.';
+    const currentUserId = this.authService.getUserId();
+    this.userId = currentUserId;
+
+    if (!currentUserId) {
+      this.errorMessage.set('User not found. Please log in again.');
       return;
     }
 
-    this.isLoading = true;
-    this.errorMessage = '';
+    this.isLoading.set(true);
+    this.errorMessage.set('');
 
-    this.accountService.getUserAccounts(this.userId).subscribe({
+    this.accountService.getUserAccounts(currentUserId).subscribe({
       next: (accounts: Account[]) => {
-        this.accounts = accounts;
-        this.isLoading = false;
+        this.accounts.set(accounts);
+        this.isLoading.set(false);
       },
       error: () => {
-        this.errorMessage = 'Failed to load trading accounts.';
-        this.isLoading = false;
+        this.errorMessage.set('Failed to load trading accounts.');
+        this.isLoading.set(false);
       }
     });
   }
@@ -66,7 +68,7 @@ export class AccountsPanel implements OnInit, OnChanges {
   openAccountFlow(): void {
     this.userId = this.authService.getUserId();
     if (!this.userId) {
-      this.errorMessage = 'User not found. Please log in again.';
+      this.errorMessage.set('User not found. Please log in again.');
       return;
     }
 

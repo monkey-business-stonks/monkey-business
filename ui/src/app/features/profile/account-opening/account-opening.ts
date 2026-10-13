@@ -40,12 +40,12 @@ export class AccountOpening {
       description: 'General investing account for stocks, ETFs, and funds.'
     },
     {
-      value: '401K', 
+      value: '_401K', 
       label: '401(k)',
       description: 'Retirement-focused account built for long-term contributions.'
     },
     {
-      value: 'ROTH IRA', 
+      value: 'ROTH_IRA', 
       label: 'Roth IRA',
       description: 'Tax-advantaged retirement account with qualified withdrawals.'
     },
@@ -77,18 +77,13 @@ export class AccountOpening {
   }
 
   confirmType(): void {
-    console.log("Current User ID in component:", this.userId);
     if (!this.selectedAccountType || this.isLoading) {
-      console.log("Have not selected type or is loading. Returning without confirmation.");
       return;
     }
 
     const refreshToken = this.authService.getStoredRefreshToken();
-    console.log("Selected Account Type:", this.selectedAccountType);
-    console.log("Retrieved Refresh Token:", refreshToken);
 
     if (!refreshToken) {
-      console.log("Authentication required. Please log in again.");
       this.errorMessage = 'Authentication required. Please log in again.';
       return;
     }
@@ -96,10 +91,8 @@ export class AccountOpening {
     this.errorMessage = '';
     this.isLoading = true;
 
-    console.log("Sending verifyAccountType request...");
     this.accountService.verifyAccountType(this.userId, refreshToken, this.selectedAccountType).subscribe({
       next: () => {
-        console.log("Switching step to deposit now!");
         this.currentStep = 'deposit';
         this.isLoading = false;
         this.cdr.detectChanges(); 
@@ -128,13 +121,11 @@ export class AccountOpening {
     this.errorMessage = '';
     this.isLoading = true;
 
-    console.log("Sending createAccount request...");
     this.accountService.createAccount(this.userId, {
       accountType: this.selectedAccountType,
       initialDeposit: amount
     }).subscribe({
       next: (response: any) => {
-        console.log("createAccount request success!");
         this.createdAccountId = response?.accountId || 'Pending';
         this.openedDate = response?.createdOn || new Date().toISOString();
         this.currentStep = 'confirmation';
@@ -142,7 +133,6 @@ export class AccountOpening {
         this.cdr.detectChanges(); 
       },
       error: (error: any) => {
-        console.log("createAccount request failed :(((");
         this.errorMessage = error?.error?.message || 'Account creation failed. Please try again.';
         this.isLoading = false;
         this.cdr.detectChanges(); 
