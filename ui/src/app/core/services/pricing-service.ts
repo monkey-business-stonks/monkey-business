@@ -9,7 +9,11 @@ import { Quote } from '../models';
 export class PricingService {
 	constructor(private http: HttpClient) {}
 
-	getQuote(ticker: string): Quote {
-		return this.http.get<Quote>(`${window.location.origin}/api/market/quote/${ticker}`);
+	getQuote(ticker: string): Observable<Quote> {
+		return this.http.get<Quote>(`${window.location.origin}/api/market/price/${ticker}`);
+	}
+
+	getPrice(ticker: string): Observable<number> {
+		return this.getQuote(ticker).pipe(map(quote => quote.data.price));
 	}
 }
