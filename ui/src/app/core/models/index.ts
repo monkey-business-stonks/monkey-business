@@ -3,3 +3,5 @@ export * from './asset';
 export * from './order';
 export * from './quote';
 export * from './user';
+export * from './data';
+export * from './meta';
