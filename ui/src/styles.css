@@ -50,6 +50,7 @@
   --font-size-2xl: 36px;
 
   /* Typography - Font Weights */
+  --font-weight-thin: 300;
   --font-weight-normal: 400;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
