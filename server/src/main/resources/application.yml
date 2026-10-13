@@ -72,16 +72,16 @@ spring:
         publishOrderSubmitted-out-0:
           destination: orders.submitted
           contentType: application/json
+        publishOrderValidated-out-0:
+          destination: orders.validated
+          contentType: application/json
         orderValidatorConsumer-in-0:
           destination: orders.submitted
           group: order-validator-group
           consumer:
             max-concurrency: 5
-        publishOrderValidated-out-0:
-          destination: orders.validated
-          contentType: application/json
         orderExecutorConsumer-in-0:
-          destination: orders.submitted
+          destination: orders.validated
           group: order-executor-group
           consumer:
             max-concurrency: 3

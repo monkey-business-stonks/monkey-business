@@ -5,6 +5,12 @@
 
 BASE_URL="http://localhost:8080"
 
+if ! curl -sS --max-time 5 -o /dev/null "$BASE_URL/"; then
+  echo "✗ API is unavailable at $BASE_URL"
+  echo "  Start the backend stack before running this test."
+  exit 1
+fi
+
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║  COMPREHENSIVE DATA RETRIEVAL TEST                            ║"
 echo "║  Validating User and Account retrieval endpoints              ║"
@@ -36,6 +42,8 @@ if [ -z "$USER_ID" ] || [ "$USER_ID" = "null" ]; then
   exit 1
 fi
 echo "  ✓ User created with ID: $USER_ID"
+echo "  ✓ Username: $TEST_USERNAME"
+echo "  ✓ Password: $TEST_PASSWORD"
 echo ""
 
 # STEP 2: Authenticate and get JWT token
@@ -261,6 +269,7 @@ fi
 echo "  ✓ Order created: $ORDER_ID"
 
 # Poll for async status transition (timeout: 20s)
+# API returns PENDING | SUCCEEDED | REJECTED (SUCCEEDED corresponds to internal FILLED)
 echo "  ⏳ Waiting for async order processing (up to 20 seconds)..."
 FINAL_ORDER_STATUS=""
 
@@ -272,7 +281,7 @@ for attempt in {1..20}; do
 
   if [ -n "$CURRENT_STATUS" ] && [ "$CURRENT_STATUS" != "null" ]; then
     FINAL_ORDER_STATUS="$CURRENT_STATUS"
-    if [ "$FINAL_ORDER_STATUS" = "FILLED" ] || [ "$FINAL_ORDER_STATUS" = "REJECTED" ]; then
+    if [ "$FINAL_ORDER_STATUS" = "SUCCEEDED" ] || [ "$FINAL_ORDER_STATUS" = "REJECTED" ]; then
       break
     fi
   fi
@@ -295,7 +304,7 @@ ASSET_COUNT=$(echo "$ASSETS_ARRAY" | jq 'length')
 UPDATED_BALANCE=$(echo "$ACC_WITH_ASSETS" | jq -r '.balance')
 UPDATED_CASH=$(echo "$ACC_WITH_ASSETS" | jq -r '.cashBalance')
 
-if [ "$FINAL_ORDER_STATUS" = "FILLED" ]; then
+if [ "$FINAL_ORDER_STATUS" = "SUCCEEDED" ]; then
   if [ "$ASSET_COUNT" != "1" ]; then
     echo "  ✗ Expected 1 asset after FILLED order, got: $ASSET_COUNT"
     echo "  Assets: $ASSETS_ARRAY"
@@ -334,12 +343,12 @@ if [ "$FINAL_ORDER_STATUS" = "FILLED" ]; then
   fi
   echo "  ✓ Asset Average Cost: $ASSET_AVG_COST"
 
-  if echo "$UPDATED_BALANCE" | grep -qE '^10000'; then
-    echo "  ✗ Balance should have decreased after FILLED order!"
+  if echo "$UPDATED_CASH" | grep -qE '^10000(\.0+)?$'; then
+    echo "  ✗ Cash balance should have decreased after FILLED order!"
     exit 1
   fi
-  echo "  ✓ Updated Balance: $UPDATED_BALANCE (correctly decreased)"
-  echo "  ✓ Updated Cash Balance: $UPDATED_CASH"
+  echo "  ✓ Updated Balance: $UPDATED_BALANCE (includes current asset value)"
+  echo "  ✓ Updated Cash Balance: $UPDATED_CASH (correctly decreased)"
 elif [ "$FINAL_ORDER_STATUS" = "REJECTED" ]; then
   echo "  ✓ Order was rejected; account holdings remain unchanged as expected"
   echo "  ✓ Held Assets Count: $ASSET_COUNT"
@@ -377,6 +386,8 @@ JWT_TOKEN2=$(curl -s -X POST "$BASE_URL/users/authenticate" \
   -d "{\"username\":\"$TEST_USERNAME2\",\"password\":\"TestPass999\"}" | jq -r '.accessToken')
 
 echo "  ✓ Second user created: $USER_ID2"
+echo "  ✓ Second user username: $TEST_USERNAME2"
+echo "  ✓ Second user password: TestPass999"
 
 # First user lists their accounts (should work)
 USER1_ACCOUNTS=$(curl -s -X GET "$BASE_URL/users/$USER_ID/accounts" \
@@ -449,6 +460,10 @@ echo ""
 
 echo "╔════════════════════════════════════════════════════════════════╗"
 echo "║ ✓ ALL RETRIEVAL TESTS PASSED!                                 ║"
+echo "╠════════════════════════════════════════════════════════════════╣"
+echo "║ Login Credentials:                                             ║"
+echo "║ • Primary user: $TEST_USERNAME / $TEST_PASSWORD               ║"
+echo "║ • Secondary user: $TEST_USERNAME2 / TestPass999               ║"
 echo "╠════════════════════════════════════════════════════════════════╣"
 echo "║ Coverage:                                                      ║"
 echo "║ • User creation and data validation                           ║"

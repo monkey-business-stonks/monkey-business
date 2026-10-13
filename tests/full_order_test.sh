@@ -23,7 +23,7 @@ wait_for_order_terminal_status() {
 
     if [[ -n "$CURRENT_STATUS" && "$CURRENT_STATUS" != "null" ]]; then
       final_status="$CURRENT_STATUS"
-      if [[ "$final_status" == "FILLED" || "$final_status" == "REJECTED" ]]; then
+      if [[ "$final_status" == "SUCCEEDED" || "$final_status" == "REJECTED" ]]; then
         break
       fi
     fi
@@ -55,6 +55,8 @@ if [[ -z "$USER_ID" || "$USER_ID" == "null" ]]; then
   exit 1
 fi
 echo "  ✓ User ID: $USER_ID"
+echo "  ✓ Username: $USERNAME"
+echo "  ✓ Password: $PASSWORD"
 
 # Step 2: Authenticate
 echo ""
@@ -163,7 +165,7 @@ echo "  ✓ Asset Count: $ASSET_COUNT"
 echo "  ✓ Ticker: $ASSET_TICKER"
 echo "  ✓ Total Quantity: $TOTAL_QUANTITY"
 
-if [[ "$FINAL_ORDER1_STATUS" == "FILLED" && "$FINAL_ORDER2_STATUS" == "FILLED" ]]; then
+if [[ "$FINAL_ORDER1_STATUS" == "SUCCEEDED" && "$FINAL_ORDER2_STATUS" == "SUCCEEDED" ]]; then
   if [[ "$ASSET_COUNT" != "1" ]]; then
     echo "  ✗ ERROR: Should have 1 asset, not $ASSET_COUNT"
     exit 1
@@ -179,7 +181,7 @@ if [[ "$FINAL_ORDER1_STATUS" == "FILLED" && "$FINAL_ORDER2_STATUS" == "FILLED" ]
     exit 1
   fi
 
-  echo "  ✓ Filled-order assertions passed (AAPL quantity = 15)"
+  echo "  ✓ Succeeded-order assertions passed (AAPL quantity = 15)"
 else
   echo "  ⚠ Non-terminal or rejected async outcomes observed; skipping strict holdings assertion"
 fi
@@ -189,6 +191,8 @@ echo "╔═══════════════════════�
 echo "║ ✓ TEST COMPLETED                                               ║"
 echo "╠════════════════════════════════════════════════════════════════╣"
 echo "║ Summary:                                                       ║"
+echo "║ • Username: $USERNAME                                        ║"
+echo "║ • Password: $PASSWORD                                        ║"
 echo "║ • Initial Balance: $INITIAL_BALANCE                                  ║"
 echo "║ • Order 1 Final Status: $FINAL_ORDER1_STATUS                               ║"
 echo "║ • Order 2 Final Status: $FINAL_ORDER2_STATUS                               ║"
