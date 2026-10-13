@@ -1,18 +1,19 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, OnInit } from '@angular/core';
+import { ActivatedRoute, Router } from '@angular/router';
 import { UserPanel } from '@/app/features/profile/user-panel/user-panel';
 import { EditPanel } from './edit-panel/edit-panel';
+import { AccountsPanel } from './accounts-panel/accounts-panel';
 
 // Profile component - displays and manages user profile information
 @Component({
   selector: 'app-profile',
   standalone: true,
-  imports: [SharedModule, UserPanel, EditPanel],
+  imports: [SharedModule, UserPanel, EditPanel, AccountsPanel],
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile {
+export class Profile implements OnInit {
   // User information properties
   username: string = '';
   firstName: string = '';
@@ -25,14 +26,29 @@ export class Profile {
   
   // Edit mode and notification preferences
   isEditMode: boolean = false;
+  autoOpenAccountFlow = false;
   notifyByPhone: boolean = true;
   notifyByEmail: boolean = true;
 
-  constructor(private router: Router) {}
+  constructor(
+    private router: Router,
+    private route: ActivatedRoute
+  ) {}
+
+  ngOnInit(): void {
+    this.route.queryParams.subscribe(params => {
+      this.autoOpenAccountFlow = params['openAccount'] === 'true';
+      this.isEditMode = false;
+    });
+  }
 
   // Toggle between view and edit mode
   toggleEditMode() {
     this.isEditMode = !this.isEditMode;
+  }
+
+  saveAndReturnToAccounts(): void {
+    this.isEditMode = false;
   }
 
   // Save profile changes and exit edit mode

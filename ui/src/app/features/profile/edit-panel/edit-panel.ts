@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { BaseInputComponent } from '@/app/shared/components/base-input/base-input';
 import { ButtonComponent } from '@/app/shared/components/button/button';
 
@@ -8,4 +8,10 @@ import { ButtonComponent } from '@/app/shared/components/button/button';
   styleUrl: './edit-panel.css',
   templateUrl: './edit-panel.html',
 })
-export class EditPanel {}
+export class EditPanel {
+  @Output() saveConfiguration = new EventEmitter<void>();
+
+  onSaveConfiguration(): void {
+    this.saveConfiguration.emit();
+  }
+}

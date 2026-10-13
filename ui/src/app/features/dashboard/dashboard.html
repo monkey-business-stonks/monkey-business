@@ -3,6 +3,12 @@
   <div class="account-select-container">
     <app-button 
       variant="primary"
+      (click)="openAccountPage()">
+      OPEN ACCOUNT
+    </app-button>
+
+    <app-button 
+      variant="primary"
       [class.active]="selectedAccountFilter() === 'ALL'"
       (click)="selectAccountFilter('ALL')">
       ALL

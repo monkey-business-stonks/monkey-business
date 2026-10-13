@@ -1,9 +1,9 @@
 export enum AccountType {
-  "BROKERAGE", 
-  "401K", 
-  "ROTH IRA", 
-  "CRYPTO", 
-  "FOREX"
+  BROKERAGE = 'BROKERAGE',
+  _401K = '_401K',
+  ROTH_IRA = 'ROTH_IRA',
+  CRYPTO = 'CRYPTO',
+  FOREX = 'FOREX'
 }
 
 export interface Account {

@@ -3,6 +3,7 @@ package domain.service;
 import domain.entities.Account;
 import domain.dto.AccountResponse;
 import domain.dto.CreateAccountRequest;
+import domain.error.AuthenticationException;
 import domain.entities.User;
 import domain.repository.AccountRepository;
 import domain.repository.AssetRepository;
@@ -40,8 +41,15 @@ public class AccountService {
             throw new IllegalArgumentException("Account type is required");
         }
 
-        // Set default balances - accounts start with 10,000 cash
-        BigDecimal cashBalance = new BigDecimal("10000");
+        if (request.getInitialDeposit() == null) {
+            throw new IllegalArgumentException("Initial deposit is required");
+        }
+
+        if (request.getInitialDeposit().compareTo(BigDecimal.ZERO) <= 0) {
+            throw new IllegalArgumentException("Initial deposit must be greater than 0");
+        }
+
+        BigDecimal cashBalance = request.getInitialDeposit();
         BigDecimal balance = cashBalance;  // Initially, all balance is cash (no holdings yet)
 
         // Create account
@@ -49,7 +57,7 @@ public class AccountService {
         Account account = new Account(
             accountId,
             ZonedDateTime.now(),
-            Account.AccountType.valueOf(request.getAccountType().toString()),
+            toEntityAccountType(request.getAccountType().toString()),
             balance,
             cashBalance,
             new HashSet<>(),
@@ -94,6 +102,43 @@ public class AccountService {
     }
 
     /**
+     * Validate account type request for authenticated user.
+     * This method performs validation only and does not create or mutate accounts.
+     */
+    public void verifyAccountType(UUID userId, String refreshToken, String accountType) {
+        User user = userService.getUserDirect(userId);
+        if (user == null) {
+            throw new NoSuchElementException("User not found with ID: " + userId);
+        }
+
+        if (refreshToken == null || refreshToken.isBlank()) {
+            throw new AuthenticationException("Refresh token is required");
+        }
+
+        if (user.getRefreshToken() == null || !refreshToken.equals(user.getRefreshToken())) {
+            throw new AuthenticationException("Refresh token does not match user");
+        }
+
+        if (accountType == null || accountType.isBlank()) {
+            throw new IllegalArgumentException("Account type is required");
+        }
+
+        try {
+            toEntityAccountType(accountType);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("Invalid account type: " + accountType);
+        }
+    }
+
+    private Account.AccountType toEntityAccountType(String accountType) {
+        return switch (accountType.trim().toUpperCase()) {
+            case "401K", "_401K" -> Account.AccountType._401K;
+            case "ROTH IRA", "ROTH_IRA" -> Account.AccountType.ROTH_IRA;
+            default -> Account.AccountType.valueOf(accountType.trim().toUpperCase());
+        };
+    }
+
+    /**
      * Get stored account (internal use)
      */
     public Account getAccountDirect(UUID accountId) {
@@ -127,10 +172,18 @@ public class AccountService {
         return new AccountResponse()
             .accountId(account.getAccID())
             .userId(userId)
-            .accountType(domain.dto.AccountType.valueOf(account.getAccType().toString()))
+            .accountType(toDtoAccountType(account.getAccType()))
             .openedDate(account.getCreatedOn().toOffsetDateTime())
             .balance(new BigDecimal(account.getBalance()))
             .cashBalance(account.getCashBalance())
             .heldAssets(heldAssets);
+    }
+
+    private domain.dto.AccountType toDtoAccountType(Account.AccountType accountType) {
+        return switch (accountType) {
+            case _401K -> domain.dto.AccountType.fromValue("401K");
+            case ROTH_IRA -> domain.dto.AccountType.fromValue("ROTH IRA");
+            default -> domain.dto.AccountType.fromValue(accountType.name());
+        };
     }
 }

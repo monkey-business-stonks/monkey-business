@@ -1,9 +1,64 @@
 <div class="accounts-panel-wrapper">
-    <div class="top-panel">
-        <div class="top-labels">
-            <p class="label">Trading Accounts</p>
-            <p class="sublabel">Manage your linked portfolios, individual holdings, and institutional assets</p>
+    @if (showAccountOpening) {
+        <account-opening
+            [userId]="userId || ''"
+            (cancel)="closeAccountFlow()"
+            (accountOpened)="onAccountOpened()"
+        ></account-opening>
+    } @else {
+        <div class="top-panel">
+            <div class="top-labels">
+                <p class="label">Trading Accounts</p>
+                <p class="sublabel">Manage your portfolios, individual holdings, and institutional assets</p>
+            </div>
+            @if (showEditProfileButton) {
+                <div class="top-actions">
+                    <app-button variant="primary" (click)="onEditProfile()">EDIT PROFILE</app-button>
+                </div>
+            }
         </div>
-        <app-button>Edit Profile</app-button>
-    </div>
+
+        <div class="accounts-container">
+            @if (errorMessage()) {
+                <div class="error-banner">{{ errorMessage() }}</div>
+            }
+
+            @if (isLoading()) {
+                <div class="empty-state">
+                    <p class="empty-sub">Loading accounts...</p>
+                </div>
+            }
+
+            <div class="account-list">
+                @for (account of accounts(); track account.accountId) {
+                    <div class="account-bar">
+                        <div class="account-head">
+                            <p class="account-name">{{ getAccountTypeLabel(account.accountType) }}</p>
+                            <p class="account-id">ID {{ account.accountId }}</p>
+                        </div>
+                        <div class="account-stats">
+                            <div class="stat-cell">
+                                <p class="stat-label">Balance</p>
+                                <p class="stat-value">${{ account.balance | number:'1.2-2' }}</p>
+                            </div>
+                            <div class="stat-cell">
+                                <p class="stat-label">Cash</p>
+                                <p class="stat-value">${{ account.cashBalance | number:'1.2-2' }}</p>
+                            </div>
+                            <div class="stat-cell">
+                                <p class="stat-label">Opened</p>
+                                <p class="stat-value">{{ account.openedDate | date:'shortDate' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <button type="button" class="account-bar open-account-bar" (click)="openAccountFlow()">
+                    <div class="account-head">
+                        <p class="account-name">OPEN ACCOUNT</p>
+                    </div>
+                </button>
+            </div>
+        </div>
+    }
 </div>

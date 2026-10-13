@@ -1,0 +1,151 @@
+.account-opening-panel {
+  background-color: var(--background-secondary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+}
+
+.header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.label {
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-semibold);
+}
+
+.sublabel {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.error-banner {
+  border: 1px solid #7a1e1e;
+  background: rgba(255, 59, 48, 0.12);
+  color: #ffd6d3;
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.account-options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-md);
+}
+
+.account-option-card {
+  background-color: var(--background-primary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color var(--transition-duration), background-color var(--transition-duration);
+}
+
+.account-option-card:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary-transparent);
+}
+
+.account-option-card.selected {
+  border-color: var(--accent-primary);
+  background-color: var(--accent-primary-transparent);
+}
+
+.account-title {
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.account-description {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.confirm-row {
+  margin-top: var(--space-lg);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.deposit-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.deposit-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.deposit-form input {
+  width: 100%;
+  box-sizing: border-box;
+  background-color: var(--background-primary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-family: 'Inter', sans-serif;
+  padding: var(--space-sm) var(--space-md);
+}
+
+.deposit-form input:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.confirmation-card {
+  background-color: var(--background-primary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+}
+
+.confirmation-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  border-bottom: 1px solid var(--background-tertiary);
+}
+
+.confirmation-row:last-child {
+  border-bottom: none;
+}
+
+.confirmation-key {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.confirmation-value {
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.mono {
+  font-family: 'Roboto Mono', sans-serif;
+}
+
+@media (max-width: 900px) {
+  .account-options-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .header-row {
+    flex-direction: column;
+  }
+}

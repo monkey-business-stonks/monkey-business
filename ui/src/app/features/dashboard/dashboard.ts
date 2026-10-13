@@ -1,5 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, OnInit, signal, computed } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { Account } from '@/app/core/models'; 
@@ -80,6 +81,7 @@ export class Dashboard implements OnInit {
   });
 
   constructor(
+    private router: Router,
     private authService: AuthService,
     private accountService: AccountService
   ) {}
@@ -114,5 +116,9 @@ export class Dashboard implements OnInit {
 
   selectAccountFilter(filter: string): void {
     this.selectedAccountFilter.set(filter);
+  }
+
+  openAccountPage(): void {
+    this.router.navigate(['/profile'], { queryParams: { openAccount: 'true' } });
   }
 }
