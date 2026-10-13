@@ -40,12 +40,12 @@ export class AccountOpening {
       description: 'General investing account for stocks, ETFs, and funds.'
     },
     {
-      value: '_401K', 
+      value: '401K',
       label: '401(k)',
       description: 'Retirement-focused account built for long-term contributions.'
     },
     {
-      value: 'ROTH_IRA', 
+      value: 'ROTH IRA',
       label: 'Roth IRA',
       description: 'Tax-advantaged retirement account with qualified withdrawals.'
     },

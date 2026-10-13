@@ -57,7 +57,7 @@ public class AccountService {
         Account account = new Account(
             accountId,
             ZonedDateTime.now(),
-            Account.AccountType.valueOf(request.getAccountType().toString()),
+            toEntityAccountType(request.getAccountType().toString()),
             balance,
             cashBalance,
             new HashSet<>(),
@@ -124,10 +124,18 @@ public class AccountService {
         }
 
         try {
-            Account.AccountType.valueOf(accountType.trim().toUpperCase());
+            toEntityAccountType(accountType);
         } catch (IllegalArgumentException ex) {
             throw new IllegalArgumentException("Invalid account type: " + accountType);
         }
+    }
+
+    private Account.AccountType toEntityAccountType(String accountType) {
+        return switch (accountType.trim().toUpperCase()) {
+            case "401K", "_401K" -> Account.AccountType._401K;
+            case "ROTH IRA", "ROTH_IRA" -> Account.AccountType.ROTH_IRA;
+            default -> Account.AccountType.valueOf(accountType.trim().toUpperCase());
+        };
     }
 
     /**
@@ -164,10 +172,18 @@ public class AccountService {
         return new AccountResponse()
             .accountId(account.getAccID())
             .userId(userId)
-            .accountType(domain.dto.AccountType.valueOf(account.getAccType().toString()))
+            .accountType(toDtoAccountType(account.getAccType()))
             .openedDate(account.getCreatedOn().toOffsetDateTime())
             .balance(new BigDecimal(account.getBalance()))
             .cashBalance(account.getCashBalance())
             .heldAssets(heldAssets);
+    }
+
+    private domain.dto.AccountType toDtoAccountType(Account.AccountType accountType) {
+        return switch (accountType) {
+            case _401K -> domain.dto.AccountType.fromValue("401K");
+            case ROTH_IRA -> domain.dto.AccountType.fromValue("ROTH IRA");
+            default -> domain.dto.AccountType.fromValue(accountType.name());
+        };
     }
 }

@@ -23,7 +23,7 @@ public class Account {
 	@Column(name = "createdon")
 	private ZonedDateTime createdOn;
 	
-	@Enumerated(EnumType.STRING)
+	@Convert(converter = AccountTypeConverter.class)
 	@Column(name = "accounttype")
 	private AccountType accountType;
 	
