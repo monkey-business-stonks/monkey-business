@@ -97,7 +97,7 @@ export class TradeSearch implements OnInit {
   //     selected: false
   //   }
   // ];
-  assetList: TradeSearchRowData[] = [this.pricingService.getPrice(AAPL), this.pricingService.getPrice(AAPL), this.pricingService.getPrice(AAPL)] 
+  assetList: TradeSearchRowData[] = [this.pricingService.getQuote(AAPL), this.pricingService.getQuote(AAPL), this.pricingService.getQuote(AAPL)] 
   ngOnInit(): void {
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
