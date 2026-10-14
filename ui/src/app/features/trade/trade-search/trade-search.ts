@@ -99,13 +99,10 @@ export class TradeSearch implements OnInit {
   // ];
   assetList: Quote[] = [];
   ngOnInit(): void {
-    forkJoin(
-      ['AAPL', 'MSFT', 'NVDA'].map(ticker =>
-        this.pricingService.getQuote(ticker)
-      )
-    ).subscribe(quotes => {
+    this.pricingService.getQuotes("AAPL,MSFT,NVDA").subscribe(quotes => {
       this.assetList = quotes;
     });
+    console.log(this.assetList)
 
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
