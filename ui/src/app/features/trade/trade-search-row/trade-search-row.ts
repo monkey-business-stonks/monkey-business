@@ -1,6 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-search-row.model';
+import { Quote } from '@/app/core/models/quote';
 
 
 @Component({
@@ -11,27 +11,20 @@ import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-
   styleUrls: ['./trade-search-row.css']
 })
 export class TradeSearchRow {
-  @Input({ required: true }) data!: TradeSearchRowData;
+  @Input({ required: true }) row!: Quote;
+  @Input() selected = false;
 
-  @Output() rowClick = new EventEmitter<TradeSearchRowData>();
+  @Output() rowClick = new EventEmitter<Quote>();
 
   get isPositive(): boolean {
-    return (this.data.quote.changePercent ?? 0) >= 0;
-  }
-
-  get currentValue(): number {
-    return this.data.asset.quantity * this.data.quote.price;
-  }
-
-  get todayChange(): number {
-    return this.data.asset.quantity * (this.data.quote.change ?? 0);
+    return (this.row.data.change ?? 0) >= 0;
   }
 
   get spread(): number {
-    return this.data.quote.ask - this.data.quote.bid;
+    return this.row.data.ask - this.row.data.bid;
   }
 
   onSelect(): void {
-    this.rowClick.emit(this.data);
+    this.rowClick.emit(this.row);
   }
 }
