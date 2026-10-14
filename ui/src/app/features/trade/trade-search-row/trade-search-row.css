@@ -64,6 +64,14 @@
     font-weight: var(--font-weight-normal);
   }
 
+  .quote-details {
+    color: var(--text-secondary);
+    font-family: 'Inter', sans-serif;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-normal);
+    white-space: nowrap;
+  }
+
   &.positive .change { color: var(--accent-primary); }
   &.negative .change { color: var(--accent-negative); }
 }

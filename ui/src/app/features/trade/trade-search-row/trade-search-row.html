@@ -5,7 +5,7 @@
 >
   <div class="asset-info">
     <span class="symbol">{{ row.data.symbol }}</span>
-    <span class="name">{{ row.data.symbol }}</span>
+    <span class="name">{{ row.data.currency }} · {{ row.data.marketState }}</span>
   </div>
 
   <div
@@ -38,11 +38,19 @@
     [class.negative]="!isPositive"
   >
     <span class="price">
-      ${{ row.data.price | number:'1.2-2' }}
+      {{ row.data.currency }} {{ row.data.price | number:'1.2-2' }}
     </span>
 
     <span class="change">
       {{ isPositive ? '+' : '' }}{{ row.data.changePercent | number:'1.2-2' }}%
+    </span>
+
+    <span class="quote-details">
+      Bid {{ row.data.bid | number:'1.2-4' }} · Ask {{ row.data.ask | number:'1.2-4' }}
+    </span>
+    <span class="quote-details">
+      Spread {{ row.data.spreadBps | number:'1.2-2' }} bps
+      <ng-container *ngIf="row.meta.stale"> · Stale</ng-container>
     </span>
   </div>
 </div>

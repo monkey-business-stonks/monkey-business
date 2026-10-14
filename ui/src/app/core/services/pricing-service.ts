@@ -10,10 +10,14 @@ export class PricingService {
 	constructor(private http: HttpClient) {}
 
 	getQuote(ticker: string): Observable<Quote> {
-		return this.http.get<Quote>(`${window.location.origin}/api/market/price/${ticker}`);
+		return this.http.get<Quote>(`${window.location.origin}/api/quote/${ticker}`);
 	}
 
 	getPrice(ticker: string): Observable<number> {
 		return this.getQuote(ticker).pipe(map(quote => quote.data.price));
+	}
+
+	getQuotes(ticker: string): Observable<Quote[]> {
+		return this.http.get<Quote[]>(`${window.location.origin}/api/quotes/${ticker}`)
 	}
 }

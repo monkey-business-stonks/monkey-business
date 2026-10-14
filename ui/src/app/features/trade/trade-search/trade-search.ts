@@ -3,6 +3,7 @@ import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
 import { Quote } from '@/app/core/models/quote';
 import { PricingService } from '@/app/core/services/pricing-service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   imports: [SharedModule, TradeSearchRow],
@@ -22,7 +23,6 @@ export class TradeSearch implements OnInit {
   constructor(private pricingService: PricingService) {}
 
   selectedAsset: Quote | null = null;
-
   // assetList: TradeSearchRowData[] = [
   //   {
   //     asset: {
@@ -99,6 +99,11 @@ export class TradeSearch implements OnInit {
   // ];
   assetList: Quote[] = [];
   ngOnInit(): void {
+    this.pricingService.getQuotes("AAPL,MSFT,NVDA").subscribe(quotes => {
+      this.assetList = quotes;
+    });
+    console.log(this.assetList)
+
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
     }
