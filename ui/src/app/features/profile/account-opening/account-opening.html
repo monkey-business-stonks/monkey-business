@@ -1,3 +1,26 @@
+<div class="account-flow-steps" aria-label="Account opening progress">
+  <div class="account-flow-step" [class.active]="currentStep === 'select-type'" [class.completed]="currentStep !== 'select-type'">
+    <span class="step-circle">
+      @if (currentStep !== 'select-type') { ✓ } @else { 1 }
+    </span>
+    <span class="step-label">Account Type</span>
+  </div>
+  <span class="step-connector" [class.completed]="currentStep !== 'select-type'" aria-hidden="true"></span>
+  <div class="account-flow-step" [class.active]="currentStep === 'deposit'" [class.completed]="currentStep === 'review' || currentStep === 'confirmation'">
+    <span class="step-circle">
+      @if (currentStep === 'review' || currentStep === 'confirmation') { ✓ } @else { 2 }
+    </span>
+    <span class="step-label">Details &amp; Profile</span>
+  </div>
+  <span class="step-connector" [class.completed]="currentStep === 'review' || currentStep === 'confirmation'" aria-hidden="true"></span>
+  <div class="account-flow-step" [class.active]="currentStep === 'review'" [class.completed]="currentStep === 'confirmation'">
+    <span class="step-circle">
+      @if (currentStep === 'confirmation') { ✓ } @else { 3 }
+    </span>
+    <span class="step-label">Review &amp; Confirm</span>
+  </div>
+</div>
+
 <div class="account-opening-panel">
   @if (errorMessage) {
     <div class="error-banner">
@@ -8,10 +31,9 @@
   @if (currentStep === 'select-type') {
     <div class="header-row">
       <div>
-        <p class="label">Open Investment Account</p>
+        <p class="label">Select Account Type</p>
         <p class="sublabel">Select one account type to continue.</p>
       </div>
-      <app-button variant="primary" (click)="close()">Back</app-button>
     </div>
 
     <div class="account-options-grid">
@@ -21,6 +43,7 @@
           class="account-option-card"
           [class.selected]="selectedAccountType === option.value"
           (click)="selectType(option.value)">
+          <span class="account-option-indicator" aria-hidden="true"></span>
           <p class="account-title">{{ option.label }}</p>
           <p class="account-description">{{ option.description }}</p>
         </button>
@@ -28,7 +51,8 @@
     </div>
 
     @if (selectedAccountType) {
-      <div class="confirm-row">
+      <div class="flow-actions">
+        <app-button variant="primary" (click)="close()">Back</app-button>
         <app-button variant="secondary" [disabled]="isLoading" (click)="confirmType()">
           @if (!isLoading) { Confirm Account Type } @else { Verifying... }
         </app-button>
@@ -39,27 +63,144 @@
   @if (currentStep === 'deposit') {
     <div class="header-row">
       <div>
-        <p class="label">Fund New {{ getSelectedLabel() }} Account</p>
-        <p class="sublabel">Enter an opening deposit to finish account creation.</p>
+        <p class="label">Configure {{ getSelectedLabel() }} Account Details</p>
+        <p class="sublabel">Complete your investor profile to tailor your experience and satisfy regulatory requirements.</p>
       </div>
-      <app-button variant="primary" (click)="goBackToType()" [disabled]="isLoading">Back</app-button>
     </div>
 
     <div class="deposit-form">
-      <label class="deposit-label" for="depositAmount">Deposit Amount (USD)</label>
-      <input
-        id="depositAmount"
-        type="number"
-        min="1"
-        step="0.01"
-        [(ngModel)]="depositAmount"
-        [disabled]="isLoading"
-        placeholder="Enter amount" />
+      <div class="deposit-grid">
+        <div class="form-field">
+          <label class="deposit-label" for="fundingMethod">Primary Funding Method</label>
+          <select id="fundingMethod" [(ngModel)]="primaryFundingMethod" [disabled]="isLoading">
+            <option value="" disabled>Select a funding method</option>
+            @for (method of fundingMethods; track method) {
+              <option [value]="method">{{ method }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="deposit-label" for="depositAmount">Deposit (USD)</label>
+          <input
+            id="depositAmount"
+            type="number"
+            min="1"
+            step="0.01"
+            [(ngModel)]="depositAmount"
+            [disabled]="isLoading"
+            placeholder="Enter amount" />
+        </div>
+
+        <div class="form-field">
+          <label class="deposit-label" for="tradingExperience">Trading Experience</label>
+          <select id="tradingExperience" [(ngModel)]="tradingExperience" [disabled]="isLoading">
+            <option value="" disabled>Select your experience</option>
+            @for (option of tradingExperienceOptions; track option) {
+              <option [value]="option">{{ option }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label class="deposit-label" for="investmentObjective">Investment Objective</label>
+          <select id="investmentObjective" [(ngModel)]="investmentObjective" [disabled]="isLoading">
+            <option value="" disabled>Select an objective</option>
+            @for (objective of investmentObjectives; track objective) {
+              <option [value]="objective">{{ objective }}</option>
+            }
+          </select>
+        </div>
+      </div>
+
+      <fieldset class="risk-section">
+        <legend class="deposit-label">Risk Tolerance</legend>
+        <div class="risk-options">
+          @for (risk of riskToleranceOptions; track risk) {
+            <button
+              type="button"
+              class="risk-button"
+              [class.selected]="riskTolerance === risk"
+              [disabled]="isLoading"
+              (click)="riskTolerance = risk">
+              {{ risk }}
+            </button>
+          }
+        </div>
+      </fieldset>
+
+      <section class="disclosure-section" aria-labelledby="disclosureTitle">
+        <h2 id="disclosureTitle" class="disclosure-title">FINRA Rule 2111 Disclosure</h2>
+        <p class="disclosure-text">I understand trading speculative assets, equities, and leverage involves high risk. I confirm my selected financial goals align with my actual net worth and risk capability.</p>
+        <label class="disclosure-check">
+          <input type="checkbox" [(ngModel)]="acceptsDisclosure" [disabled]="isLoading" />
+          <span>I acknowledge and accept regulatory disclosure above</span>
+        </label>
+      </section>
     </div>
 
-    <div class="confirm-row">
+    <div class="flow-actions">
+      <app-button variant="primary" (click)="goBackToType()" [disabled]="isLoading">Back</app-button>
       <app-button variant="secondary" [disabled]="isLoading" (click)="confirmDeposit()">
-        @if (!isLoading) { Confirm Deposit } @else { Creating Account... }
+        @if (!isLoading) { Continue } @else { Preparing Review... }
+      </app-button>
+    </div>
+  }
+
+  @if (currentStep === 'review') {
+    <div class="header-row">
+      <div>
+        <p class="label">Review & Confirm Account</p>
+        <p class="sublabel">Please review your account details before submitting the application.</p>
+      </div>
+    </div>
+
+    <div class="confirmation-card">
+      <div class="confirmation-section">
+        <h2 class="confirmation-section-title">Account Baseline</h2>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Account Owner</span>
+          <span class="confirmation-value">{{ ownerName || 'Name not available' }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Email Address</span>
+          <span class="confirmation-value">{{ ownerEmail || 'Email not available' }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Account Type</span>
+          <span class="confirmation-value">{{ getSelectedLabel() }}</span>
+        </div>
+      </div>
+
+      <div class="confirmation-section confirmation-section-investment">
+        <h2 class="confirmation-section-title">Investment Profile</h2>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Funding Choice</span>
+          <span class="confirmation-value">{{ primaryFundingMethod }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Deposit Amount</span>
+          <span class="confirmation-value deposit-value">${{ depositAmount }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Risk Tolerance</span>
+          <span class="confirmation-value">{{ riskTolerance }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Investment Intent</span>
+          <span class="confirmation-value">{{ investmentObjective }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Opened On</span>
+          <span class="confirmation-value">Pending submission</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="flow-actions">
+      <app-button variant="primary" (click)="goBackToDeposit()" [disabled]="isLoading">Back</app-button>
+      <app-button variant="secondary" [disabled]="isLoading" (click)="submitAccount()">
+        @if (!isLoading) { Submit Account } @else { Submitting... }
       </app-button>
     </div>
   }
@@ -73,17 +214,48 @@
     </div>
 
     <div class="confirmation-card">
-      <div class="confirmation-row">
-        <span class="confirmation-key">Account Type</span>
-        <span class="confirmation-value">{{ getSelectedLabel() }}</span>
+      <div class="confirmation-section">
+        <h2 class="confirmation-section-title">Account Baseline</h2>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Account Owner</span>
+          <span class="confirmation-value">{{ ownerName || 'Name not available' }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Email Address</span>
+          <span class="confirmation-value">{{ ownerEmail || 'Email not available' }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Account Type</span>
+          <span class="confirmation-value">{{ getSelectedLabel() }}</span>
+        </div>
       </div>
-      <div class="confirmation-row">
-        <span class="confirmation-key">Account ID</span>
-        <span class="confirmation-value mono">{{ createdAccountId }}</span>
-      </div>
-      <div class="confirmation-row">
-        <span class="confirmation-key">Opened On</span>
-        <span class="confirmation-value">{{ openedDate | date:'medium' }}</span>
+
+      <div class="confirmation-section confirmation-section-investment">
+        <h2 class="confirmation-section-title">Investment Profile</h2>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Funding Choice</span>
+          <span class="confirmation-value">{{ primaryFundingMethod }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Deposit Amount</span>
+          <span class="confirmation-value deposit-value">${{ depositAmount }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Risk Tolerance</span>
+          <span class="confirmation-value">{{ riskTolerance }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Investment Intent</span>
+          <span class="confirmation-value">{{ investmentObjective }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Account ID</span>
+          <span class="confirmation-value mono">{{ createdAccountId }}</span>
+        </div>
+        <div class="confirmation-row">
+          <span class="confirmation-key">Opened On</span>
+          <span class="confirmation-value">{{ openedDate | date:'medium' }}</span>
+        </div>
       </div>
     </div>
 

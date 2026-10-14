@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, EventEmitter, Input, Output, ChangeDetectorRef } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ChangeDetectorRef, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
@@ -11,7 +11,7 @@ interface AccountTypeOption {
   description: string;
 }
 
-type AccountOpenStep = 'select-type' | 'deposit' | 'confirmation';
+type AccountOpenStep = 'select-type' | 'deposit' | 'review' | 'confirmation';
 
 @Component({
   selector: 'account-opening',
@@ -20,7 +20,7 @@ type AccountOpenStep = 'select-type' | 'deposit' | 'confirmation';
   templateUrl: './account-opening.html',
   styleUrl: './account-opening.css'
 })
-export class AccountOpening {
+export class AccountOpening implements OnInit {
   @Input() userId = '';
   @Output() cancel = new EventEmitter<void>();
   @Output() accountOpened = new EventEmitter<void>();
@@ -30,8 +30,20 @@ export class AccountOpening {
   isLoading = false;
   errorMessage = '';
   depositAmount = '';
+  primaryFundingMethod = '';
+  tradingExperience = '';
+  investmentObjective = '';
+  riskTolerance = '';
+  acceptsDisclosure = false;
   openedDate = '';
   createdAccountId = '';
+  ownerName = '';
+  ownerEmail = '';
+
+  readonly fundingMethods = ['Bank account', 'Debit card', 'Wire transfer'];
+  readonly tradingExperienceOptions = ['Beginner', 'Some experience', 'Experienced'];
+  readonly investmentObjectives = ['Capital preservation', 'Income', 'Growth', 'Speculation'];
+  readonly riskToleranceOptions = ['Conservative', 'Moderate', 'Aggressive'];
 
   readonly accountTypes: AccountTypeOption[] = [
     {
@@ -66,6 +78,19 @@ export class AccountOpening {
     private accountService: AccountService,
     private cdr: ChangeDetectorRef
   ) {}
+
+  ngOnInit(): void {
+    if (!this.userId) {
+      return;
+    }
+
+    this.accountService.getUser(this.userId).subscribe({
+      next: (user) => {
+        this.ownerName = user.name;
+        this.ownerEmail = user.email;
+      }
+    });
+  }
 
   selectType(type: string): void {
     if (this.isLoading) {
@@ -118,16 +143,36 @@ export class AccountOpening {
       return;
     }
 
+    if (!this.primaryFundingMethod || !this.tradingExperience || !this.investmentObjective || !this.riskTolerance) {
+      this.errorMessage = 'Please complete your investor profile before continuing.';
+      return;
+    }
+
+    if (!this.acceptsDisclosure) {
+      this.errorMessage = 'Please acknowledge the regulatory disclosure before continuing.';
+      return;
+    }
+
+    this.errorMessage = '';
+    this.currentStep = 'review';
+    this.cdr.detectChanges();
+  }
+
+  submitAccount(): void {
+    if (this.isLoading || !this.selectedAccountType) {
+      return;
+    }
+
     this.errorMessage = '';
     this.isLoading = true;
 
     this.accountService.createAccount(this.userId, {
       accountType: this.selectedAccountType,
-      initialDeposit: amount
+      initialDeposit: Number(this.depositAmount)
     }).subscribe({
       next: (response: any) => {
         this.createdAccountId = response?.accountId || 'Pending';
-        this.openedDate = response?.createdOn || new Date().toISOString();
+        this.openedDate = response?.openedDate || response?.createdOn || new Date().toISOString();
         this.currentStep = 'confirmation';
         this.isLoading = false;
         this.cdr.detectChanges(); 
@@ -146,6 +191,11 @@ export class AccountOpening {
 
   goBackToType(): void {
     this.currentStep = 'select-type';
+    this.errorMessage = '';
+  }
+
+  goBackToDeposit(): void {
+    this.currentStep = 'deposit';
     this.errorMessage = '';
   }
 

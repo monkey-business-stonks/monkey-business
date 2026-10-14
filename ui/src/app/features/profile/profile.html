@@ -7,7 +7,6 @@
       <edit-panel (saveConfiguration)="saveAndReturnToAccounts()"></edit-panel>
     } @else {
       <accounts-panel
-        [autoOpenAccountFlow]="autoOpenAccountFlow"
         [showEditProfileButton]="true"
         (editProfile)="toggleEditMode()"
       ></accounts-panel>

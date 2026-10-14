@@ -1,0 +1,5 @@
+.account-opening-page {
+  max-width: 725px;
+  margin: 0 auto;
+  padding: var(--space-md);
+}
