@@ -7,7 +7,7 @@
 
   <div class="rows-list">
     <trade-search-row
-      *ngFor="let asset of assetList"
+      *ngFor="let asset of assetList()"
       [row]="asset"
       [selected]="selectedAsset?.data.symbol === asset.data.symbol"
       (rowClick)="handleSelect($event)"

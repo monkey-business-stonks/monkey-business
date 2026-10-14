@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -48,7 +49,7 @@ public class PricingEngine {
      * @param symbols List of symbols (comma-separated or list)
      * @return Map of symbol to quote
      */
-    public Map<String, Map<String, Object>> getQuotes(List<String> symbols) {
+    public Map<String, Map<String, Object>> getPrices(List<String> symbols) {
         if (symbols == null || symbols.isEmpty()) {
             return new HashMap<>();
         }
@@ -58,15 +59,27 @@ public class PricingEngine {
         }
         
         String symbolsParam = String.join(",", symbols);
-        UriComponentsBuilder.fromHttpUrl(apiUrl + "/quotes")
+        String url = UriComponentsBuilder.fromHttpUrl(apiUrl + "/quotes")
                 .queryParam("symbols", symbolsParam)
                 .toUriString();
-        
-        // TODO: Parse batch response and return map
-        // For now, return individual quotes - service team will implement batch parsing
-        Map<String, Map<String, Object>> result = new HashMap<>();
-        for (String symbol : symbols) {
-            result.put(symbol, getQuote(symbol));
+
+        Map<String, Object> response = callFauxnanceApi(url);
+        Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+        Object data = response.get("data");
+        if (data instanceof Map<?, ?> dataMap && dataMap.get("quotes") instanceof List<?> quotes) {
+            for (Object item : quotes) {
+                if (!(item instanceof Map<?, ?> quoteItem)) {
+                    continue;
+                }
+
+                Object symbol = quoteItem.get("symbol");
+                Object quote = quoteItem.get("quote");
+                if (symbol != null && quote instanceof Map<?, ?> quoteMap) {
+                    Map<String, Object> normalizedQuote = new HashMap<>();
+                    quoteMap.forEach((key, value) -> normalizedQuote.put(key.toString(), value));
+                    result.put(symbol.toString(), normalizedQuote);
+                }
+            }
         }
         return result;
     }

@@ -1,9 +1,8 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
 import { Quote } from '@/app/core/models/quote';
 import { PricingService } from '@/app/core/services/pricing-service';
-import { forkJoin } from 'rxjs';
 
 @Component({
   imports: [SharedModule, TradeSearchRow],
@@ -12,6 +11,14 @@ import { forkJoin } from 'rxjs';
   templateUrl: './trade-search.html',
 })
 export class TradeSearch implements OnInit {
+  private static readonly TOP_SYMBOLS = [
+    'AAPL', 'MSFT', 'NVDA', 'AMZN', 'META',
+    'GOOGL', 'AVGO', 'TSLA', 'WMT', 'JPM',
+    'V', 'LLY', 'MA', 'NFLX', 'XOM',
+    'COST', 'JNJ', 'HD', 'PG', 'ORCL',
+    'ABBV', 'BAC', 'CRM', 'KO', 'MRK'
+  ];
+
   @Input() selectedTickerFromParent: Quote | null = null;
 
   @Output() onTickerHighlighted =
@@ -97,12 +104,12 @@ export class TradeSearch implements OnInit {
   //     selected: false
   //   }
   // ];
-  assetList: Quote[] = [];
+  assetList = signal<Quote[]>([]);
   ngOnInit(): void {
-    this.pricingService.getQuotes("AAPL,MSFT,NVDA").subscribe(quotes => {
-      this.assetList = quotes;
+    this.pricingService.getPrices(TradeSearch.TOP_SYMBOLS.join(',')).subscribe({
+      next: quotes => this.assetList.set(quotes),
+      error: error => console.error('Unable to load market quotes', error)
     });
-    console.log(this.assetList)
 
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;

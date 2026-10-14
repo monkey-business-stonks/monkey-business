@@ -287,11 +287,14 @@ class PricingEngineTest {
     }
 
     @Test
-    void testGetQuotes_SingleSymbol() {
+    void testGetPrices_SingleSymbol() {
         // Arrange
-        Map<String, Object> quoteData = new HashMap<>();
-        quoteData.put("ticker", "AAPL");
-        ResponseEntity<Map> response = new ResponseEntity<>(quoteData, HttpStatus.OK);
+        Map<String, Object> quote = new HashMap<>();
+        quote.put("symbol", "AAPL");
+        quote.put("price", 150.0);
+        Map<String, Object> quoteItem = Map.of("symbol", "AAPL", "quote", quote);
+        Map<String, Object> responseData = Map.of("quotes", List.of(quoteItem));
+        ResponseEntity<Map> response = new ResponseEntity<>(Map.of("data", responseData), HttpStatus.OK);
         when(restTemplate.exchange(
             anyString(),
             eq(HttpMethod.GET),
@@ -300,7 +303,7 @@ class PricingEngineTest {
         )).thenReturn(response);
 
         // Act
-        Map<String, Map<String, Object>> result = pricingEngine.getQuotes(List.of("AAPL"));
+        Map<String, Map<String, Object>> result = pricingEngine.getPrices(List.of("AAPL"));
 
         // Assert
         assertNotNull(result);
@@ -309,19 +312,19 @@ class PricingEngineTest {
     }
 
     @Test
-    void testGetQuotes_ExceedsMaxLimit() {
+    void testGetPrices_ExceedsMaxLimit() {
         // Act & Assert
         List<String> tooManySymbols = new java.util.ArrayList<>();
         for (int i = 0; i < 26; i++) {
             tooManySymbols.add("SYM" + i);
         }
-        assertThrows(IllegalArgumentException.class, () -> pricingEngine.getQuotes(tooManySymbols));
+        assertThrows(IllegalArgumentException.class, () -> pricingEngine.getPrices(tooManySymbols));
     }
 
     @Test
-    void testGetQuotes_EmptyList() {
+    void testGetPrices_EmptyList() {
         // Act
-        Map<String, Map<String, Object>> result = pricingEngine.getQuotes(List.of());
+        Map<String, Map<String, Object>> result = pricingEngine.getPrices(List.of());
 
         // Assert
         assertNotNull(result);

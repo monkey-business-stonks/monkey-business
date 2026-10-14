@@ -42,12 +42,12 @@ export class TradeInput {
   }
 
   private loadSharePrice(): void {
-    const ticker = this.selectedTicker?.quote?.symbol || this.selectedTicker?.asset?.ticker;
+    const ticker = this.selectedTicker?.data?.symbol;
     if (!ticker) {
       return;
     }
 
-    this.sharePrice = this.selectedTicker?.quote?.price ?? 0;
+    this.sharePrice = this.selectedTicker?.data?.price ?? 0;
     this.pricingService.getPrice(ticker).subscribe({
       next: price => {
         if (price > 0) {
@@ -70,7 +70,7 @@ export class TradeInput {
       quantity: this.quantity,
       sharePrice: this.sharePrice,
       estimatedTotal: this.estimatedTotal,
-        ticker: this.selectedTicker?.quote?.symbol || this.selectedTicker?.asset?.ticker || 'UNKNOWN'
+        ticker: this.selectedTicker?.data?.symbol || 'UNKNOWN'
     };
   }
 

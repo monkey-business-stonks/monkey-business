@@ -2,29 +2,29 @@
   <div class="instrument-details-header">
     <div class="instrument-details-header-left">    
       <div class="instrument-details-header-title">
-        <div class="ticker">{{ selectedTicker?.quote?.symbol || '--' }}</div>
+        <div class="ticker">{{ selectedTicker?.data?.symbol || '--' }}</div>
         <div><p class="type">{{ selectedTicker?.asset?.assetClass?.toUpperCase() || 'EQUITY' }}</p></div>
       </div>
-      <div class="name">{{ selectedTicker?.asset?.name || '--' }} — {{ selectedTicker?.quote?.currency || 'USD' }}</div>
+      <div class="name">{{ selectedTicker?.data?.symbol || '--' }} — {{ selectedTicker?.data?.currency || 'USD' }}</div>
     </div>
     <div class="instrument-details-header-right">
-      <div class="value">{{ selectedTicker?.quote?.price ? ('$' + selectedTicker.quote.price) : '--' }}</div>
-      <div class="change-today">{{ selectedTicker?.quote?.changePercent ? ('+$' + selectedTicker.quote.change + ' (+' + selectedTicker.quote.changePercent + '% today)') : '--' }}</div>
+      <div class="value">{{ selectedTicker?.data?.price ? ('$' + selectedTicker.data.price) : '--' }}</div>
+      <div class="change-today">{{ selectedTicker?.data?.changePercent ? ('+$' + selectedTicker.data.change + ' (+' + selectedTicker.data.changePercent + '% today)') : '--' }}</div>
     </div>
   </div>
   <instrument-chart [selectedTicker]="selectedTicker"/>
   <div class="instrument-caption">
     <div class="instrument-caption-pair">
       <p class="label">BID</p>
-      <p class="val">{{ selectedTicker?.quote?.bid || '--' }}</p>
+      <p class="val">{{ selectedTicker?.data?.bid || '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">ASK</p>
-      <p class="val">{{ selectedTicker?.quote?.ask || '--' }}</p>
+      <p class="val">{{ selectedTicker?.data?.ask || '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">SPREAD</p>
-      <p class="val">{{ selectedTicker?.quote?.spreadBps ? (selectedTicker.quote.spreadBps + ' bps') : '--' }}</p>
+      <p class="val">{{ selectedTicker?.data?.spreadBps ? (selectedTicker.data.spreadBps + ' bps') : '--' }}</p>
     </div>
   </div>
 </div>
