@@ -114,6 +114,18 @@ spring:
         size: 5
       thread-name-prefix: monkey-scheduler-
       enable-async: true
+
+analytics:
+  max-replica-lag-seconds: 300
+  primary-fallback-enabled: false
+  datasource:
+    url: jdbc:postgresql://postgres_replica:5432/monkey_business
+    username: analytics_reader
+    password: analytics_reader_change_me
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      read-only: true
+      maximum-pool-size: 10
   
 server:
   port: 8080

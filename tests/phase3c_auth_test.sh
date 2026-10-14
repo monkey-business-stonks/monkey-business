@@ -53,7 +53,7 @@ echo ""
 ACCOUNT_RESPONSE=$(curl -s -X POST "http://localhost:8080/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"BROKERAGE"}')
+  -d '{"accountType":"BROKERAGE","initialDeposit":10000}')
 
 ACCOUNT_ID=$(echo "$ACCOUNT_RESPONSE" | jq -r '.accountId')
 INITIAL_BALANCE=$(echo "$ACCOUNT_RESPONSE" | jq -r '.balance')

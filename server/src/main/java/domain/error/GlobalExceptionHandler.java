@@ -133,6 +133,17 @@ public class GlobalExceptionHandler {
     }
 
     /**
+     * Handle AnalyticsUnavailableException - analytics replica is unhealthy or unavailable
+     * Returns 503 Service Unavailable
+     */
+    @ExceptionHandler(AnalyticsUnavailableException.class)
+    @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+    public ErrorResponse handleAnalyticsUnavailableException(AnalyticsUnavailableException ex, WebRequest request) {
+        logger.warn("Analytics unavailable: {}", ex.getMessage());
+        return new ErrorResponse(503, "Service Unavailable", ex.getMessage());
+    }
+
+    /**
      * Handle IllegalArgumentException - invalid input parameter
      * Returns 400 Bad Request
      */

@@ -116,11 +116,17 @@ ACCOUNT_TYPES=("BROKERAGE" "CRYPTO" "FOREX")
 
 for i in 0 1 2; do
   ACC_TYPE="${ACCOUNT_TYPES[$i]}"
+  INITIAL_DEPOSIT=10000
+  if [ "$ACC_TYPE" = "CRYPTO" ]; then
+    INITIAL_DEPOSIT=5000
+  elif [ "$ACC_TYPE" = "FOREX" ]; then
+    INITIAL_DEPOSIT=3000
+  fi
   
   ACC_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $JWT_TOKEN" \
-    -d "{\"accountType\":\"$ACC_TYPE\"}")
+    -d "{\"accountType\":\"$ACC_TYPE\",\"initialDeposit\":$INITIAL_DEPOSIT}")
   
   ACC_ID=$(echo "$ACC_RESPONSE" | jq -r '.accountId')
   ACC_BALANCE=$(echo "$ACC_RESPONSE" | jq -r '.balance')
