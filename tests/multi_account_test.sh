@@ -82,7 +82,7 @@ echo "▶ STEP 3: Creating BROKERAGE account..."
 BROKERAGE_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"BROKERAGE","initialBalance":10000}')
+  -d '{"accountType":"BROKERAGE","initialDeposit":10000}')
 
 BROKERAGE_ID=$(echo "$BROKERAGE_RESPONSE" | jq -r '.accountId')
 if [[ -z "$BROKERAGE_ID" || "$BROKERAGE_ID" == "null" ]]; then
@@ -100,7 +100,7 @@ echo "▶ STEP 4: Creating CRYPTO account..."
 CRYPTO_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"CRYPTO","initialBalance":5000}')
+  -d '{"accountType":"CRYPTO","initialDeposit":5000}')
 
 CRYPTO_ID=$(echo "$CRYPTO_RESPONSE" | jq -r '.accountId')
 if [[ -z "$CRYPTO_ID" || "$CRYPTO_ID" == "null" ]]; then
@@ -118,7 +118,7 @@ echo "▶ STEP 5: Creating FOREX account..."
 FOREX_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"FOREX","initialBalance":3000}')
+  -d '{"accountType":"FOREX","initialDeposit":3000}')
 
 FOREX_ID=$(echo "$FOREX_RESPONSE" | jq -r '.accountId')
 if [[ -z "$FOREX_ID" || "$FOREX_ID" == "null" ]]; then

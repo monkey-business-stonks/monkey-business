@@ -142,6 +142,18 @@ services:
   postgres:
     image: postgres:18-alpine
     container_name: monkey_business_db
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - max_wal_senders=10
+      - -c
+      - max_replication_slots=10
+      - -c
+      - wal_keep_size=512MB
+      - -c
+      - hot_standby=on
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: n3u3d4!
@@ -150,12 +162,45 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql
+      - ./db/replication/primary-init/01-replication-hba.sh:/docker-entrypoint-initdb.d/01-replication-hba.sh
       - ./db/databasescript.sql:/docker-entrypoint-initdb.d/01-init.sql
+      - ./db/replication/primary-init/02-replication-setup.sql:/docker-entrypoint-initdb.d/02-replication-setup.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 10s
       timeout: 5s
       retries: 5
+
+  postgres_replica:
+    image: postgres:18-alpine
+    container_name: monkey_business_db_replica
+    user: postgres
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: n3u3d4!
+      POSTGRES_DB: monkey_business
+      PRIMARY_HOST: postgres
+      PRIMARY_PORT: 5432
+      REPLICATION_USER: replicator
+      REPLICATION_PASSWORD: replicator_change_me
+      REPLICATION_SLOT: monkey_business_replica_slot
+      REPLICA_MAX_LAG_SECONDS: 300
+    command: ["/bin/bash", "/replica/init-replica.sh"]
+    expose:
+      - "5432"
+    volumes:
+      - postgres_replica_data:/var/lib/postgresql/data
+      - ./db/replication/replica/init-replica.sh:/replica/init-replica.sh:ro
+      - ./db/replication/replica/healthcheck.sh:/replica/healthcheck.sh:ro
+      - ./db/replication/replica/replication-metrics.sql:/replica/replication-metrics.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "/replica/healthcheck.sh"]
+      interval: 15s
+      timeout: 5s
+      retries: 10
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -198,6 +243,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      postgres_replica:
+        condition: service_healthy
       auth:
         condition: service_healthy
       kafka-1:
@@ -210,6 +257,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monkey_business
       SPRING_DATASOURCE_USERNAME: postgres
       SPRING_DATASOURCE_PASSWORD: n3u3d4!
+      ANALYTICS_DATASOURCE_URL: jdbc:postgresql://postgres_replica:5432/monkey_business
+      ANALYTICS_DATASOURCE_USERNAME: analytics_reader
+      ANALYTICS_DATASOURCE_PASSWORD: analytics_reader_change_me
+      ANALYTICS_PRIMARY_FALLBACK_ENABLED: "false"
+      ANALYTICS_MAX_REPLICA_LAG_SECONDS: "300"
       JWT_SIGNING_KEY: my-secret-key-change-me-in-production
       KAFKA_BROKERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
     healthcheck:
@@ -240,6 +292,7 @@ services:
 
 volumes:
   postgres_data:
+  postgres_replica_data:
   pgadmin_data:
   kafka_1_data:
   kafka_2_data:
