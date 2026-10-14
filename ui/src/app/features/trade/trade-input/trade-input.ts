@@ -2,6 +2,7 @@ import { SharedModule } from '@/app/shared/shared.module';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, OrderReviewData } from '../confirmation/confirmation';
+import { PricingService } from '@/app/core/services/pricing-service';
 
 @Component({
   selector: 'trade-input',
@@ -31,8 +32,31 @@ export class TradeInput {
   selectedOrderType: string = 'market';
 
   quantity: number = 50;
-  sharePrice: number = 187.42;
+  sharePrice: number = 0;
   showConfirmation: boolean = false;
+
+  constructor(private pricingService: PricingService) {}
+
+  ngOnInit(): void {
+    this.loadSharePrice();
+  }
+
+  private loadSharePrice(): void {
+    const ticker = this.selectedTicker?.quote?.symbol || this.selectedTicker?.asset?.ticker;
+    if (!ticker) {
+      return;
+    }
+
+    this.sharePrice = this.selectedTicker?.quote?.price ?? 0;
+    this.pricingService.getPrice(ticker).subscribe({
+      next: price => {
+        if (price > 0) {
+          this.sharePrice = price;
+        }
+      },
+        error: () => undefined
+    });
+  }
 
   get estimatedTotal(): number {
     return (this.quantity || 0) * this.sharePrice;
@@ -46,7 +70,7 @@ export class TradeInput {
       quantity: this.quantity,
       sharePrice: this.sharePrice,
       estimatedTotal: this.estimatedTotal,
-      ticker: this.selectedTicker?.symbol || 'UNKNOWN'
+        ticker: this.selectedTicker?.quote?.symbol || this.selectedTicker?.asset?.ticker || 'UNKNOWN'
     };
   }
 

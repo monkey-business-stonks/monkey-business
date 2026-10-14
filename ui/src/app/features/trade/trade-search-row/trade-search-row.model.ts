@@ -1,7 +1,12 @@
-import { Asset, Quote } from '@/app/core/models';
+import { Data, Meta } from '@/app/core/models';
 
 export interface TradeSearchRowData {
-  asset: Asset;
-  quote: Quote;
-  selected: boolean;
+  data: Data;
+  meta: Meta;
 }
+
+// export interface TradeSearchRowData {
+//   asset: Asset;
+//   quote: Quote;
+//   selected: boolean;
+// }
