@@ -1,7 +1,7 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, Output, EventEmitter, Input, OnInit } from '@angular/core';
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
-import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-search-row.model';
+import { Quote } from '@/app/core/models/quote';
 import { PricingService } from '@/app/core/services/pricing-service';
 
 @Component({
@@ -11,17 +11,17 @@ import { PricingService } from '@/app/core/services/pricing-service';
   templateUrl: './trade-search.html',
 })
 export class TradeSearch implements OnInit {
-  @Input() selectedTickerFromParent: TradeSearchRowData | null = null;
+  @Input() selectedTickerFromParent: Quote | null = null;
 
   @Output() onTickerHighlighted =
-    new EventEmitter<TradeSearchRowData>();
+    new EventEmitter<Quote>();
 
   @Output() onTickerSelected =
-    new EventEmitter<TradeSearchRowData>();
+    new EventEmitter<Quote>();
   
   constructor(private pricingService: PricingService) {}
 
-  selectedAsset: TradeSearchRowData | null = null;
+  selectedAsset: Quote | null = null;
 
   // assetList: TradeSearchRowData[] = [
   //   {
@@ -97,27 +97,14 @@ export class TradeSearch implements OnInit {
   //     selected: false
   //   }
   // ];
-  assetList: TradeSearchRowData[] = [this.pricingService.getQuote(AAPL), this.pricingService.getQuote(AAPL), this.pricingService.getQuote(AAPL)] 
+  assetList: Quote[] = [];
   ngOnInit(): void {
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
-
-      this.assetList = this.assetList.map(asset => ({
-        ...asset,
-        selected:
-          asset.asset.ticker ===
-          this.selectedTickerFromParent?.asset.ticker
-      }));
     }
   }
 
-  handleSelect(selectedAsset: TradeSearchRowData): void {
-    this.assetList = this.assetList.map(asset => ({
-      ...asset,
-      selected:
-        asset.asset.ticker === selectedAsset.asset.ticker
-    }));
-
+  handleSelect(selectedAsset: Quote): void {
     this.selectedAsset = selectedAsset;
 
     this.onTickerHighlighted.emit(selectedAsset);

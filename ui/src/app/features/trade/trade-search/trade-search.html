@@ -8,7 +8,8 @@
   <div class="rows-list">
     <trade-search-row
       *ngFor="let asset of assetList"
-      [data]="asset"
+      [row]="asset"
+      [selected]="selectedAsset?.data.symbol === asset.data.symbol"
       (rowClick)="handleSelect($event)"
     ></trade-search-row>
   </div>
@@ -19,7 +20,7 @@
     (click)="selectedAsset && onTickerSelected.emit(selectedAsset)"
   >
     {{ selectedAsset
-      ? `Trade ${selectedAsset.asset.ticker}`
+      ? `Trade ${selectedAsset.data.symbol}`
       : 'Select ticker to trade'
     }}
   </app-button>

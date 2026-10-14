@@ -1,11 +1,11 @@
 <div
   class="asset-row"
-  [class.selected]="data.selected"
+  [class.selected]="selected"
   (click)="onSelect()"
 >
   <div class="asset-info">
-    <span class="symbol">{{ data.asset.ticker }}</span>
-    <span class="name">{{ data.asset.name }}</span>
+    <span class="symbol">{{ row.data.symbol }}</span>
+    <span class="name">{{ row.data.symbol }}</span>
   </div>
 
   <div
@@ -38,11 +38,11 @@
     [class.negative]="!isPositive"
   >
     <span class="price">
-      ${{ data.quote.price | number:'1.2-2' }}
+      ${{ row.data.price | number:'1.2-2' }}
     </span>
 
     <span class="change">
-      {{ isPositive ? '+' : '' }}{{ data.quote.changePercent | number:'1.2-2' }}%
+      {{ isPositive ? '+' : '' }}{{ row.data.changePercent | number:'1.2-2' }}%
     </span>
   </div>
 </div>

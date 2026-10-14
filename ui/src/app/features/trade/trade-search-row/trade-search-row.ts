@@ -1,6 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, Input, Output, EventEmitter } from '@angular/core';
-import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-search-row.model';
+import { Quote } from '@/app/core/models/quote';
 
 
 @Component({
@@ -11,9 +11,10 @@ import { TradeSearchRowData } from '@/app/features/trade/trade-search-row/trade-
   styleUrls: ['./trade-search-row.css']
 })
 export class TradeSearchRow {
-  @Input({ required: true }) row!: TradeSearchRowData;
+  @Input({ required: true }) row!: Quote;
+  @Input() selected = false;
 
-  @Output() rowClick = new EventEmitter<TradeSearchRowData>();
+  @Output() rowClick = new EventEmitter<Quote>();
 
   get isPositive(): boolean {
     return (this.row.data.change ?? 0) >= 0;
