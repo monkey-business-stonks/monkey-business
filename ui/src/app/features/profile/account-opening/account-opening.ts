@@ -40,10 +40,36 @@ export class AccountOpening implements OnInit {
   ownerName = '';
   ownerEmail = '';
 
-  readonly fundingMethods = ['Bank account', 'Debit card', 'Wire transfer'];
+  readonly fundingMethodsByAccountType: Record<string, string[]> = {
+    BROKERAGE: [
+      'ACH Bank Transfer',
+      'ACH Instant Transfer',
+      'Wire Transfer',
+      'Debit Card Deposit',
+      'Check Deposit',
+      'Direct Deposit (Payroll)',
+      'ACAT Account Transfer'
+    ],
+    CRYPTO: [
+      'ACH Bank Transfer',
+      'ACH Instant Transfer',
+      'Wire Transfer',
+      'Debit Card Deposit',
+      'Crypto Asset Deposit'
+    ],
+    FOREX: ['ACH Bank Transfer', 'Wire Transfer', 'Debit Card Deposit'],
+    'ROTH IRA': [
+      'Bank Transfer',
+      'Wire Transfer',
+      'Direct Deposit (Payroll Contribution)',
+      'Rollover / IRA Transfer'
+    ],
+    '401K': ['Payroll Contribution', 'Rollover / 401(k) Transfer']
+  };
   readonly tradingExperienceOptions = ['Beginner', 'Some experience', 'Experienced'];
   readonly investmentObjectives = ['Capital preservation', 'Income', 'Growth', 'Speculation'];
   readonly riskToleranceOptions = ['Conservative', 'Moderate', 'Aggressive'];
+  readonly maximumDeposit = 250000;
 
   readonly accountTypes: AccountTypeOption[] = [
     {
@@ -98,7 +124,12 @@ export class AccountOpening implements OnInit {
     }
 
     this.selectedAccountType = type;
+    this.primaryFundingMethod = '';
     this.errorMessage = '';
+  }
+
+  get fundingMethods(): string[] {
+    return this.selectedAccountType ? this.fundingMethodsByAccountType[this.selectedAccountType] || [] : [];
   }
 
   confirmType(): void {
@@ -140,6 +171,11 @@ export class AccountOpening implements OnInit {
 
     if (!Number.isFinite(amount) || amount <= 0) {
       this.errorMessage = 'Please enter a valid deposit amount above 0.';
+      return;
+    }
+
+    if (amount > this.maximumDeposit) {
+      this.errorMessage = 'The maximum opening deposit is $250,000.';
       return;
     }
 

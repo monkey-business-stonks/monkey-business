@@ -74,7 +74,7 @@
 
 .label {
   color: var(--text-primary);
-  font-size: var(--font-size-2xl);
+  font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -101,7 +101,7 @@
 
 .account-option-card {
   position: relative;
-  min-height: 78px;
+  min-height: 95px;
   width: 100%;
   background-color: var(--background-primary);
   border: 2px solid var(--background-tertiary);
@@ -243,6 +243,10 @@
 .risk-button.selected {
   border-color: var(--accent-primary);
   background-color: var(--accent-primary-transparent);
+}
+
+.risk-button.selected {
+  color: var(--accent-primary);
 }
 
 .risk-button:disabled {
