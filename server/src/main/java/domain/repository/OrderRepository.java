@@ -22,9 +22,9 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     // Get specific order
     Optional<Order> findById(UUID orderId);
     
-    // Find pending (SUBMITTED) orders for account
+       // Find orders still awaiting validation or execution.
     @Query(value = "SELECT o.* FROM Orders o WHERE o.accountId = :accountId " +
-           "AND o.status = 'SUBMITTED'", 
+                 "AND o.status IN ('SUBMITTED', 'ACCEPTED')",
            nativeQuery = true)
     List<Order> findPendingOrdersByAccount(@Param("accountId") UUID accountId);
     
@@ -63,7 +63,7 @@ public interface OrderRepository extends JpaRepository<Order, UUID> {
     // Set order to ACCEPTED status
     @Modifying
     @Query(value = "UPDATE Orders SET status = 'ACCEPTED', statusCode = :statusCode, " +
-           "updatedAt = CURRENT_TIMESTAMP WHERE orderId = :id", 
+           "verifiedOn = CURRENT_TIMESTAMP WHERE orderId = :id",
            nativeQuery = true)
     int acceptOrder(@Param("id") UUID orderId, @Param("statusCode") Integer statusCode);
     

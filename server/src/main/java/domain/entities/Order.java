@@ -12,6 +12,7 @@ public class Order {
         SUBMITTED,
         ACCEPTED,
         FILLED,
+        SETTLED,
         REJECTED
     }
 
@@ -39,6 +40,12 @@ public class Order {
     
     @Column(name = "executedon")
     private ZonedDateTime executedOn;
+
+    @Column(name = "verifiedon")
+    private ZonedDateTime verifiedOn;
+
+    @Column(name = "settledon")
+    private ZonedDateTime settledOn;
     
     @Column(name = "submittedvalue")
     private BigDecimal submittedValue;
@@ -72,6 +79,8 @@ public class Order {
         this.action = null;
         this.submittedOn = null;
         this.executedOn = null;
+        this.verifiedOn = null;
+        this.settledOn = null;
         this.submittedValue = null;
         this.executedValue = null;
         this.status = null;
@@ -86,6 +95,8 @@ public class Order {
     public String getAction() { return this.action; }
     public ZonedDateTime getSubmittedOn() { return this.submittedOn; }
     public ZonedDateTime getExecutedOn() { return this.executedOn; }
+    public ZonedDateTime getVerifiedOn() { return this.verifiedOn; }
+    public ZonedDateTime getSettledOn() { return this.settledOn; }
     public BigDecimal getSubmittedValue() { return this.submittedValue; }
     public BigDecimal getExecutedValue() { return this.executedValue; }
     public OrderStatus getStatus() { return this.status; }
@@ -110,6 +121,8 @@ public class Order {
         this.action = action;
         this.submittedOn = submittedOn;
         this.executedOn = null;
+        this.verifiedOn = null;
+        this.settledOn = null;
         this.submittedValue = submittedValue;
         this.executedValue = null;
         this.status = status;
@@ -122,5 +135,17 @@ public class Order {
         this.executedValue = executedValue;
         this.status = status;
         this.statusCode = statusCode;
+    }
+
+    public void markAccepted(ZonedDateTime verifiedOn) {
+        this.verifiedOn = verifiedOn;
+        this.status = OrderStatus.ACCEPTED;
+        this.statusCode = 200;
+    }
+
+    public void markSettled(ZonedDateTime settledOn) {
+        this.settledOn = settledOn;
+        this.status = OrderStatus.SETTLED;
+        this.statusCode = 200;
     }
 }

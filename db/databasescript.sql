@@ -116,6 +116,10 @@ CREATE TABLE Orders (
 
     executedOn TIMESTAMP,
 
+    verifiedOn TIMESTAMP,
+
+    settledOn TIMESTAMP,
+
     submittedValue NUMERIC(18,2) NOT NULL,
 
     executedValue NUMERIC(18,2),
@@ -126,6 +130,7 @@ CREATE TABLE Orders (
                 'SUBMITTED',
                 'ACCEPTED',
                 'FILLED',
+                'SETTLED',
                 'REJECTED'
             )
         ),
@@ -159,7 +164,22 @@ CREATE TABLE Orders (
             OR executedOn >= submittedOn
         ),
 
-    CONSTRAINT chk_order_filled_requires_execution
+        CONSTRAINT chk_order_verifiedOn_after_submittedOn
+            CHECK (
+                verifiedOn IS NULL
+                OR verifiedOn >= submittedOn
+            ),
+
+        CONSTRAINT chk_order_settledOn_after_executedOn
+            CHECK (
+                settledOn IS NULL
+                OR (
+                    executedOn IS NOT NULL
+                    AND settledOn >= executedOn
+                )
+            ),
+
+        CONSTRAINT chk_order_filled_requires_execution
         CHECK (
             status <> 'FILLED'
             OR (
@@ -171,10 +191,7 @@ CREATE TABLE Orders (
     CONSTRAINT chk_order_rejected_not_executed
         CHECK (
             status <> 'REJECTED'
-            OR (
-                executedOn IS NULL
-                AND executedValue IS NULL
-            )
+                OR executedValue IS NULL
         ),
 
     CONSTRAINT chk_order_action_valid
