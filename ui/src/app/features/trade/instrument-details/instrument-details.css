@@ -1,4 +1,6 @@
 .instrument-details-container {
+  box-sizing: border-box;
+  min-width: 0;
   height: calc(100vh - 180px);
   padding: var(--space-lg);
   background-color: var(--background-secondary);

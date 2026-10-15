@@ -277,13 +277,19 @@ class PricingEngineTest {
     }
 
     @Test
-    void testGetCandles_ReturnsEmptyList() {
-        // Act
-        List<?> candles = pricingEngine.getCandles("AAPL", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31));
+    void testGetCandles_ReturnsApiResponse() {
+        Map<String, Object> responseData = Map.of("data", Map.of("symbol", "AAPL"));
+        when(restTemplate.exchange(
+            contains("/candles/AAPL"),
+            eq(HttpMethod.GET),
+            any(),
+            eq(Map.class)
+        )).thenReturn(new ResponseEntity<>(responseData, HttpStatus.OK));
 
-        // Assert
-        assertNotNull(candles);
-        assertEquals(0, candles.size());
+        Map<String, Object> candles = pricingEngine.getCandles(
+            "AAPL", LocalDate.of(2026, 1, 1), LocalDate.of(2026, 1, 31));
+
+        assertEquals(responseData, candles);
     }
 
     @Test
