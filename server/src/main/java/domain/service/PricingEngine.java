@@ -91,17 +91,15 @@ public class PricingEngine {
      * @param to End date (inclusive)
      * @return List of candles with open, high, low, close, adjclose, volume
      */
-    public List<?> getCandles(String ticker, LocalDate from, LocalDate to) {
-        UriComponentsBuilder
+    public Map<String, Object> getCandles(String ticker, LocalDate from, LocalDate to) {
+        String url = UriComponentsBuilder
                 .fromHttpUrl(apiUrl + "/candles/" + ticker)
                 .queryParam("from", from)
                 .queryParam("to", to)
                 .queryParam("interval", "1d")
                 .toUriString();
-        
-        // TODO: Parse candles response and return list
-        // For now, return empty list - service team will implement parsing
-        return List.of();
+
+        return callFauxnanceApi(url);
     }
     
     /**

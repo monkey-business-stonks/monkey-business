@@ -5,3 +5,4 @@ export * from './quote';
 export * from './user';
 export * from './data';
 export * from './meta';
+export * from './candle';

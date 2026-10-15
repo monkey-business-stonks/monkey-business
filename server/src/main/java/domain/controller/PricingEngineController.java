@@ -6,6 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Arrays;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 
@@ -54,6 +55,33 @@ public class PricingEngineController {
             return ResponseEntity.ok(pricingEngine.getPrices(requestedSymbols));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        } catch (Exception e) {
+            return ResponseEntity.status(503).body(Map.of("error", "Market API error: " + e.getMessage()));
+        }
+    }
+
+    @GetMapping("/candles/{ticker}")
+    public ResponseEntity<?> getCandles(
+            @PathVariable String ticker,
+            @RequestParam(required = false) LocalDate from,
+            @RequestParam(required = false) LocalDate to) {
+        if (ticker == null || ticker.isBlank()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Ticker cannot be empty"));
+        }
+
+        LocalDate endDate = to != null ? to : LocalDate.now();
+        LocalDate startDate = from != null ? from : endDate.minusYears(1);
+
+        if (startDate.isAfter(endDate)) {
+            return ResponseEntity.badRequest().body(Map.of("error", "From date cannot be after to date"));
+        }
+
+        try {
+            Map<String, Object> candles = pricingEngine.getCandles(ticker, startDate, endDate);
+            if (candles == null || candles.isEmpty()) {
+                return ResponseEntity.status(502).body(Map.of("error", "No candle data received from market API"));
+            }
+            return ResponseEntity.ok(candles);
         } catch (Exception e) {
             return ResponseEntity.status(503).body(Map.of("error", "Market API error: " + e.getMessage()));
         }

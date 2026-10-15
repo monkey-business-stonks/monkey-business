@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { InstrumentChart } from '@/app/trade/instrument-details/instrument-chart/instrument-chart';
+import { provideHttpClient } from '@angular/common/http';
+import { InstrumentChart } from './instrument-chart';
 
 describe('InstrumentChart', () => {
   let component: InstrumentChart;
@@ -8,6 +9,7 @@ describe('InstrumentChart', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [InstrumentChart],
+      providers: [provideHttpClient()],
     }).compileComponents();
 
     fixture = TestBed.createComponent(InstrumentChart);

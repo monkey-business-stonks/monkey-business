@@ -1,1 +1,7 @@
-<div class="instrument-chart"></div>
+<div class="instrument-chart">
+	<div #chartContainer class="chart-container"></div>
+
+	@if (error) {
+		<div class="chart-status">Historical data is unavailable.</div>
+	}
+</div>

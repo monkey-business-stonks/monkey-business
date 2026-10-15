@@ -92,7 +92,8 @@ public class SecurityConfig {
                     "/users/health",
                     "/market/health",
                     "/market/price/**",
-                    "/market/quotes"
+                    "/market/quotes",
+                    "/market/candles/**"
                 )
                 .cors(cors -> {})
                 .csrf(csrf -> csrf.disable())

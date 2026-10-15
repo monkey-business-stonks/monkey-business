@@ -11,6 +11,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                    (req.url.endsWith('/users') && req.method === 'POST') ||
                    req.url.includes('/market/price') ||
                    req.url.includes('/market/quotes') ||
+                   req.url.includes('/market/candles') ||
                    req.url.includes('/health');
 
   if (isPublic) {

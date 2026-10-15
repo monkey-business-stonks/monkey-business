@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map } from 'rxjs';
-import { Quote } from '../models';
+import { Candle, Quote } from '../models';
 
 @Injectable({
 	providedIn: 'root'
@@ -16,6 +16,21 @@ export class PricingService {
 
 	getPrice(ticker: string): Observable<number> {
 		return this.getQuote(ticker).pipe(map(quote => quote.data.price));
+	}
+
+	getCandles(ticker: string, from?: string, to?: string): Observable<Candle> {
+		let params = new HttpParams();
+		if (from) {
+			params = params.set('from', from);
+		}
+		if (to) {
+			params = params.set('to', to);
+		}
+
+		return this.http.get<Candle>(
+			`${window.location.origin}/api/market/candles/${encodeURIComponent(ticker)}`,
+			{ params }
+		);
 	}
 
 	getPrices(symbols: string): Observable<Quote[]> {
