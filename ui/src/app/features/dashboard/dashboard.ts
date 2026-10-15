@@ -119,6 +119,6 @@ export class Dashboard implements OnInit {
   }
 
   openAccountPage(): void {
-    this.router.navigate(['/profile'], { queryParams: { openAccount: 'true' } });
+    this.router.navigate(['/profile/open-account']);
   }
 }

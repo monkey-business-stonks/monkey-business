@@ -467,6 +467,7 @@ components:
           type: number
           minimum: 0
           exclusiveMinimum: true
+          maximum: 250000
           example: 5000.00
 
     UpdateAccountRequest:

@@ -1,6 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, OnInit } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { Component } from '@angular/core';
+import { Router } from '@angular/router';
 import { UserPanel } from '@/app/features/profile/user-panel/user-panel';
 import { EditPanel } from './edit-panel/edit-panel';
 import { AccountsPanel } from './accounts-panel/accounts-panel';
@@ -13,7 +13,7 @@ import { AccountsPanel } from './accounts-panel/accounts-panel';
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile implements OnInit {
+export class Profile {
   // User information properties
   username: string = '';
   firstName: string = '';
@@ -26,21 +26,12 @@ export class Profile implements OnInit {
   
   // Edit mode and notification preferences
   isEditMode: boolean = false;
-  autoOpenAccountFlow = false;
   notifyByPhone: boolean = true;
   notifyByEmail: boolean = true;
 
   constructor(
-    private router: Router,
-    private route: ActivatedRoute
+    private router: Router
   ) {}
-
-  ngOnInit(): void {
-    this.route.queryParams.subscribe(params => {
-      this.autoOpenAccountFlow = params['openAccount'] === 'true';
-      this.isEditMode = false;
-    });
-  }
 
   // Toggle between view and edit mode
   toggleEditMode() {
