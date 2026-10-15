@@ -1,44 +1,34 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, EventEmitter, Input, OnChanges, OnInit, Output, SimpleChanges, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { Account } from '@/app/core/models';
-import { AccountOpening } from '../account-opening/account-opening';
 
 @Component({
-  imports: [SharedModule, AccountOpening],
+  imports: [SharedModule],
   selector: 'accounts-panel',
   styleUrl: './accounts-panel.css',
   templateUrl: './accounts-panel.html',
 })
-export class AccountsPanel implements OnInit, OnChanges {
-  @Input() autoOpenAccountFlow = false;
+export class AccountsPanel implements OnInit {
   @Input() showEditProfileButton = false;
   @Output() editProfile = new EventEmitter<void>();
 
   userId: string | null = null;
   accounts = signal<Account[]>([]);
-  showAccountOpening = false;
   isLoading = signal(false);
   errorMessage = signal<string>('');
 
   constructor(
     private authService: AuthService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private router: Router
   ) {}
 
   ngOnInit(): void {
     this.loadAccounts();
 
-    if (this.autoOpenAccountFlow) {
-      this.openAccountFlow();
-    }
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['autoOpenAccountFlow']?.currentValue === true) {
-      this.openAccountFlow();
-    }
   }
 
   loadAccounts(): void {
@@ -72,16 +62,7 @@ export class AccountsPanel implements OnInit, OnChanges {
       return;
     }
 
-    this.showAccountOpening = true;
-  }
-
-  closeAccountFlow(): void {
-    this.showAccountOpening = false;
-  }
-
-  onAccountOpened(): void {
-    this.showAccountOpening = false;
-    this.loadAccounts();
+    this.router.navigate(['/profile/open-account']);
   }
 
   onEditProfile(): void {

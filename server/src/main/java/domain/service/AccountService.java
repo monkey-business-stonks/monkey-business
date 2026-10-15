@@ -49,6 +49,10 @@ public class AccountService {
             throw new IllegalArgumentException("Initial deposit must be greater than 0");
         }
 
+        if (request.getInitialDeposit().compareTo(new BigDecimal("250000")) > 0) {
+            throw new IllegalArgumentException("Initial deposit cannot exceed 250,000");
+        }
+
         BigDecimal cashBalance = request.getInitialDeposit();
         BigDecimal balance = cashBalance;  // Initially, all balance is cash (no holdings yet)
 
