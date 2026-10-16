@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
-export interface PlaceOrderRequest {
+export interface OrderRequest {
   orderType: 'EQUITY' | 'FOREX' | 'CRYPTO';
   action: 'BUY' | 'SELL';
   ticker: string;
@@ -31,8 +31,8 @@ export class OrderService {
     return `${window.location.origin}/api`;
   }
 
-  placeOrder(accountId: string, request: PlaceOrderRequest): Observable<unknown> {
-    return this.http.post<unknown>(
+  placeOrder(accountId: string, request: OrderRequest): Observable<OrderResponse> {
+    return this.http.post<OrderResponse>(
       `${this.getBackendUrl()}/accounts/${accountId}/orders`,
       request
     );
