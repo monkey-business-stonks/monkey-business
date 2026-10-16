@@ -3,15 +3,78 @@
     class="search-bar"
     type="text"
     placeholder="Search tickers..."
+    (keyup.enter)="handleSearchSubmit($event)"
   >
 
+  <div class="filter-buttons">
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="isFilterActive('EQUITY')"
+      (click)="toggleFilter('EQUITY')"
+    >
+      EQUITY
+    </button>
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="isFilterActive('CRYPTO')"
+      (click)="toggleFilter('CRYPTO')"
+    >
+      CRYPTO
+    </button>
+    <button
+      type="button"
+      class="filter-btn"
+      [class.active]="isFilterActive('FOREX')"
+      (click)="toggleFilter('FOREX')"
+    >
+      FOREX
+    </button>
+  </div>
+
   <div class="rows-list">
-    <trade-search-row
-      *ngFor="let asset of assetList()"
-      [row]="asset"
-      [selected]="selectedAsset?.data.symbol === asset.data.symbol"
-      (rowClick)="handleSelect($event)"
-    ></trade-search-row>
+    <ng-container *ngIf="hasSearched()">
+      <div class="subsection-header">Results</div>
+
+      <div *ngIf="searchError()" class="search-error-message">
+        {{ searchError() }}
+      </div>
+
+      <ng-container *ngIf="!searchError()">
+        <div *ngIf="resultsList().length > 0; else noResultsTemplate">
+          <trade-search-row
+            *ngFor="let asset of resultsList()"
+            [row]="asset"
+            [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
+            (rowClick)="handleSelect($event)"
+          ></trade-search-row>
+        </div>
+        <ng-template #noResultsTemplate>
+          <div class="no-results-message">no results to display</div>
+        </ng-template>
+      </ng-container>
+    </ng-container>
+
+    <ng-container *ngIf="recentsList().length > 0">
+      <div class="subsection-header">Recents</div>
+      <trade-search-row
+        *ngFor="let asset of recentsList()"
+        [row]="asset"
+        [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
+        (rowClick)="handleSelect($event)"
+      ></trade-search-row>
+    </ng-container>
+
+    <ng-container *ngIf="topInstrumentsList().length > 0">
+      <div class="subsection-header">Top Instruments</div>
+      <trade-search-row
+        *ngFor="let asset of topInstrumentsList()"
+        [row]="asset"
+        [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
+        (rowClick)="handleSelect($event)"
+      ></trade-search-row>
+    </ng-container>
   </div>
 
   <app-button

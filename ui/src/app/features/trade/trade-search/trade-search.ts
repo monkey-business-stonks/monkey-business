@@ -3,6 +3,11 @@ import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
 import { Quote } from '@/app/core/models/quote';
 import { PricingService } from '@/app/core/services/pricing-service';
+import { OrderService } from '@/app/core/services/order.service';
+import { forkJoin, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+
+export type AssetFilter = 'EQUITY' | 'CRYPTO' | 'FOREX';
 
 @Component({
   imports: [SharedModule, TradeSearchRow],
@@ -19,106 +24,178 @@ export class TradeSearch implements OnInit {
     'ABBV', 'BAC', 'CRM', 'KO', 'MRK'
   ];
 
+  @Input() userId: string = '';
   @Input() selectedTickerFromParent: Quote | null = null;
 
-  @Output() onTickerHighlighted =
-    new EventEmitter<Quote>();
+  @Output() onTickerHighlighted = new EventEmitter<Quote>();
+  @Output() onTickerSelected = new EventEmitter<Quote>();
 
-  @Output() onTickerSelected =
-    new EventEmitter<Quote>();
-  
-  constructor(private pricingService: PricingService) {}
+  constructor(
+    private pricingService: PricingService,
+    private orderService: OrderService
+  ) {}
 
   selectedAsset: Quote | null = null;
-  // assetList: TradeSearchRowData[] = [
-  //   {
-  //     asset: {
-  //       assetId: 'asset-001',
-  //       assetClass: 'equity',
-  //       ticker: 'AAPL',
-  //       name: 'Apple Inc.',
-  //       quantity: 10,
-  //       averageCost: 175.25
-  //     },
-  //     quote: {
-  //       symbol: 'AAPL',
-  //       price: 187.42,
-  //       bid: 187.40,
-  //       ask: 187.45,
-  //       spreadBps: 2.67,
-  //       currency: 'USD',
-  //       change: 1.72,
-  //       changePercent: 0.92,
-  //       previousClose: 185.70,
-  //       asOf: '2026-10-05T15:30:00Z',
-  //       marketState: 'open'
-  //     },
-  //     selected: false
-  //   },
-  //   {
-  //     asset: {
-  //       assetId: 'asset-002',
-  //       assetClass: 'equity',
-  //       ticker: 'MSFT',
-  //       name: 'Microsoft Corp.',
-  //       quantity: 5,
-  //       averageCost: 390.50
-  //     },
-  //     quote: {
-  //       symbol: 'MSFT',
-  //       price: 415.60,
-  //       bid: 415.55,
-  //       ask: 415.65,
-  //       spreadBps: 2.40,
-  //       currency: 'USD',
-  //       change: -1.87,
-  //       changePercent: -0.45,
-  //       previousClose: 417.47,
-  //       asOf: '2026-10-05T15:30:00Z',
-  //       marketState: 'open'
-  //     },
-  //     selected: false
-  //   },
-  //   {
-  //     asset: {
-  //       assetId: 'asset-003',
-  //       assetClass: 'equity',
-  //       ticker: 'NVDA',
-  //       name: 'NVIDIA Corp.',
-  //       quantity: 8,
-  //       averageCost: 720.00
-  //     },
-  //     quote: {
-  //       symbol: 'NVDA',
-  //       price: 875.12,
-  //       bid: 875.00,
-  //       ask: 875.25,
-  //       spreadBps: 2.86,
-  //       currency: 'USD',
-  //       change: 40.23,
-  //       changePercent: 4.82,
-  //       previousClose: 834.89,
-  //       asOf: '2026-10-05T15:30:00Z',
-  //       marketState: 'open'
-  //     },
-  //     selected: false
-  //   }
-  // ];
-  assetList = signal<Quote[]>([]);
+
+  activeFilters = signal<AssetFilter[]>(['EQUITY', 'CRYPTO', 'FOREX']);
+
+  resultsList = signal<Quote[]>([]);
+  recentsList = signal<Quote[]>([]);
+  topInstrumentsList = signal<Quote[]>([]);
+
+  searchQuery = signal<string>('');
+  hasSearched = signal<boolean>(false);
+  searchError = signal<string | null>(null);
+
   ngOnInit(): void {
-    this.pricingService.getPrices(TradeSearch.TOP_SYMBOLS.join(',')).subscribe({
-      next: quotes => this.assetList.set(quotes),
-      error: error => console.error('Unable to load market quotes', error)
-    });
+    this.loadTopInstruments();
+    this.loadRecents();
 
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
     }
   }
 
+  private loadTopInstruments(): void {
+    const formattedSymbols = TradeSearch.TOP_SYMBOLS
+      .map(symbol => this.formatTickerForFilters(symbol))
+      .flat();
+
+    if (formattedSymbols.length === 0) {
+      this.topInstrumentsList.set([]);
+      return;
+    }
+
+    this.pricingService.getPrices(formattedSymbols.join(',')).subscribe({
+      next: quotes => this.topInstrumentsList.set(quotes),
+      error: error => console.error('Unable to load market quotes', error)
+    });
+  }
+
+  private loadRecents(): void {
+    if (!this.userId) return;
+
+    this.orderService.getUserOrders(this.userId).subscribe({
+      next: orders => {
+        const uniqueTickers: string[] = [];
+        for (const order of orders) {
+          if (order.ticker && !uniqueTickers.includes(order.ticker)) {
+            uniqueTickers.push(order.ticker);
+          }
+          if (uniqueTickers.length === 3) break;
+        }
+
+        if (uniqueTickers.length === 0) {
+          this.recentsList.set([]);
+          return;
+        }
+
+        const quoteRequests = uniqueTickers.map(ticker =>
+          this.pricingService.getQuote(ticker).pipe(
+            catchError(err => {
+              console.error(`Error fetching quote for ${ticker}`, err);
+              return of(null);
+            })
+          )
+        );
+
+        forkJoin(quoteRequests).subscribe(results => {
+          const validQuotes = results.filter((q): q is Quote => q !== null);
+          this.recentsList.set(validQuotes);
+        });
+      },
+      error: err => console.error('Unable to load user orders', err)
+    });
+  }
+
+  handleSearchSubmit(event: Event): void {
+    const query = (event.target as HTMLInputElement).value.trim().toUpperCase();
+    if (!query) {
+      this.hasSearched.set(false);
+      this.resultsList.set([]);
+      this.searchError.set(null);
+      return;
+    }
+
+    this.searchQuery.set(query);
+    this.hasSearched.set(true);
+    this.executeSearch(query);
+  }
+
+  private executeSearch(query: string): void {
+    this.searchError.set(null);
+    const formattedTickers = this.formatTickerForFilters(query);
+
+    if (formattedTickers.length === 0) {
+      this.resultsList.set([]);
+      return;
+    }
+
+    const requests = formattedTickers.map(ticker =>
+      this.pricingService.getQuote(ticker).pipe(
+        catchError(err => {
+          console.error(`API error when searching for ${ticker}`, err);
+          return of({ error: true, message: err?.message || 'Error loading price data' });
+        })
+      )
+    );
+
+    forkJoin(requests).subscribe({
+      next: results => {
+        const errors = results.filter((res: any) => res && res.error);
+        const validQuotes = results.filter((res: any): res is Quote => res && !res.error && res.data);
+
+        this.resultsList.set(validQuotes);
+
+        if (errors.length > 0 && validQuotes.length === 0) {
+          this.searchError.set('An error occurred while fetching market results. Please try again.');
+        }
+      },
+      error: err => {
+        this.resultsList.set([]);
+        this.searchError.set('An error occurred while communicating with the pricing service.');
+      }
+    });
+  }
+
+  toggleFilter(filter: AssetFilter): void {
+    const current = this.activeFilters();
+    if (current.includes(filter)) {
+      this.activeFilters.set(current.filter(f => f !== filter));
+    } else {
+      this.activeFilters.set([...current, filter]);
+    }
+
+    this.loadTopInstruments();
+    if (this.hasSearched() && this.searchQuery()) {
+      this.executeSearch(this.searchQuery());
+    }
+  }
+
+  isFilterActive(filter: AssetFilter): boolean {
+    return this.activeFilters().includes(filter);
+  }
+
+  private formatTickerForFilters(ticker: string): string[] {
+    const filters = this.activeFilters();
+    const queryAll = filters.length === 0;
+    const formatted: string[] = [];
+
+    if (queryAll || filters.includes('EQUITY')) {
+      formatted.push(ticker);
+    }
+    if (queryAll || filters.includes('CRYPTO')) {
+      formatted.push(`X:${ticker}-USD`);
+    }
+    if (queryAll || filters.includes('FOREX')) {
+      formatted.push(`FX:${ticker}USD`);
+    }
+
+    return formatted;
+  }
+
   handleSelect(selectedAsset: Quote): void {
     this.selectedAsset = selectedAsset;
-
     this.onTickerHighlighted.emit(selectedAsset);
   }
 }
