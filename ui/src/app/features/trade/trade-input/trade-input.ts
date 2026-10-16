@@ -127,8 +127,9 @@ export class TradeInput {
       ticker: data.ticker ?? '',
       quantity: data.quantity
     }).subscribe({
-      next: () => {
-        this.onOrderConfirmed.emit(data);
+      next: order => {
+        console.log('Order ID:', order.orderId);
+        console.log('Status:', order.status);
       },
       error: error => {
         console.error('Failed to place order:', error);

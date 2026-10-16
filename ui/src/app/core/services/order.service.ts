@@ -9,6 +9,18 @@ export interface PlaceOrderRequest {
   quantity: number;
 }
 
+export interface OrderResponse {
+  orderId: string;
+  accountId: string;
+  orderType: string;
+  action: string;
+  ticker: string;
+  quantity: number;
+  status: 'PENDING' | 'SUCCEEDED' | 'REJECTED';
+  submittedValue: number;
+  executedValue: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
