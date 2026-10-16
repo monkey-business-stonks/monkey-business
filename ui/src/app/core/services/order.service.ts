@@ -17,9 +17,9 @@ export interface OrderResponse {
   action: string;
   ticker: string;
   quantity: number;
-  status: 'PENDING' | 'SUCCEEDED' | 'REJECTED';
+  status: 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED' | 'REJECTED';
   submittedValue: number;
-  executedValue: number;
+  executedValue: number | null;
 }
 
 @Injectable({
@@ -41,5 +41,11 @@ export class OrderService {
 
   getUserOrders(userId: string): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.getBackendUrl()}/users/${userId}/orders`);
+  }
+
+  getOrder(accountId: string, orderId: string): Observable<OrderResponse> {
+    return this.http.get<OrderResponse>(
+      `${this.getBackendUrl()}/accounts/${accountId}/orders/${orderId}`
+    );
   }
 }
