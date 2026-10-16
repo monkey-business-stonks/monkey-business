@@ -135,7 +135,7 @@ export class TradeInput {
         console.log('Order ID:', order.orderId);
         console.log('Status:', order.status);
         this.showConfirmation = false;
-        this.orderError = `Order submitted. Waiting for execution...`;
+        this.orderError.set('Order submitted. Waiting for execution...');
         if (data.accountId) {
           this.trackOrderUntilComplete(data.accountId, order.orderId);
         }
@@ -162,7 +162,7 @@ export class TradeInput {
     ).subscribe({
       next: order => {
         if (order.status === 'REJECTED') {
-          this.orderError = 'Order rejected. Your holdings were not changed.';
+          this.orderError.set('Order rejected. Your holdings were not changed.');
           return;
         }
 
@@ -172,7 +172,7 @@ export class TradeInput {
       },
       error: error => {
         console.error('Failed to track order:', error);
-        this.orderError = 'Order was submitted, but its final status could not be confirmed.';
+        this.orderError.set('Order was submitted, but its final status could not be confirmed.');
       }
     });
   }
