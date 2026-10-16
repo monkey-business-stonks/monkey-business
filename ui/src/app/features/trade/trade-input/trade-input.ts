@@ -3,6 +3,10 @@ import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, OrderReviewData } from '../confirmation/confirmation';
 import { PricingService } from '@/app/core/services/pricing-service';
+import { AccountService } from '@/app/core/services/account.service';
+import { AuthService } from '@/app/core/services/auth.service';
+import { OrderService } from '@/app/core/services/order.service';
+import { Account } from '@/app/core/models/account';
 
 @Component({
   selector: 'trade-input',
@@ -20,10 +24,9 @@ export class TradeInput {
   selectedAction: string = 'Buy';
 
   accountOptions: SelectOption[] = [
-    { label: 'INDIVIDUAL', value: 'individual' },
-    { label: 'JOINT', value: 'joint' }
+    { label: 'Loading accounts...', value: '' }
   ];
-  selectedAccount: string = 'individual';
+  selectedAccount: string = '';
 
   orderTypeOptions: SelectOption[] = [
     { label: 'Market Order', value: 'market' },
@@ -34,11 +37,41 @@ export class TradeInput {
   quantity: number = 50;
   sharePrice: number = 0;
   showConfirmation: boolean = false;
+  orderError: string | null = null;
+  private accounts: Account[] = [];
 
-  constructor(private pricingService: PricingService) {}
+  constructor(
+    private pricingService: PricingService,
+    private accountService: AccountService,
+    private authService: AuthService,
+    private orderService: OrderService
+  ) {}
 
   ngOnInit(): void {
     this.loadSharePrice();
+    this.loadAccounts();
+  }
+
+  private loadAccounts(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.orderError = 'Session Expired: Please sign in again.';
+      return;
+    }
+
+    this.accountService.getUserAccounts(userId).subscribe({
+      next: accounts => {
+        this.accounts = accounts;
+        this.accountOptions = accounts.map(account => ({
+          label: account.accountType,
+          value: account.accountId
+        }));
+        this.selectedAccount = accounts[0]?.accountId ?? '';
+      },
+      error: () => {
+        this.orderError = 'Unable to load accounts.';
+      }
+    });
   }
 
   private loadSharePrice(): void {
@@ -65,7 +98,9 @@ export class TradeInput {
   get orderData(): OrderReviewData {
     return {
       action: this.selectedAction,
-      account: this.selectedAccount,
+      account: this.accounts.find(account => account.accountId === this.selectedAccount)?.accountType
+        ?? this.selectedAccount,
+      accountId: this.selectedAccount,
       orderType: this.selectedOrderType,
       quantity: this.quantity,
       sharePrice: this.sharePrice,
@@ -79,9 +114,28 @@ export class TradeInput {
   }
 
   onConfirmTrade(data: OrderReviewData): void {
-    console.log('Order confirmed:', data);
-    this.onOrderConfirmed.emit(data);
-    this.showConfirmation = false;
+    if (!data.accountId) {
+      this.orderError = 'Select a valid account before placing the order.';
+      return;
+    }
+
+    this.orderError = null;
+    
+    this.orderService.placeOrder(data.accountId, {
+      orderType: 'EQUITY',
+      action: data.action.toUpperCase() as 'BUY' | 'SELL',
+      ticker: data.ticker ?? '',
+      quantity: data.quantity
+    }).subscribe({
+      next: order => {
+        console.log('Order ID:', order.orderId);
+        console.log('Status:', order.status);
+      },
+      error: error => {
+        console.error('Failed to place order:', error);
+        this.orderError = error?.error?.message || 'Unable to place the order. Please try again.';
+      }
+    });
   }
 
   onCancelTrade(): void {

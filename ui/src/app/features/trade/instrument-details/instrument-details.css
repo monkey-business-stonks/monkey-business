@@ -65,8 +65,16 @@
 }
 
 .change-today {
-  color: var(--accent-primary);
   font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+
+  &.positive {
+    color: var(--accent-primary); 
+  }
+
+  &.negative {
+    color: var(--accent-negative); 
+  }
 }
 
 .instrument-caption {

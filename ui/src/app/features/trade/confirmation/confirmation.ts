@@ -6,18 +6,13 @@ import { ButtonComponent } from '@/app/shared/components/button/button';
 export interface OrderReviewData {
   action: string;
   account: string;
+  accountId?: string;
   orderType: string;
   quantity: number;
   sharePrice: number;
   estimatedTotal: number;
   ticker?: string;
 }
-
-// enum tradeState {
-//   PENDING,
-//   SUCCESS,
-//   FAILURE,
-// }
 
 @Component({
   imports: [CommonModule, ButtonComponent, RouterLink],
@@ -35,13 +30,13 @@ export class Confirmation {
   // currentState: tradeState = tradeState.PENDING;
 
   confirm(): void {
+    if (this.orderData) {
+      this.onConfirm.emit(this.orderData);
+    }
     this.showSuccessState = true;
   }
 
   completeOrder(): void {
-    if (this.orderData) {
-      this.onConfirm.emit(this.orderData);
-    }
     this.closeModal();
   }
 
