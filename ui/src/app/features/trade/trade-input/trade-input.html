@@ -55,6 +55,10 @@
   <app-button variant="secondary" (click)="reviewOrder()">
     Review Order
   </app-button>
+
+  @if (orderError) {
+    <p class="order-error" role="alert">{{ orderError }}</p>
+  }
 </div>
 
 <!-- Order Confirmation Modal -->
