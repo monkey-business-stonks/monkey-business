@@ -1,7 +1,7 @@
 .trade-search-container {
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 130px);
+  height: calc(100vh - 160px);
   padding: var(--space-lg);
   background-color: var(--background-secondary);
   border: var(--width-sm) solid var(--background-tertiary);
@@ -103,5 +103,38 @@
     &:hover {
       background: var(--text-secondary);
     }
+  }
+}
+.rows-group,
+.shimmer-rows {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.shimmer-row {
+  box-sizing: border-box;
+  padding: var(--space-xmd) var(--space-md);
+  height: 58px; /* Matches rendered height of asset-row */
+  width: 100%;
+  border-radius: var(--radius-md);
+  border: var(--width-xs) solid transparent;
+  margin-top: var(--space-xxs);
+  background: linear-gradient(
+    90deg,
+    var(--background-primary) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    var(--background-primary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
   }
 }
