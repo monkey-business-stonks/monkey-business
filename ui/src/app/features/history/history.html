@@ -1,6 +1,12 @@
 <div class="history-container">
-  <app-table 
-    [columns]="orderColumns" 
-    [data]="orderData">
-  </app-table>
+  @if (loading()) {
+    <p>Loading order history...</p>
+  } @else if (error()) {
+    <p>{{ error() }}</p>
+  } @else {
+    <app-table
+      [columns]="orderColumns"
+      [data]="orderData()">
+    </app-table>
+  }
 </div>

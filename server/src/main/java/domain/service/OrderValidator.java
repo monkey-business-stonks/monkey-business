@@ -14,6 +14,9 @@ public class OrderValidator {
     @Autowired
     private PricingEngine pricingEngine;
 
+    @Autowired
+    private AssetService assetService;
+
     /**
      * Validate if a trade is allowed for an account
      * Checks:
@@ -66,8 +69,10 @@ public class OrderValidator {
         }
         // For SELL orders: check quantity held is sufficient
         else if (action.equalsIgnoreCase("SELL")) {
-            // AssetService will check if the position exists and has sufficient quantity
-            // For now, we assume AssetService handles this during transaction
+            var asset = assetService.getAsset(account, order.getTicker());
+            if (asset == null || asset.quantity() < order.getQuantity()) {
+                return false;
+            }
         }
 
         return true;

@@ -23,6 +23,9 @@ class OrderValidatorTest {
     @Mock
     private PricingEngine pricingEngine;
 
+    @Mock
+    private AssetService assetService;
+
     @InjectMocks
     private OrderValidator orderValidator;
 
@@ -137,11 +140,29 @@ class OrderValidatorTest {
             ZonedDateTime.now()
         );
 
+        when(assetService.getAsset(brokerageAccount, "AAPL")).thenReturn(
+            new domain.entities.Asset(UUID.randomUUID(), "EQUITY", "AAPL", "Apple Inc.", 100.0, BigDecimal.valueOf(150))
+        );
+
         // Act
         boolean isValid = orderValidator.isValidTrade(sellOrder, brokerageAccount);
 
         // Assert
         assertTrue(isValid);
+    }
+
+    @Test
+    void testIsValidTrade_SellOrder_InsufficientHoldings() {
+        Order sellOrder = new Order(
+            UUID.randomUUID(), "EQUITY", "AAPL", 100.0, "SELL",
+            ZonedDateTime.now(), BigDecimal.valueOf(15000), Order.OrderStatus.SUBMITTED, 202, ZonedDateTime.now()
+        );
+
+        when(assetService.getAsset(brokerageAccount, "AAPL")).thenReturn(
+            new domain.entities.Asset(UUID.randomUUID(), "EQUITY", "AAPL", "Apple Inc.", 25.0, BigDecimal.valueOf(150))
+        );
+
+        assertFalse(orderValidator.isValidTrade(sellOrder, brokerageAccount));
     }
 
     @Test
