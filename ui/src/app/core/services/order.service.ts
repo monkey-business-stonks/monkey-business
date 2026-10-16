@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Order } from '@/app/core/models'; 
 import { Observable } from 'rxjs';
 
 export interface OrderRequest {
@@ -36,5 +37,9 @@ export class OrderService {
       `${this.getBackendUrl()}/accounts/${accountId}/orders`,
       request
     );
+  }
+
+  getUserOrders(userId: string): Observable<Order[]> {
+    return this.http.get<Order[]>(`${this.getBackendUrl()}/users/${userId}/orders`);
   }
 }
