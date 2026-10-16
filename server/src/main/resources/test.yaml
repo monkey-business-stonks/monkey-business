@@ -460,7 +460,7 @@ components:
 
     CreateAccountRequest:
       type: object
-      required: [accountType, initialDeposit]
+      required: [accountType, initialDeposit, tradingExperience, investmentObjective, riskTolerance, acceptsDisclosure]
       properties:
         accountType: { $ref: '#/components/schemas/AccountType' }
         initialDeposit:
@@ -469,6 +469,10 @@ components:
           exclusiveMinimum: true
           maximum: 250000
           example: 5000.00
+        tradingExperience: { type: string }
+        investmentObjective: { type: string }
+        riskTolerance: { type: string }
+        acceptsDisclosure: { type: boolean }
 
     UpdateAccountRequest:
       type: object
@@ -484,6 +488,9 @@ components:
         openedDate: { type: string, format: date-time }
         balance: { type: number, example: 25000.00 }
         cashBalance: { type: number, example: 10000.00 }
+        tradingExperience: { type: string }
+        investmentObjective: { type: string }
+        riskTolerance: { type: string }
         heldAssets:
           type: array
           items: { $ref: '#/components/schemas/AssetResponse' }

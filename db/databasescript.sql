@@ -61,6 +61,12 @@ CREATE TABLE Accounts (
 
     balance NUMERIC(18,2) NOT NULL,
 
+    tradingExperience VARCHAR(100) NOT NULL,
+
+    investmentObjective VARCHAR(100) NOT NULL,
+
+    riskTolerance VARCHAR(50) NOT NULL,
+
     updatedAt TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT fk_account_user
