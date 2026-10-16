@@ -115,6 +115,9 @@ spring:
       thread-name-prefix: monkey-scheduler-
       enable-async: true
 
+orders:
+  execution-delay-ms: ${ORDER_EXECUTION_DELAY_MS:10000}
+
 analytics:
   max-replica-lag-seconds: 300
   primary-fallback-enabled: false

@@ -11,8 +11,10 @@ export enum OrderAction {
 } 
 
 export enum OrderStatus {
-  Pending = "PENDING", 
-  Succeeded = "SUCCEEDED", 
+  Submitted = "SUBMITTED",
+  Accepted = "ACCEPTED",
+  Filled = "FILLED",
+  Settled = "SETTLED",
   Rejected = "REJECTED"
 }
 
@@ -24,9 +26,11 @@ export interface Order {
   ticker: string;
   quantity: number;
   submittedValue: number;
-  executedValue: number;
+  executedValue: number | null;
   status: OrderStatus;
   submittedOn: Date;
-  executedOn: Date;
+  verifiedOn: Date | null;
+  settledOn: Date | null;
+  executedOn: Date | null;
   createdOn: Date;
 }

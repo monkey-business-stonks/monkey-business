@@ -14,6 +14,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - zk_1_data:/var/lib/zookeeper/data
+      - zk_1_log:/var/lib/zookeeper/log
 
   zk-2:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -29,6 +32,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - zk_2_data:/var/lib/zookeeper/data
+      - zk_2_log:/var/lib/zookeeper/log
 
   zk-3:
     image: confluentinc/cp-zookeeper:7.5.0
@@ -44,6 +50,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    volumes:
+      - zk_3_data:/var/lib/zookeeper/data
+      - zk_3_log:/var/lib/zookeeper/log
 
   # Kafka - Message broker (3-node cluster)
   kafka-1:
@@ -59,6 +68,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zk-1:2181,zk-2:2181,zk-3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-1:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -70,9 +80,9 @@ services:
       - "29092:29092"
       - "9092:9092"
     volumes:
-      - kafka_1_data:/var/lib/kafka/data
+      - kafka_1_data_v2:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD", "jps", "-l"]
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -90,6 +100,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zk-1:2181,zk-2:2181,zk-3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-2:9092,PLAINTEXT_HOST://localhost:29093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -101,9 +112,9 @@ services:
       - "29093:29092"
       - "9093:9092"
     volumes:
-      - kafka_2_data:/var/lib/kafka/data
+      - kafka_2_data_v2:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD", "jps", "-l"]
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -121,6 +132,7 @@ services:
     environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zk-1:2181,zk-2:2181,zk-3:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka-3:9092,PLAINTEXT_HOST://localhost:29094
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
@@ -132,9 +144,9 @@ services:
       - "29094:29092"
       - "9094:9092"
     volumes:
-      - kafka_3_data:/var/lib/kafka/data
+      - kafka_3_data_v2:/var/lib/kafka/data
     healthcheck:
-      test: ["CMD", "jps", "-l"]
+      test: ["CMD-SHELL", "kafka-broker-api-versions --bootstrap-server localhost:9092 >/dev/null 2>&1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -291,9 +303,15 @@ services:
       retries: 3
 
 volumes:
+  zk_1_data:
+  zk_1_log:
+  zk_2_data:
+  zk_2_log:
+  zk_3_data:
+  zk_3_log:
   postgres_data:
   postgres_replica_data:
   pgadmin_data:
-  kafka_1_data:
-  kafka_2_data:
-  kafka_3_data:
+  kafka_1_data_v2:
+  kafka_2_data_v2:
+  kafka_3_data_v2:

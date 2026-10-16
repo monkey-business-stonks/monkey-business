@@ -34,7 +34,7 @@ public class OrderExecutor {
             if (currentPrice == null || currentPrice.equals(BigDecimal.ZERO)) {
                 // Price retrieval failed, mark order as rejected
                 order.updateExecution(
-                    null,  // executedon must be NULL for rejected orders
+                    ZonedDateTime.now(),
                     null,  // executedvalue must be NULL for rejected orders
                     OrderStatus.REJECTED,
                     503  // Service Unavailable
@@ -51,7 +51,7 @@ public class OrderExecutor {
                 if (account.getCashBalance().compareTo(totalCost) < 0) {
                     // Insufficient cash
                     order.updateExecution(
-                        null,  // executedon must be NULL for rejected orders
+                        ZonedDateTime.now(),
                         null,  // executedvalue must be NULL for rejected orders
                         OrderStatus.REJECTED,
                         422  // Unprocessable Entity
@@ -74,7 +74,7 @@ public class OrderExecutor {
         } catch (Exception e) {
             // Any exception during execution -> reject order
             order.updateExecution(
-                null,  // executedon must be NULL for rejected orders
+                ZonedDateTime.now(),
                 null,  // executedvalue must be NULL for rejected orders
                 OrderStatus.REJECTED,
                 500  // Internal Server Error

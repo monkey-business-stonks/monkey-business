@@ -163,6 +163,8 @@ public class OrderService {
             .executedValue(order.getExecutedValue())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
+            .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
+            .settledOn(order.getSettledOn() != null ? order.getSettledOn().toOffsetDateTime() : null)
             .executedOn(order.getExecutedOn() != null ? order.getExecutedOn().toOffsetDateTime() : null)
             .createdOn(order.getCreatedOn().toOffsetDateTime());
     }
@@ -180,28 +182,17 @@ public class OrderService {
             .quantity(new BigDecimal(order.getQuantity()))
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
+            .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
+            .settledOn(order.getSettledOn() != null ? order.getSettledOn().toOffsetDateTime() : null)
             .executedValue(order.getExecutedValue());
     }
 
     /**
      * Map entity OrderStatus to DTO OrderStatus
-     * Entity: SUBMITTED, ACCEPTED, FILLED, REJECTED
-     * DTO:    PENDING, SUCCEEDED, REJECTED
+    * Entity: SUBMITTED, ACCEPTED, FILLED, SETTLED, REJECTED
+    * API exposes the lifecycle statuses directly.
      */
     private OrderStatus mapOrderStatus(Order.OrderStatus entityStatus) {
-        if (entityStatus == null) {
-            return OrderStatus.PENDING;
-        }
-        switch (entityStatus) {
-            case SUBMITTED:
-            case ACCEPTED:
-                return OrderStatus.PENDING;
-            case FILLED:
-                return OrderStatus.SUCCEEDED;
-            case REJECTED:
-                return OrderStatus.REJECTED;
-            default:
-                return OrderStatus.PENDING;
-        }
+        return entityStatus == null ? null : OrderStatus.valueOf(entityStatus.name());
     }
 }
