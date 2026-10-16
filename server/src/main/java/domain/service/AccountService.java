@@ -53,6 +53,16 @@ public class AccountService {
             throw new IllegalArgumentException("Initial deposit cannot exceed 250,000");
         }
 
+        if (request.getTradingExperience() == null || request.getTradingExperience().isBlank()
+                || request.getInvestmentObjective() == null || request.getInvestmentObjective().isBlank()
+                || request.getRiskTolerance() == null || request.getRiskTolerance().isBlank()) {
+            throw new IllegalArgumentException("Investor profile fields are required");
+        }
+
+        if (!Boolean.TRUE.equals(request.getAcceptsDisclosure())) {
+            throw new IllegalArgumentException("Regulatory disclosure must be accepted");
+        }
+
         BigDecimal cashBalance = request.getInitialDeposit();
         BigDecimal balance = cashBalance;  // Initially, all balance is cash (no holdings yet)
 
@@ -68,6 +78,9 @@ public class AccountService {
             new HashSet<>()
         );
         account.setUser(user);
+        account.setTradingExperience(request.getTradingExperience());
+        account.setInvestmentObjective(request.getInvestmentObjective());
+        account.setRiskTolerance(request.getRiskTolerance());
 
         // Store account in repository
         accountRepository.save(account);
@@ -180,6 +193,9 @@ public class AccountService {
             .openedDate(account.getCreatedOn().toOffsetDateTime())
             .balance(new BigDecimal(account.getBalance()))
             .cashBalance(account.getCashBalance())
+            .tradingExperience(account.getTradingExperience())
+            .investmentObjective(account.getInvestmentObjective())
+            .riskTolerance(account.getRiskTolerance())
             .heldAssets(heldAssets);
     }
 
