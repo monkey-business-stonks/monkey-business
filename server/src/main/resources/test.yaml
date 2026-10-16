@@ -213,7 +213,8 @@ paths:
       description: |
         Triggers the full internal flow: OrderController, OrderManager,
         Validation, Execution, PricingEngine, TransactionManager. The order is
-        saved as PENDING, then moved to SUCCEEDED or REJECTED. Balance, asset
+        saved as SUBMITTED, then moved through ACCEPTED, FILLED or REJECTED, and
+        SETTLED after successful account and asset updates. Balance, asset
         and order updates happen in a single database transaction.
         A rejected order is still persisted (status REJECTED) and the request
         returns 422.
@@ -225,7 +226,7 @@ paths:
             schema: { $ref: '#/components/schemas/PlaceOrderRequest' }
       responses:
         '201':
-          description: Order executed (status SUCCEEDED)
+          description: Order executed (status FILLED)
           content:
             application/json:
               schema: { $ref: '#/components/schemas/OrderResponse' }
@@ -407,7 +408,7 @@ components:
 
     OrderStatus:
       type: string
-      enum: ["PENDING", "SUCCEEDED", "REJECTED"]
+      enum: ["SUBMITTED", "ACCEPTED", "FILLED", "SETTLED", "REJECTED"]
 
     AssetClass:
       type: string
@@ -515,6 +516,8 @@ components:
         executedValue: { type: number, nullable: true, example: 2512.50 }
         status: { $ref: '#/components/schemas/OrderStatus' }
         submittedOn: { type: string, format: date-time }
+        verifiedOn: { type: string, format: date-time, nullable: true }
+        settledOn: { type: string, format: date-time, nullable: true }
         executedOn: { type: string, format: date-time, nullable: true }
         createdOn: { type: string, format: date-time }
 
@@ -528,6 +531,8 @@ components:
         quantity: { type: number }
         status: { $ref: '#/components/schemas/OrderStatus' }
         submittedOn: { type: string, format: date-time }
+        verifiedOn: { type: string, format: date-time, nullable: true }
+        settledOn: { type: string, format: date-time, nullable: true }
         executedValue: { type: number, nullable: true }
 
     AssetResponse:

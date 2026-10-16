@@ -92,7 +92,7 @@ class OrderExecutorTest {
         assertNotNull(result);
         assertEquals(Order.OrderStatus.REJECTED, result.getStatus());
         assertEquals(422, result.getStatusCode());
-        assertNull(result.getExecutedOn());
+        assertNotNull(result.getExecutedOn());
         assertNull(result.getExecutedValue());
     }
 
@@ -108,7 +108,7 @@ class OrderExecutorTest {
         assertNotNull(result);
         assertEquals(Order.OrderStatus.REJECTED, result.getStatus());
         assertEquals(503, result.getStatusCode());
-        assertNull(result.getExecutedOn());
+        assertNotNull(result.getExecutedOn());
         assertNull(result.getExecutedValue());
     }
 
@@ -124,7 +124,7 @@ class OrderExecutorTest {
         assertNotNull(result);
         assertEquals(Order.OrderStatus.REJECTED, result.getStatus());
         assertEquals(503, result.getStatusCode());
-        assertNull(result.getExecutedOn());
+        assertNotNull(result.getExecutedOn());
         assertNull(result.getExecutedValue());
     }
 
@@ -186,7 +186,7 @@ class OrderExecutorTest {
         assertNotNull(result);
         assertEquals(Order.OrderStatus.REJECTED, result.getStatus());
         assertEquals(500, result.getStatusCode());
-        assertNull(result.getExecutedOn());
+        assertNotNull(result.getExecutedOn());
         assertNull(result.getExecutedValue());
     }
 

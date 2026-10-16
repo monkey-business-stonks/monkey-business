@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Configuration;
 
 import java.util.UUID;
 import java.util.function.Consumer;
+import java.time.Duration;
+import java.time.ZonedDateTime;
+import org.springframework.beans.factory.annotation.Value;
 
 /**
  * Spring Cloud Stream Kafka Consumer Configuration
@@ -51,6 +54,9 @@ public class ConsumerConfiguration {
 
     @Autowired
     private OrderExecutionEngine orderExecutionEngine;
+
+    @Value("${orders.execution-delay-ms:10000}")
+    private long executionDelayMs;
     
     /**
      * Consumer for order validation.
@@ -83,7 +89,7 @@ public class ConsumerConfiguration {
                 
                 if (!isValidTrade) {
                     log.warn("Order validation failed: orderId={}, user={}", orderId, submittedEvent.getUsername());
-                    order.updateExecution(null, null, Order.OrderStatus.REJECTED, 422);
+                    order.updateExecution(ZonedDateTime.now(), null, Order.OrderStatus.REJECTED, 422);
                     orderRepository.save(order);
                     orderEventPublisher.publishOrderRejected(
                         orderId, 
@@ -94,6 +100,8 @@ public class ConsumerConfiguration {
                     );
                 } else {
                     log.info("Order validation passed: orderId={}, user={}", orderId, submittedEvent.getUsername());
+                    order.markAccepted(ZonedDateTime.now());
+                    orderRepository.save(order);
                     orderEventPublisher.publishOrderValidated(submittedEvent);
                 }
             } catch (Exception e) {
@@ -121,13 +129,17 @@ public class ConsumerConfiguration {
             try {
                 log.info("Executing order: orderId={}, user={}, kafkaMessageId={}", 
                          orderId, submittedEvent.getUsername(), kafkaMessageId);
+
+                Thread.sleep(Duration.ofMillis(executionDelayMs));
                 
                 // Fetch order and account from database
                 Order order = orderRepository.findById(UUID.fromString(orderId))
                     .orElseThrow(() -> new RuntimeException("Order not found: " + orderId));
 
                 // Idempotency guard for retries/replays
-                if (order.getStatus() == Order.OrderStatus.FILLED || order.getStatus() == Order.OrderStatus.REJECTED) {
+                if (order.getStatus() == Order.OrderStatus.FILLED
+                    || order.getStatus() == Order.OrderStatus.SETTLED
+                    || order.getStatus() == Order.OrderStatus.REJECTED) {
                     log.info("Skipping already-terminal order: orderId={}, status={}", orderId, order.getStatus());
                     return;
                 }
@@ -137,10 +149,13 @@ public class ConsumerConfiguration {
                 
                 // Execute trade
                 order = orderExecutor.processTrade(order, account);
+
+                // Persist the execution decision before settlement so analysts can observe FILLED or REJECTED.
+                orderRepository.save(order);
                 
                 if (order.getStatus() == Order.OrderStatus.FILLED) {
-                    // Persist account and asset changes first, then persist terminal order status
                     orderExecutionEngine.updateAccount(account, order);
+                    order.markSettled(ZonedDateTime.now());
                     orderRepository.save(order);
 
                     log.info("Order executed successfully: orderId={}, user={}", orderId, submittedEvent.getUsername());
