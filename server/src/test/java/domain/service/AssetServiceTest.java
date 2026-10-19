@@ -155,10 +155,10 @@ class AssetServiceTest {
         when(assetRepository.findByAccountAccountIdAndTicker(testAccount.getAccID(), "UNKNOWN"))
             .thenReturn(Optional.empty());
 
-        // Act
-        assetService.updateAssetOnSell(testAccount, "unknown", 50.0);
+        // Act and assert
+        assertThrows(domain.error.BusinessConflictException.class,
+            () -> assetService.updateAssetOnSell(testAccount, "unknown", 50.0));
 
-        // Assert
         verify(assetRepository, never()).save(any());
         verify(assetRepository, never()).delete(any());
     }
