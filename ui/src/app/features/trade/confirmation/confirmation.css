@@ -111,12 +111,56 @@
   justify-content: center;
   width: 60px;
   height: 60px;
-  background-color: rgba(76, 175, 80, 0.2);
-  border: 2px solid #4caf50;
+  background-color: var(--accent-primary-transparent);
+  border: 2px solid var(--accent-primary);
   border-radius: 50%;
   font-size: 32px;
   font-weight: 700;
-  color: #4caf50;
+  color: var(--accent-primary);
+}
+
+.processing-mark,
+.rejected-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.processing-mark {
+  background-color: var(--accent-warning-transparent);
+  border: 2px solid var(--accent-warning);
+  color: var(--accent-warning);
+  font-size: 30px;
+}
+
+.rejected-mark {
+  background-color: var(--accent-negative-transparent-secondary);
+  border: 2px solid var(--accent-negative);
+  color: var(--accent-negative);
+}
+
+.confirmed-title {
+  color: var(--accent-primary);
+}
+
+.processing-title {
+  color: var(--accent-warning);
+}
+
+.rejected-title {
+  color: var(--accent-negative);
+}
+
+.rejection-message {
+  margin: 0;
+  color: var(--accent-negative);
+  font-size: var(--font-size-sm);
+  text-align: center;
 }
 
 .confirmation-footer app-button {
