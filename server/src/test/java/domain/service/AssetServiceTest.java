@@ -114,14 +114,18 @@ class AssetServiceTest {
 
         when(assetRepository.findByAccountAccountIdAndTicker(testAccount.getAccID(), "AAPL"))
             .thenReturn(Optional.of(existingAsset));
-        when(assetRepository.save(existingAsset)).thenReturn(existingAsset);
+        when(assetRepository.sellAsset(testAccount.getAccID(), "AAPL", BigDecimal.valueOf(30.0)))
+            .thenAnswer(invocation -> {
+                existingAsset.setQuantity(70.0);
+                return 1;
+            });
 
         // Act
         assetService.updateAssetOnSell(testAccount, "aapl", 30.0);
 
         // Assert
         assertEquals(70.0, existingAsset.quantity()); // 100 - 30
-        verify(assetRepository, times(1)).save(existingAsset);
+        verify(assetRepository, never()).save(existingAsset);
         verify(assetRepository, never()).delete(existingAsset);
     }
 
@@ -140,6 +144,11 @@ class AssetServiceTest {
 
         when(assetRepository.findByAccountAccountIdAndTicker(testAccount.getAccID(), "AAPL"))
             .thenReturn(Optional.of(existingAsset));
+        when(assetRepository.sellAsset(testAccount.getAccID(), "AAPL", BigDecimal.valueOf(100.0)))
+            .thenAnswer(invocation -> {
+                existingAsset.setQuantity(0.0);
+                return 1;
+            });
 
         // Act
         assetService.updateAssetOnSell(testAccount, "aapl", 100.0);
@@ -152,8 +161,7 @@ class AssetServiceTest {
     @Test
     void testUpdateAssetOnSell_AssetNotFound() {
         // Arrange
-        when(assetRepository.findByAccountAccountIdAndTicker(testAccount.getAccID(), "UNKNOWN"))
-            .thenReturn(Optional.empty());
+        when(assetRepository.sellAsset(testAccount.getAccID(), "UNKNOWN", BigDecimal.valueOf(50.0))).thenReturn(0);
 
         // Act and assert
         assertThrows(domain.error.BusinessConflictException.class,
@@ -221,13 +229,17 @@ class AssetServiceTest {
 
         when(assetRepository.findByAccountAccountIdAndTicker(testAccount.getAccID(), "GOOG"))
             .thenReturn(Optional.of(existingAsset));
-        when(assetRepository.save(existingAsset)).thenReturn(existingAsset);
+        when(assetRepository.sellAsset(testAccount.getAccID(), "GOOG", BigDecimal.valueOf(20.0)))
+            .thenAnswer(invocation -> {
+                existingAsset.setQuantity(30.0);
+                return 1;
+            });
 
         // Act
         assetService.updateAssetOnSell(testAccount, "GoOg", 20.0);
 
         // Assert
         assertEquals(30.0, existingAsset.quantity());
-        verify(assetRepository).save(existingAsset);
+        verify(assetRepository, never()).save(existingAsset);
     }
 }

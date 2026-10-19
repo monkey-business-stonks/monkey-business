@@ -6,10 +6,12 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import domain.entities.Account;
 import domain.entities.Asset;
 import domain.entities.Order;
+import domain.repository.AccountRepository;
 
 @Service
 public class OrderExecutionEngine {
@@ -21,7 +23,7 @@ public class OrderExecutionEngine {
     private PricingEngine pricingEngine;
     
     @Autowired
-    private AccountService accountService;
+    private AccountRepository accountRepository;
 
     /**
      * Updates account after successful trade execution
@@ -33,6 +35,7 @@ public class OrderExecutionEngine {
      * @param account Account to update
      * @param order Executed order
      */
+    @Transactional
     public void updateAccount(Account account, Order order) {
         try {
             if (account == null || order == null) {
@@ -95,8 +98,12 @@ public class OrderExecutionEngine {
             BigDecimal totalBalance = account.getCashBalance().add(totalAssetValue);
             account.setBalance(totalBalance.doubleValue());  // Convert BigDecimal to double
             
-            // Persist account changes
-            accountService.saveAccount(account);
+            // Update balances without cascading the account's potentially stale asset collection.
+            accountRepository.updateCashBalance(
+                account.getAccID(),
+                action.equalsIgnoreCase("SELL") ? executedValue : executedValue.negate()
+            );
+            accountRepository.updateBalance(account.getAccID(), BigDecimal.valueOf(totalBalance.doubleValue()));
             
         } catch (Exception e) {
             System.err.println("ERROR in TransactionManager.updateAccount(): " + e.getMessage());
