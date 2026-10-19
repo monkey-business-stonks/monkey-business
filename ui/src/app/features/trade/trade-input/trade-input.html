@@ -18,8 +18,9 @@
   <div class="form-fields">
     <app-select-input
       label="Account"
-      [options]="accountOptions"
-      [(value)]="selectedAccount"
+      [options]="accountOptions()"
+      [value]="selectedAccount()"
+      (valueChange)="selectedAccount.set($event)"
     ></app-select-input>
 
     <app-select-input
@@ -56,8 +57,8 @@
     Review Order
   </app-button>
 
-  @if (orderError) {
-    <p class="order-error" role="alert">{{ orderError }}</p>
+  @if (orderError()) {
+    <p class="order-error" role="alert">{{ orderError() }}</p>
   }
 </div>
 

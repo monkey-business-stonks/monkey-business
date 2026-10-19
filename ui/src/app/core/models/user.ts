@@ -9,8 +9,9 @@ export interface U {
   username: string;
   name: string;
   email: string;
-  phone: string;
-  dob: Date;
+  phone: string | null;
+  dob: string;
   accessLevel: AccessLevel;
-  lastLogin: Date;
+  createdOn: string;
+  lastLogin: string | null;
 }

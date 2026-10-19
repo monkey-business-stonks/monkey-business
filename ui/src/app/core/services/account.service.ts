@@ -29,7 +29,14 @@ export class AccountService {
     return this.http.get<U>(`${this.getBackendUrl()}/users/${userId}`);
   }
 
-  createAccount(userId: string, request: { accountType: string; initialDeposit: number }): Observable<Account> {
+  createAccount(userId: string, request: {
+    accountType: string;
+    initialDeposit: number;
+    tradingExperience: string;
+    investmentObjective: string;
+    riskTolerance: string;
+    acceptsDisclosure: boolean;
+  }): Observable<Account> {
     return this.http.post<Account>(
       `${this.getBackendUrl()}/users/${userId}/accounts`,
       request
