@@ -31,7 +31,7 @@
     <app-base-input
       label="Quantity (Shares)"
       type="number"
-      suffix="Max: 679"
+      suffix="Max: ?"
       [(value)]="quantity"
     ></app-base-input>
   </div>
@@ -55,6 +55,10 @@
   <app-button variant="secondary" (click)="reviewOrder()">
     Review Order
   </app-button>
+
+  @if (orderError) {
+    <p class="order-error" role="alert">{{ orderError }}</p>
+  }
 </div>
 
 <!-- Order Confirmation Modal -->

@@ -2,14 +2,14 @@
   <div class="instrument-details-header">
     <div class="instrument-details-header-left">    
       <div class="instrument-details-header-title">
-        <div class="ticker">{{ selectedTicker?.data?.symbol || '--' }}</div>
-        <div><p class="type">{{ selectedTicker?.asset?.assetClass?.toUpperCase() || 'EQUITY' }}</p></div>
+        <div class="ticker">{{ selectedTicker?.data?.symbol.split(':').pop() || '--' }}</div>
+        <div><p class="type">{{ assetTypeDisplay }}</p></div>
       </div>
       <div class="name">{{ selectedTicker?.data?.symbol || '--' }} — {{ selectedTicker?.data?.currency || 'USD' }}</div>
     </div>
     <div class="instrument-details-header-right">
       <div class="value">{{ selectedTicker?.data?.price ? ('$' + selectedTicker.data.price) : '--' }}</div>
-      <div class="change-today">{{ selectedTicker?.data?.changePercent ? ('+$' + selectedTicker.data.change + ' (+' + selectedTicker.data.changePercent + '% today)') : '--' }}</div>
+      <div [class]="changeClass">{{ formattedChangeToday }}</div>
     </div>
   </div>
   <instrument-chart [selectedTicker]="selectedTicker"/>
