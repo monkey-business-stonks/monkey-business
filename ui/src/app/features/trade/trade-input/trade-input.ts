@@ -1,12 +1,14 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, Input, Output, EventEmitter } from '@angular/core';
+import { ChangeDetectorRef, Component, Input, Output, EventEmitter } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
-import { Confirmation, OrderReviewData } from '../confirmation/confirmation';
+import { Confirmation, ConfirmationStatus, OrderReviewData } from '../confirmation/confirmation';
 import { PricingService } from '@/app/core/services/pricing-service';
 import { AccountService } from '@/app/core/services/account.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';
 import { Account } from '@/app/core/models/account';
+import { Subscription, timer } from 'rxjs';
+import { switchMap, takeWhile } from 'rxjs/operators';
 
 @Component({
   selector: 'trade-input',
@@ -38,13 +40,17 @@ export class TradeInput {
   sharePrice: number = 0;
   showConfirmation: boolean = false;
   orderError: string | null = null;
+  orderStatus: ConfirmationStatus = null;
+  rejectionMessage: string | null = null;
+  private orderStatusSubscription?: Subscription;
   private accounts: Account[] = [];
 
   constructor(
     private pricingService: PricingService,
     private accountService: AccountService,
     private authService: AuthService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -120,6 +126,8 @@ export class TradeInput {
     }
 
     this.orderError = null;
+    this.orderStatus = 'SUBMITTED';
+    this.rejectionMessage = null;
     
     this.orderService.placeOrder(data.accountId, {
       orderType: 'EQUITY',
@@ -129,17 +137,49 @@ export class TradeInput {
     }).subscribe({
       next: order => {
         console.log('Order ID:', order.orderId);
-        console.log('Status:', order.status);
+        this.updateOrderStatus(order.status);
+        this.watchOrderStatus(data.accountId!, order.orderId);
       },
       error: error => {
         console.error('Failed to place order:', error);
         this.orderError = error?.error?.message || 'Unable to place the order. Please try again.';
+        this.orderStatus = 'REJECTED';
+        this.rejectionMessage = this.orderError;
       }
     });
   }
 
+  private watchOrderStatus(accountId: string, orderId: string): void {
+    this.orderStatusSubscription?.unsubscribe();
+    // The backend intentionally delays execution by 10 seconds.
+    this.orderStatusSubscription = timer(10000, 1000).pipe(
+      switchMap(() => this.orderService.getOrder(accountId, orderId)),
+      takeWhile(order => !['FILLED', 'SETTLED', 'REJECTED'].includes(order.status), true)
+    ).subscribe({
+      next: order => {
+        this.updateOrderStatus(order.status);
+        if (this.orderStatus === 'REJECTED') {
+          this.rejectionMessage = 'The order was rejected by the execution service.';
+        }
+      },
+      error: error => {
+        this.rejectionMessage = error?.error?.message || 'Unable to retrieve the final order status.';
+        this.orderStatus = 'REJECTED';
+      }
+    });
+  }
+
+  private updateOrderStatus(status: string): void {
+    this.orderStatus = status.toUpperCase() as ConfirmationStatus;
+    this.changeDetectorRef.detectChanges();
+  }
+
   onCancelTrade(): void {
+    this.orderStatusSubscription?.unsubscribe();
+    this.orderStatusSubscription = undefined;
     this.showConfirmation = false;
+    this.orderStatus = null;
+    this.rejectionMessage = null;
   }
 
   handleBack() {

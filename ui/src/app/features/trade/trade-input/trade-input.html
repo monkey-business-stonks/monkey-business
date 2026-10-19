@@ -65,6 +65,8 @@
 @if (showConfirmation) {
   <app-confirmation 
     [orderData]="orderData"
+    [status]="orderStatus"
+    [rejectionMessage]="rejectionMessage"
     (onConfirm)="onConfirmTrade($event)"
     (onClose)="onCancelTrade()"
   ></app-confirmation>
