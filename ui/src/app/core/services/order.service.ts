@@ -39,6 +39,12 @@ export class OrderService {
     );
   }
 
+  getOrder(accountId: string, orderId: string): Observable<OrderResponse> {
+    return this.http.get<OrderResponse>(
+      `${this.getBackendUrl()}/accounts/${accountId}/orders/${orderId}`
+    );
+  }
+
   getUserOrders(userId: string): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.getBackendUrl()}/users/${userId}/orders`);
   }
