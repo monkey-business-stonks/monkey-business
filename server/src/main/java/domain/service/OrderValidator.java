@@ -14,6 +14,9 @@ public class OrderValidator {
     @Autowired
     private PricingEngine pricingEngine;
 
+    @Autowired
+    private AssetService assetService;
+
     /**
      * Validate if a trade is allowed for an account
      * Checks:
@@ -66,8 +69,10 @@ public class OrderValidator {
         }
         // For SELL orders: check quantity held is sufficient
         else if (action.equalsIgnoreCase("SELL")) {
-            // AssetService will check if the position exists and has sufficient quantity
-            // For now, we assume AssetService handles this during transaction
+            var asset = assetService.getAsset(account, order.getTicker());
+            if (asset == null || asset.quantity() < order.getQuantity()) {
+                return false;
+            }
         }
 
         return true;
@@ -77,8 +82,7 @@ public class OrderValidator {
      * Check if account type is compatible with asset type
      * CRYPTO accounts can only hold CRYPTO assets
      * FOREX accounts can only hold FOREX assets
-     * 401K/ROTH_IRA cannot hold CRYPTO
-     * BROKERAGE can hold any asset type
+    * 401K/ROTH_IRA and BROKERAGE accounts can hold EQUITY only
      * 
      * @param account Account
      * @param assetType Asset type (EQUITY, CRYPTO, FOREX)
@@ -105,12 +109,10 @@ public class OrderValidator {
                 
             case _401K:
             case ROTH_IRA:
-                // 401K and ROTH_IRA cannot hold CRYPTO
-                return !normalizedAssetType.equals("CRYPTO");
+                return normalizedAssetType.equals("EQUITY");
                 
             case BROKERAGE:
-                // BROKERAGE can hold any asset type
-                return true;
+                return normalizedAssetType.equals("EQUITY");
                 
             default:
                 return false;

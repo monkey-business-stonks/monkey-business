@@ -5,6 +5,7 @@ import domain.entities.Account;
 import domain.entities.Order;
 import domain.entities.User;
 import domain.repository.OrderRepository;
+import domain.repository.AccountRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.UUID;
 
@@ -43,6 +45,9 @@ class OrderServiceTest {
 
     @Mock
     private OrderRepository orderRepository;
+
+    @Mock
+    private AccountRepository accountRepository;
 
     @Mock
     private OrderEventPublisher orderEventPublisher;
@@ -311,5 +316,30 @@ class OrderServiceTest {
         assertNotNull(response);
         assertEquals(Order.OrderStatus.SUBMITTED, largeOrder.getStatus());
         verify(orderEventPublisher, times(1)).publishOrderSubmitted(any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void testListOrdersForUser_SupportsForeignExchangeOrders() {
+        Order forexOrder = new Order(
+            UUID.randomUUID(),
+            "FOREIGN EXCHANGE",
+            "EURUSD",
+            1000.0,
+            "BUY",
+            ZonedDateTime.now(),
+            BigDecimal.valueOf(1100),
+            Order.OrderStatus.FILLED,
+            0,
+            ZonedDateTime.now()
+        );
+        forexOrder.setAccount(testAccount);
+
+        when(accountRepository.findByUserUserId(testUserId)).thenReturn(java.util.List.of(testAccount));
+        when(orderRepository.findByAccountAccountId(testAccountId)).thenReturn(java.util.List.of(forexOrder));
+
+        List<OrderResponse> orders = orderService.listOrdersForUser(testUserId);
+
+        assertEquals(1, orders.size());
+        assertEquals(domain.dto.OrderType.FOREIGN_EXCHANGE, orders.get(0).getOrderType());
     }
 }

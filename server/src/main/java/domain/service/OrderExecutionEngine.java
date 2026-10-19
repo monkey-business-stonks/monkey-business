@@ -78,7 +78,12 @@ public class OrderExecutionEngine {
                 
             } else if (action.equalsIgnoreCase("SELL")) {
                 // Use AssetService to update holdings
-                assetService.updateAssetOnSell(account, ticker, quantity);
+                Asset updatedAsset = assetService.updateAssetOnSell(account, ticker, quantity);
+                // Keep the eager account collection synchronized before cascading the account save.
+                account.getAllAssets().removeIf(asset -> asset.ticker().equalsIgnoreCase(ticker));
+                if (updatedAsset != null) {
+                    account.addAsset(updatedAsset);
+                }
                 
                 // Add cash to account from sale proceeds
                 BigDecimal newCash = account.getCashBalance().add(executedValue);

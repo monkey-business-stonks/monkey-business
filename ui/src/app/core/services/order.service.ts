@@ -4,7 +4,7 @@ import { Order } from '@/app/core/models';
 import { Observable } from 'rxjs';
 
 export interface OrderRequest {
-  orderType: 'EQUITY' | 'FOREX' | 'CRYPTO';
+  orderType: 'EQUITY' | 'FOREIGN EXCHANGE' | 'CRYPTO';
   action: 'BUY' | 'SELL';
   ticker: string;
   quantity: number;
@@ -19,7 +19,7 @@ export interface OrderResponse {
   quantity: number;
   status: 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED' | 'REJECTED';
   submittedValue: number;
-  executedValue: number;
+  executedValue: number | null;
 }
 
 @Injectable({
@@ -47,5 +47,11 @@ export class OrderService {
 
   getUserOrders(userId: string): Observable<Order[]> {
     return this.http.get<Order[]>(`${this.getBackendUrl()}/users/${userId}/orders`);
+  }
+
+  getOrder(accountId: string, orderId: string): Observable<OrderResponse> {
+    return this.http.get<OrderResponse>(
+      `${this.getBackendUrl()}/accounts/${accountId}/orders/${orderId}`
+    );
   }
 }

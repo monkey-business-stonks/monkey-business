@@ -204,7 +204,11 @@ export class AccountOpening implements OnInit {
 
     this.accountService.createAccount(this.userId, {
       accountType: this.selectedAccountType,
-      initialDeposit: Number(this.depositAmount)
+      initialDeposit: Number(this.depositAmount),
+      tradingExperience: this.tradingExperience,
+      investmentObjective: this.investmentObjective,
+      riskTolerance: this.riskTolerance,
+      acceptsDisclosure: this.acceptsDisclosure
     }).subscribe({
       next: (response: any) => {
         this.createdAccountId = response?.accountId || 'Pending';
