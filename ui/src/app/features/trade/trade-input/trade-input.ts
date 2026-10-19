@@ -1,14 +1,11 @@
 import { SharedModule } from '@/app/shared/shared.module';
-
-import { ChangeDetectorRef, Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, ConfirmationStatus, OrderReviewData } from '../confirmation/confirmation';
 import { PricingService } from '@/app/core/services/pricing-service';
 import { AccountService } from '@/app/core/services/account.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';
-import { timer } from 'rxjs';
-import { switchMap, takeWhile } from 'rxjs/operators';
 import { Account } from '@/app/core/models/account';
 import { Subscription, timer } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
@@ -25,35 +22,29 @@ export class TradeInput {
   @Output() onBack = new EventEmitter<void>();
   @Output() onOrderConfirmed = new EventEmitter<OrderReviewData>();
 
-  actionOptions: string[] = ['Buy', 'Sell', 'Exchange'];
-  selectedAction: string = 'Buy';
-
-  accountOptions = signal<SelectOption[]>([
-    { label: 'Loading accounts...', value: '' }
-  ]);
+  actionOptions = ['Buy', 'Sell', 'Exchange'];
+  selectedAction = 'Buy';
+  accountOptions = signal<SelectOption[]>([{ label: 'Loading accounts...', value: '' }]);
   selectedAccount = signal('');
-
   orderTypeOptions: SelectOption[] = [
     { label: 'Market Order', value: 'market' },
     { label: 'Limit Order', value: 'limit' }
   ];
-  selectedOrderType: string = 'market';
-
-  quantity: number = 50;
-  sharePrice: number = 0;
-  showConfirmation: boolean = false;
-  orderError: signal<string | null>(null);
+  selectedOrderType = 'market';
+  quantity = 50;
+  sharePrice = 0;
+  showConfirmation = false;
+  orderError = signal<string | null>(null);
   orderStatus: ConfirmationStatus = null;
   rejectionMessage: string | null = null;
   private orderStatusSubscription?: Subscription;
-  private accounts: signal<Account[]>([]);
+  private accounts = signal<Account[]>([]);
 
   constructor(
     private pricingService: PricingService,
     private accountService: AccountService,
     private authService: AuthService,
-    private orderService: OrderService,
-    private changeDetectorRef: ChangeDetectorRef
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -77,26 +68,20 @@ export class TradeInput {
         })));
         this.selectedAccount.set(accounts[0]?.accountId ?? '');
       },
-      error: () => {
-        this.orderError.set('Unable to load accounts.');
-      }
+      error: () => this.orderError.set('Unable to load accounts.')
     });
   }
 
   private loadSharePrice(): void {
     const ticker = this.selectedTicker?.data?.symbol;
-    if (!ticker) {
-      return;
-    }
+    if (!ticker) return;
 
     this.sharePrice = this.selectedTicker?.data?.price ?? 0;
     this.pricingService.getPrice(ticker).subscribe({
       next: price => {
-        if (price > 0) {
-          this.sharePrice = price;
-        }
+        if (price > 0) this.sharePrice = price;
       },
-        error: () => undefined
+      error: () => undefined
     });
   }
 
@@ -114,7 +99,7 @@ export class TradeInput {
       quantity: this.quantity,
       sharePrice: this.sharePrice,
       estimatedTotal: this.estimatedTotal,
-        ticker: this.selectedTicker?.data?.symbol || 'UNKNOWN'
+      ticker: this.selectedTicker?.data?.symbol || 'UNKNOWN'
     };
   }
 
@@ -131,7 +116,7 @@ export class TradeInput {
     this.orderError.set(null);
     this.orderStatus = 'SUBMITTED';
     this.rejectionMessage = null;
-    
+
     this.orderService.placeOrder(data.accountId, {
       orderType: this.getSelectedAssetType(),
       action: data.action.toUpperCase() as 'BUY' | 'SELL',
@@ -139,53 +124,38 @@ export class TradeInput {
       quantity: data.quantity
     }).subscribe({
       next: order => {
-        console.log('Order ID:', order.orderId);
         this.updateOrderStatus(order.status);
         this.watchOrderStatus(data.accountId!, order.orderId);
       },
       error: error => {
-        console.error('Failed to place order:', error);
-        this.orderError = error?.error?.message || 'Unable to place the order. Please try again.';
+        this.orderError.set(error?.error?.message || 'Unable to place the order. Please try again.');
         this.orderStatus = 'REJECTED';
-        this.rejectionMessage = this.orderError;
+        this.rejectionMessage = this.orderError();
       }
     });
   }
 
   private watchOrderStatus(accountId: string, orderId: string): void {
     this.orderStatusSubscription?.unsubscribe();
-    // The backend intentionally delays execution by 10 seconds.
     this.orderStatusSubscription = timer(10000, 1000).pipe(
       switchMap(() => this.orderService.getOrder(accountId, orderId)),
       takeWhile(order => !['FILLED', 'SETTLED', 'REJECTED'].includes(order.status), true)
     ).subscribe({
       next: order => {
         this.updateOrderStatus(order.status);
-        if (this.orderStatus === 'REJECTED') {
+        if (order.status === 'REJECTED') {
           this.rejectionMessage = 'The order was rejected by the execution service.';
         }
       },
       error: error => {
-        this.rejectionMessage = error?.error?.message || 'Unable to retrieve the final order status.';
         this.orderStatus = 'REJECTED';
+        this.rejectionMessage = error?.error?.message || 'Unable to retrieve the final order status.';
       }
     });
   }
 
   private updateOrderStatus(status: string): void {
     this.orderStatus = status.toUpperCase() as ConfirmationStatus;
-    this.changeDetectorRef.detectChanges();
-        console.log('Status:', order.status);
-        this.orderError.set('Order submitted. Waiting for execution...');
-        if (data.accountId) {
-          this.trackOrderUntilComplete(data.accountId, order.orderId);
-        }
-      },
-      error: error => {
-        console.error('Failed to place order:', error);
-        this.orderError.set(error?.error?.message || 'Unable to place the order. Please try again.');
-      }
-    });
   }
 
   private getSelectedAssetType(): 'EQUITY' | 'FOREIGN EXCHANGE' | 'CRYPTO' {
@@ -203,26 +173,7 @@ export class TradeInput {
     this.rejectionMessage = null;
   }
 
-  handleBack() {
+  handleBack(): void {
     this.onBack.emit();
-  }
-
-  private trackOrderUntilComplete(accountId: string, orderId: string): void {
-    timer(0, 1000).pipe(
-      switchMap(() => this.orderService.getOrder(accountId, orderId)),
-      takeWhile(order => order.status === 'SUBMITTED' || order.status === 'ACCEPTED' || order.status === 'FILLED', true)
-    ).subscribe({
-      next: order => {
-        if (order.status === 'REJECTED') {
-          this.orderError.set('Order rejected. Your holdings were not changed.');
-          return;
-        }
-
-      },
-      error: error => {
-        console.error('Failed to track order:', error);
-        this.orderError.set('Order was submitted, but its final status could not be confirmed.');
-      }
-    });
   }
 }

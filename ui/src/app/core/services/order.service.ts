@@ -49,9 +49,4 @@ export class OrderService {
     return this.http.get<Order[]>(`${this.getBackendUrl()}/users/${userId}/orders`);
   }
 
-  getOrder(accountId: string, orderId: string): Observable<OrderResponse> {
-    return this.http.get<OrderResponse>(
-      `${this.getBackendUrl()}/accounts/${accountId}/orders/${orderId}`
-    );
-  }
 }
