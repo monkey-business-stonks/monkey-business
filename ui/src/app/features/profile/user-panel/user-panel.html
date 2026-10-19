@@ -14,7 +14,7 @@
     </tr>
     <tr>
       <td class="table-left">MEMBER SINCE</td>
-      <td class="table-right">{{ user()?.createdOn ? (user()?.createdOn | date: 'MMM yyyy').toUppercase() : 'UNKNOWN' }}</td>
+      <td class="table-right">{{ user()?.createdOn ? ((user()?.createdOn | date: 'MMM yyyy') | uppercase) : 'UNKNOWN' }}</td>
     </tr>
     <tr>
       <td class="table-left">REGISTRATION COUNTRY</td>

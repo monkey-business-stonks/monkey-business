@@ -69,7 +69,7 @@ public interface AssetRepository extends JpaRepository<Asset, UUID> {
     @Query(value = "UPDATE Assets SET quantity = quantity - :qty, updatedAt = CURRENT_TIMESTAMP " +
            "WHERE accountId = :accountId AND ticker = :ticker AND quantity >= :qty", 
            nativeQuery = true)
-    int sellAsset(@Param("accountId") UUID accountId, 
+       int sellAsset(@Param("accountId") UUID accountId,
                   @Param("ticker") String ticker, 
                   @Param("qty") BigDecimal qty);
     

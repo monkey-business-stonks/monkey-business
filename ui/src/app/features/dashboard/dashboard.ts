@@ -59,7 +59,11 @@ export class Dashboard implements OnInit {
       // If backend returns heldAssets array inside Account response
       const assets = (acc as any).heldAssets || [];
       assets.forEach((asset: any) => {
-        const qty = asset.quantity || 0;
+        const qty = Number(asset.quantity);
+        if (!Number.isFinite(qty) || qty <= 0) {
+          return;
+        }
+
         const avgCost = asset.boughtAverage || 0;
         const currentPrice = asset.currentPrice || avgCost; 
         const mktValue = qty * currentPrice;
@@ -115,6 +119,10 @@ export class Dashboard implements OnInit {
   }
 
   selectAccountFilter(filter: string): void {
+    if (this.selectedAccountFilter() === filter) {
+      return;
+    }
+
     this.selectedAccountFilter.set(filter);
   }
 
