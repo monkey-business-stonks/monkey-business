@@ -4,7 +4,7 @@ import { Order } from '@/app/core/models';
 import { Observable } from 'rxjs';
 
 export interface OrderRequest {
-  orderType: 'EQUITY' | 'FOREX' | 'CRYPTO';
+  orderType: 'EQUITY' | 'FOREIGN EXCHANGE' | 'CRYPTO';
   action: 'BUY' | 'SELL';
   ticker: string;
   quantity: number;

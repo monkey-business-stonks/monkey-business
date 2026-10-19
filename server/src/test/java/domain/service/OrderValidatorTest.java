@@ -125,6 +125,16 @@ class OrderValidatorTest {
     }
 
     @Test
+    void testIsValidTrade_ForexOrder_RequiresForexAccount() {
+        Order forexOrder = new Order(
+            UUID.randomUUID(), "FOREIGN EXCHANGE", "EURUSD", 1000.0, "BUY",
+            ZonedDateTime.now(), BigDecimal.valueOf(1100), Order.OrderStatus.SUBMITTED, 202, ZonedDateTime.now()
+        );
+
+        assertFalse(orderValidator.isValidTrade(forexOrder, brokerageAccount));
+    }
+
+    @Test
     void testIsValidTrade_SellOrder() {
         // Arrange
         Order sellOrder = new Order(

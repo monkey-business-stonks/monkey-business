@@ -6,7 +6,6 @@ import { PricingService } from '@/app/core/services/pricing-service';
 import { AccountService } from '@/app/core/services/account.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';
-import { Router } from '@angular/router';
 import { timer } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
 import { Account } from '@/app/core/models/account';
@@ -47,8 +46,7 @@ export class TradeInput {
     private pricingService: PricingService,
     private accountService: AccountService,
     private authService: AuthService,
-    private orderService: OrderService,
-    private router: Router
+    private orderService: OrderService
   ) {}
 
   ngOnInit(): void {
@@ -126,7 +124,7 @@ export class TradeInput {
     this.orderError.set(null);
     
     this.orderService.placeOrder(data.accountId, {
-      orderType: 'EQUITY',
+      orderType: this.getSelectedAssetType(),
       action: data.action.toUpperCase() as 'BUY' | 'SELL',
       ticker: data.ticker ?? '',
       quantity: data.quantity
@@ -134,7 +132,6 @@ export class TradeInput {
       next: order => {
         console.log('Order ID:', order.orderId);
         console.log('Status:', order.status);
-        this.showConfirmation = false;
         this.orderError.set('Order submitted. Waiting for execution...');
         if (data.accountId) {
           this.trackOrderUntilComplete(data.accountId, order.orderId);
@@ -145,6 +142,13 @@ export class TradeInput {
         this.orderError.set(error?.error?.message || 'Unable to place the order. Please try again.');
       }
     });
+  }
+
+  private getSelectedAssetType(): 'EQUITY' | 'FOREIGN EXCHANGE' | 'CRYPTO' {
+    const symbol = (this.selectedTicker?.data?.symbol ?? '').toUpperCase();
+    if (symbol.startsWith('FX:')) return 'FOREIGN EXCHANGE';
+    if (symbol.startsWith('X:')) return 'CRYPTO';
+    return 'EQUITY';
   }
 
   onCancelTrade(): void {
@@ -166,9 +170,6 @@ export class TradeInput {
           return;
         }
 
-        if (order.status === 'SETTLED') {
-          this.router.navigate(['/dashboard']);
-        }
       },
       error: error => {
         console.error('Failed to track order:', error);
