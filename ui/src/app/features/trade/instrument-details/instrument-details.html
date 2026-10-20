@@ -8,7 +8,7 @@
       <div class="name">{{ selectedTicker?.data?.symbol || '--' }} — {{ selectedTicker?.data?.currency || 'USD' }}</div>
     </div>
     <div class="instrument-details-header-right">
-      <div class="value">{{ selectedTicker?.data?.price ? ('$' + selectedTicker.data.price) : '--' }}</div>
+      <div class="value">{{ selectedTicker?.data?.price ? ('$' + (selectedTicker.data.price | number:'1.2-2')) : '--' }}</div>
       <div [class]="changeClass">{{ formattedChangeToday }}</div>
     </div>
   </div>
@@ -16,11 +16,11 @@
   <div class="instrument-caption">
     <div class="instrument-caption-pair">
       <p class="label">BID</p>
-      <p class="val">{{ selectedTicker?.data?.bid || '--' }}</p>
+      <p class="val">{{ selectedTicker?.data?.bid ? (selectedTicker.data.bid | number:'1.2-2') : '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">ASK</p>
-      <p class="val">{{ selectedTicker?.data?.ask || '--' }}</p>
+      <p class="val">{{ selectedTicker?.data?.ask ? (selectedTicker.data.ask | number:'1.2-2') : '--' }}</p>
     </div>
     <div class="instrument-caption-pair">
       <p class="label">SPREAD</p>
