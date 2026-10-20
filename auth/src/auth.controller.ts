@@ -43,4 +43,14 @@ export class AuthController {
       revokedCount 
     };
   }
+
+  @HttpCode(HttpStatus.OK)
+  @Post('verify-status')
+  verifyStatus(@Body() body: { jti: string }) {
+    if (!body.jti) {
+      throw new UnauthorizedException('jti is required');
+    }
+    const isBlocked = this.authService.isTokenBlocked(body.jti);
+    return { active: !isBlocked };
+  }
 }

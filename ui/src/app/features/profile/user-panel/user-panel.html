@@ -6,8 +6,10 @@
     <p class="name">{{ user()?.name || user()?.username || 'User' }}</p>
     <p class="email">{{ user()?.email || 'Email unavailable' }}</p>
   </div>
-  <hr>
   <table class="info-table">
+    <tr>
+      <td colspan="2"><hr class="table-hr"></td>
+    </tr>
     <tr class="standard">
       <td class="table-left">ACCESS</td>
       <td class="table-right">{{ user()?.accessLevel || 'UNKNOWN' }}</td>
@@ -18,11 +20,21 @@
     </tr>
     <tr>
       <td class="table-left">REGISTRATION COUNTRY</td>
-      <td class="table-right">USA</td>
+      <td class="table-right">UNITED STATES</td>
     </tr>
     <tr>
       <td class="table-left">FAVORITE INDEX</td>
       <td class="table-right">NASDAQ 100</td>
+    </tr>
+    <tr>
+      <td colspan="2"><hr class="table-hr"></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="logout-cell">
+        <button type="button" class="logout-btn" (click)="onLogout()">
+          LOGOUT
+        </button>
+      </td>
     </tr>
   </table>
 </div>

@@ -14,6 +14,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                    req.url.includes('/market/candles') ||
                    req.url.includes('/analytics-api/') ||
                    req.url.includes('/health');
+  const isLogout = req.url.includes('/users/logout');
 
   if (isPublic) {
     return next(req);
@@ -27,7 +28,12 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
     });
   }
 
-  return next(authReq).pipe(
+  const response$ = next(authReq);
+  if (isLogout) {
+    return response$;
+  }
+
+  return response$.pipe(
     catchError((error: HttpErrorResponse) => {
       if (error.status === 401) {
         return authService.refreshToken().pipe(

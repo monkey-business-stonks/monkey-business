@@ -1,5 +1,7 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, input } from '@angular/core';
+import { Router } from '@angular/router';
+import { AuthService } from '@/app/core/services/auth.service';
 import { U } from '@/app/core/models/user';
 
 @Component({
@@ -11,6 +13,22 @@ import { U } from '@/app/core/models/user';
 export class UserPanel {
   user = input<U | null>(null);
   avatar: string = 'https://via.placeholder.com/150';
+
+  constructor(
+    private authService: AuthService,
+    private router: Router
+  ) {}
+
+  onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/login']);
+      },
+      error: () => {
+        this.router.navigate(['/login']);
+      }
+    });
+  }
 
   onAvatarUpload(event: any) {
     const file = event.target.files[0];
