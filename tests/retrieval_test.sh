@@ -126,7 +126,7 @@ for i in 0 1 2; do
   ACC_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
     -H "Content-Type: application/json" \
     -H "Authorization: Bearer $JWT_TOKEN" \
-    -d "{\"accountType\":\"$ACC_TYPE\",\"initialDeposit\":$INITIAL_DEPOSIT}")
+    -d "{\"accountType\":\"$ACC_TYPE\",\"initialDeposit\":$INITIAL_DEPOSIT,\"tradingExperience\":\"INTERMEDIATE\",\"investmentObjective\":\"GROWTH\",\"riskTolerance\":\"MODERATE\",\"acceptsDisclosure\":true}")
   
   ACC_ID=$(echo "$ACC_RESPONSE" | jq -r '.accountId')
   ACC_BALANCE=$(echo "$ACC_RESPONSE" | jq -r '.balance')

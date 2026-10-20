@@ -32,7 +32,7 @@ JWT_TOKEN=$(echo "$AUTH_RESPONSE" | jq -r '.accessToken')
 ACCOUNT_RESPONSE=$(curl -s -X POST "http://localhost:8080/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"BROKERAGE"}')
+  -d '{"accountType":"BROKERAGE","initialDeposit":10000,"tradingExperience":"INTERMEDIATE","investmentObjective":"GROWTH","riskTolerance":"MODERATE","acceptsDisclosure":true}')
 ACCOUNT_ID=$(echo "$ACCOUNT_RESPONSE" | jq -r '.accountId')
 
 echo "✓ User: $USER_ID"

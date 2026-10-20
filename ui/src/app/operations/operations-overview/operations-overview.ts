@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
@@ -6,6 +6,9 @@ import { BannerMessageComponent } from '@/app/shared/components/banner-message/b
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
 import { TableComponent } from '@/app/shared/components/table/table';
 import { ButtonComponent } from '@/app/shared/components/button/button';
+import { AnalyticsService } from '@/app/core/services/analytics.service';
+import { OperationsOverviewResponse } from '@/app/core/models';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-order-register',
@@ -25,24 +28,40 @@ import { ButtonComponent } from '@/app/shared/components/button/button';
     './operations-overview.css'
   ]
 })
-export class OperationsOverviewComponent {
+export class OperationsOverviewComponent implements OnInit {
   searchQuery = '';
-  selectedTimeRange = '28-30 September 2026';
+  selectedTimeRange = 'Last 30 days';
   selectedInstrument = 'All instruments';
   selectedExecution = 'All outcomes';
   selectedSettlement = 'All statuses';
   selectedException = 'All records';
+  loading = false;
+  error: string | null = null;
+  bannerDetail = 'Loading operations analytics...';
 
-  timeRangeOptions = [{ label: '28–30 September 2026', value: '28-30 September 2026' }];
+  acceptedOrders = '0';
+  settledOrders = '0';
+  awaitingSettlement = '0';
+  openExceptions = '0';
+  acceptedSubtext = '0 requests';
+  settledSubtext = 'Filled and settled';
+  awaitingSubtext = 'Filled and pending settlement';
+  exceptionsSubtext = 'Records requiring review';
+
+  timeRangeOptions = [{ label: 'Last 30 days', value: 'Last 30 days' }];
   instrumentOptions = [{ label: 'All instruments', value: 'All instruments' }];
   executionOptions = [{ label: 'All outcomes', value: 'All outcomes' }];
   settlementOptions = [{ label: 'All statuses', value: 'All statuses' }];
   exceptionOptions = [{ label: 'All records', value: 'All records' }];
 
-  statusTabs = ['All requests 8,520', 'Working 68', 'Cancelled 44', 'Rejected 58'];
-  activeTab = 'All requests 8,520';
+  statusTabs: string[] = [];
+  activeTab = '';
 
-  selectedOrder = {
+  selectedOrder: {
+    id: string;
+    details: string;
+    summary: string;
+  } | null = {
     id: 'APX-928731-NASDAQ',
     details: '50 AAPL @ $187.42',
     summary: 'Filled and settled · Principal $9,371.00 · Fees $0.00 · Net cash debit $9,371.00 · Full recorded lifecycle available'
@@ -61,9 +80,139 @@ export class OperationsOverviewComponent {
     { key: 'exception', header: 'Exception', align: 'left' as const }
   ];
 
-  ordersData = [
-    { orderId: 'APX-928731-NASDAQ', client: 'CL-001042', instrument: 'AAPL Buy', qty: '50', execPrice: '$187.42', principal: '$9,371.00', execution: 'Filled', settlement: 'Settled', latestEvent: '2026-09-30 15:00:00.000', exception: 'None' },
-    { orderId: 'APX-928988-NASDAQ', client: 'CL-001188', instrument: 'AAPL Buy', qty: '20', execPrice: '$187.42', principal: '$3,748.40', execution: 'Filled', settlement: 'Awaiting', latestEvent: '2026-09-30 14:55:21.842', exception: 'None' },
-    { orderId: 'APX-928977-CRYPTO', client: 'CL-001045', instrument: 'BTC/USD Sell', qty: '0.20', execPrice: '$64,281.50', principal: '$12,856.30', execution: 'Filled', settlement: 'Settled', latestEvent: '2026-09-30 14:48:12.120', exception: 'None' }
-  ];
+  ordersData: Array<{
+    orderId: string;
+    client: string;
+    instrument: string;
+    qty: string;
+    execPrice: string;
+    principal: string;
+    execution: string;
+    settlement: string;
+    latestEvent: string;
+    exception: string;
+  }> = [];
+
+  constructor(private analyticsService: AnalyticsService) {}
+
+  ngOnInit(): void {
+    this.loadOverview();
+  }
+
+  onFilterChange(): void {
+    this.loadOverview();
+  }
+
+  onSearch(): void {
+    this.loadOverview();
+  }
+
+  private loadOverview(): void {
+    this.loading = true;
+    this.error = null;
+
+    const now = new Date();
+    const periodTo = new Date(now);
+    const periodFrom = new Date(now);
+    periodFrom.setUTCDate(periodFrom.getUTCDate() - 30);
+
+    this.analyticsService
+      .getOperationsOverview({
+        period_from: periodFrom.toISOString(),
+        period_to: periodTo.toISOString(),
+        instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
+        search: this.searchQuery.trim() || undefined,
+        limit: 50,
+        offset: 0,
+      })
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (data) => this.applyOverview(data),
+        error: (err) => {
+          const message = err?.error?.message || err?.message || 'Unable to load operations analytics.';
+          this.error = message;
+          this.bannerDetail = `Analytics request failed: ${message}`;
+        },
+      });
+  }
+
+  private applyOverview(data: OperationsOverviewResponse): void {
+    const asOf = this.formatUtc(data.meta.market_as_of);
+    this.bannerDetail = `As of ${asOf}`;
+
+    this.acceptedOrders = this.formatInt(data.summary.accepted_orders);
+    this.settledOrders = this.formatInt(data.summary.settled_orders);
+    this.awaitingSettlement = this.formatInt(data.summary.awaiting_settlement);
+    this.openExceptions = this.formatInt(data.summary.open_exceptions);
+    this.acceptedSubtext = `${this.formatInt(data.summary.total_requests)} requests · ${this.formatInt(data.summary.rejected_orders)} rejected before acceptance`;
+    this.settledSubtext = 'Filled and settled · Terminal outcome';
+    this.awaitingSubtext = 'Filled and pending settlement';
+    this.exceptionsSubtext = 'Open exceptions from rejected activity';
+
+    this.statusTabs = data.status_tabs;
+    this.activeTab = data.status_tabs[0] || '';
+
+    this.ordersData = data.orders.map((row) => ({
+      orderId: row.order_id,
+      client: `${row.client_ref} / ${row.account_type}`,
+      instrument: row.instrument,
+      qty: this.formatDecimal(row.quantity),
+      execPrice: '-',
+      principal: this.formatCurrency(row.principal_usd),
+      execution: row.execution_status,
+      settlement: row.settlement_status,
+      latestEvent: row.latest_event_utc ? this.formatUtc(row.latest_event_utc) : 'n/a',
+      exception: row.exception,
+    }));
+
+    const uniqueInstruments = [...new Set(data.orders.map((row) => row.instrument.split(' ')[0]))];
+    this.instrumentOptions = [
+      { label: 'All instruments', value: 'All instruments' },
+      ...uniqueInstruments.map((instrument) => ({ label: instrument, value: instrument })),
+    ];
+
+    const firstOrder = data.orders[0];
+    this.selectedOrder = firstOrder
+      ? {
+          id: firstOrder.order_id,
+          details: `${this.formatDecimal(firstOrder.quantity)} ${firstOrder.instrument}`,
+          summary: `${firstOrder.execution_status} and ${firstOrder.settlement_status.toLowerCase()} · Principal ${this.formatCurrency(firstOrder.principal_usd)}`,
+        }
+      : null;
+  }
+
+  private formatCurrency(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  private formatInt(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      maximumFractionDigits: 0,
+    }).format(value);
+  }
+
+  private formatDecimal(value: number): string {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: value % 1 === 0 ? 0 : 2,
+      maximumFractionDigits: 2,
+    }).format(value);
+  }
+
+  private formatUtc(value: string): string {
+    const date = new Date(value);
+    return date.toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false,
+      timeZone: 'UTC',
+    }) + ' UTC';
+  }
 }

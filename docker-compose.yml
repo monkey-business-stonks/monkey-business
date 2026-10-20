@@ -283,6 +283,30 @@ services:
       start_period: 30s
       retries: 3
 
+  analytics-python:
+    build:
+      context: ./analytics
+      dockerfile: Dockerfile
+    container_name: monkey_business_analytics_python
+    depends_on:
+      postgres_replica:
+        condition: service_healthy
+    environment:
+      ANALYTICS_DB_HOST: postgres_replica
+      ANALYTICS_DB_PORT: 5432
+      ANALYTICS_DB_NAME: monkey_business
+      ANALYTICS_DB_USER: analytics_reader
+      ANALYTICS_DB_PASSWORD: analytics_reader_change_me
+    ports:
+      - "8001:8000"
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 3s
+      start_period: 20s
+      retries: 5
+
   frontend:
     build:
       context: ./ui
@@ -291,7 +315,10 @@ services:
     ports:
       - "4200:4200"
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+      analytics-python:
+        condition: service_healthy
     environment:
       API_URL: http://backend:8080/api
       AUTH_URL: http://auth:3000

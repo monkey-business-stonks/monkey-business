@@ -4,16 +4,24 @@
     <div class="header-title-area">
       <span class="breadcrumb">BUSINESS INTELLIGENCE / HISTORICAL REPORTS</span>
       <h1>Monthly trading & client activity</h1>
-      <p class="subtitle">Executive committee report · September 2026 · Saved report RPT-MONTH-004 · Version 3</p>
+      <p class="subtitle">Executive committee report · Saved report RPT-MONTH-004 · Live analytics snapshot</p>
     </div>
   </header>
 
   <!-- Shared Banner Component -->
   <app-banner-message 
     title="Reporting warehouse · isolated from live trading"
-    detail="Complete through 2026-09-30 23:59:59 UTC · As of Oct 01, 2026 06:00 UTC"
-    tag="SAMPLE DATA">
+    [detail]="bannerDetail"
+    [tag]="loading ? 'LOADING' : 'LIVE DATA'">
   </app-banner-message>
+
+  @if (error) {
+    <app-banner-message
+      title="Analytics request error"
+      [detail]="error"
+      tag="ERROR">
+    </app-banner-message>
+  }
 
   <div class="historical-layout-grid">
     <!-- Sidebar Controls -->
@@ -26,10 +34,10 @@
           </div>
         </div>
 
-        <app-select-input label="Period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod"></app-select-input>
-        <app-select-input label="Instrument scope" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
-        <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment"></app-select-input>
-        <app-select-input label="Comparison" [options]="comparisonOptions" [(value)]="selectedComparison"></app-select-input>
+        <app-select-input label="Period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod" (valueChange)="onFilterChange()"></app-select-input>
+        <app-select-input label="Instrument scope" [options]="instrumentOptions" [(value)]="selectedInstrument" (valueChange)="onFilterChange()"></app-select-input>
+        <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment" (valueChange)="onFilterChange()"></app-select-input>
+        <app-select-input label="Comparison" [options]="comparisonOptions" [(value)]="selectedComparison" (valueChange)="onFilterChange()"></app-select-input>
 
         <div class="form-group">
           <label class="form-label">Group by · Ordered dimensions</label>
@@ -57,8 +65,8 @@
       <div class="card-box">
         <div class="card-box-header">
           <div>
-            <h3 class="card-title">September 2026 · Report summary</h3>
-            <p class="card-subtitle">01 Sep 00:00:00 – 30 Sep 23:59:59 UTC · All instruments and segments</p>
+            <h3 class="card-title">{{ summaryTitle }}</h3>
+            <p class="card-subtitle">{{ summarySubtitle }}</p>
           </div>
           <span class="status-badge complete">Complete</span>
         </div>
@@ -66,18 +74,18 @@
         <div class="metrics-summary-row">
           <div class="metric-item">
             <span class="card-subtitle">USD NOTIONAL</span>
-            <span class="metric-val">$128.40M</span>
-            <span class="text-xs text-success">+12.6% vs $114.00M in August</span>
+            <span class="metric-val">{{ totalNotional }}</span>
+            <span class="text-xs text-success">{{ totalNotionalDelta }} vs comparison period</span>
           </div>
           <div class="metric-item">
             <span class="card-subtitle">FILLED ORDERS</span>
-            <span class="metric-val">18,420</span>
-            <span class="text-xs text-success">+9.6% vs 16,800 in August</span>
+            <span class="metric-val">{{ totalOrders }}</span>
+            <span class="text-xs text-success">{{ totalOrdersDelta }} vs comparison period</span>
           </div>
           <div class="metric-item">
             <span class="card-subtitle">DISTINCT ACTIVE CLIENTS</span>
-            <span class="metric-val">1,248</span>
-            <span class="text-xs text-success">+5.8% vs 1,180 in August</span>
+            <span class="metric-val">{{ totalActiveClients }}</span>
+            <span class="text-xs text-success">{{ totalActiveClientsDelta }} vs comparison period</span>
           </div>
         </div>
       </div>
@@ -87,9 +95,9 @@
         <div class="card-box-header">
           <div>
             <h3 class="card-title">Grouped results</h3>
-            <p class="card-subtitle">Month → Instrument → Client segment · 15 rows · USD reporting currency</p>
+            <p class="card-subtitle">Period -> Instrument -> Client segment · {{ reportRows.length }} rows · USD reporting currency</p>
           </div>
-          <span class="text-xs text-muted">Generated 01 Oct 2026 · 06:04 UTC</span>
+          <span class="text-xs text-muted">{{ generatedAt }}</span>
         </div>
 
         <div class="embedded-table-wrapper">
@@ -118,10 +126,10 @@
                 </tr>
               }
               <tr class="table-summary-row">
-                <td colspan="3" class="align-left">Grand total · September 2026</td>
-                <td class="align-right mono">$128,400,000.00</td>
-                <td class="align-right mono">18,420 orders</td>
-                <td class="align-right mono">100.00%</td>
+                <td colspan="3" class="align-left">Grand total</td>
+                <td class="align-right mono">{{ totalNotional }}</td>
+                <td class="align-right mono">{{ totalOrders }} orders</td>
+                <td class="align-right mono">{{ totalShare }}</td>
                 <td></td>
               </tr>
             </tbody>
