@@ -10,15 +10,23 @@
 
   <app-banner-message 
     title="Order event archive · read-only" 
-    detail="As of 2026-09-30 16:00:00 UTC" 
-    tag="SAMPLE DATA">
+    [detail]="bannerDetail" 
+    [tag]="loading ? 'LOADING' : 'LIVE DATA'">
   </app-banner-message>
 
+  @if (error) {
+    <app-banner-message
+      title="Analytics request error"
+      [detail]="error"
+      tag="ERROR">
+    </app-banner-message>
+  }
+
   <div class="metrics-grid">
-    <app-metric-card title="ACCEPTED ORDERS · COUNT" value="8,462" subtext="8,520 requests · 58 rejected before acceptance"></app-metric-card>
-    <app-metric-card title="SETTLED · COUNT" value="8,126" subtext="Filled and settled · Terminal outcome"></app-metric-card>
-    <app-metric-card title="AWAITING SETTLEMENT · COUNT" value="224" subtext="Filled · Includes 3 overdue settlements"></app-metric-card>
-    <app-metric-card title="OPEN EXCEPTIONS · COUNT" value="7" badge="Review" badgeType="warning" subtext="3 settlement · 2 pricing · 2 recording lag"></app-metric-card>
+    <app-metric-card title="ACCEPTED ORDERS · COUNT" [value]="acceptedOrders" [subtext]="acceptedSubtext"></app-metric-card>
+    <app-metric-card title="SETTLED · COUNT" [value]="settledOrders" [subtext]="settledSubtext"></app-metric-card>
+    <app-metric-card title="AWAITING SETTLEMENT · COUNT" [value]="awaitingSettlement" [subtext]="awaitingSubtext"></app-metric-card>
+    <app-metric-card title="OPEN EXCEPTIONS · COUNT" [value]="openExceptions" badge="Review" badgeType="warning" [subtext]="exceptionsSubtext"></app-metric-card>
   </div>
 
   <!-- Search & Filters Container -->
@@ -34,7 +42,8 @@
         type="text" 
         class="search-input" 
         placeholder="Search order ID, trade ID, client, account or external reference" 
-        [(ngModel)]="searchQuery" />
+        [(ngModel)]="searchQuery"
+        (keyup.enter)="onSearch()" />
 
       <button type="button" class="exact-id-tag">
         Exact ID or reference
@@ -42,11 +51,11 @@
     </div>
 
     <div class="filter-row">
-      <app-select-input label="Event time range · UTC" [options]="timeRangeOptions" [(value)]="selectedTimeRange"></app-select-input>
-      <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
-      <app-select-input label="Execution status" [options]="executionOptions" [(value)]="selectedExecution"></app-select-input>
-      <app-select-input label="Settlement status" [options]="settlementOptions" [(value)]="selectedSettlement"></app-select-input>
-      <app-select-input label="Exception" [options]="exceptionOptions" [(value)]="selectedException"></app-select-input>
+      <app-select-input label="Event time range · UTC" [options]="timeRangeOptions" [(value)]="selectedTimeRange" (valueChange)="onFilterChange()"></app-select-input>
+      <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument" (valueChange)="onFilterChange()"></app-select-input>
+      <app-select-input label="Execution status" [options]="executionOptions" [(value)]="selectedExecution" (valueChange)="onFilterChange()"></app-select-input>
+      <app-select-input label="Settlement status" [options]="settlementOptions" [(value)]="selectedSettlement" (valueChange)="onFilterChange()"></app-select-input>
+      <app-select-input label="Exception" [options]="exceptionOptions" [(value)]="selectedException" (valueChange)="onFilterChange()"></app-select-input>
     </div>
   </div>
 

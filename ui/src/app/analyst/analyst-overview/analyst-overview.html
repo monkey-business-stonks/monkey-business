@@ -9,24 +9,32 @@
 
   <app-banner-message 
     title="Reporting warehouse · isolated from live trading"
-    detail="Complete through 2026-09-30 23:59:59 UTC · As of Oct 01, 2026 06:00 UTC"
-    tag="SAMPLE DATA">
+    [detail]="bannerDetail"
+    [tag]="loading ? 'LOADING' : 'LIVE DATA'">
   </app-banner-message>
+
+  @if (error) {
+    <app-banner-message
+      title="Analytics request error"
+      [detail]="error"
+      tag="ERROR">
+    </app-banner-message>
+  }
 
   <!-- Filter Row -->
   <div class="filter-grid">
-    <app-select-input label="Reporting period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod"></app-select-input>
-    <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument"></app-select-input>
-    <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment"></app-select-input>
-    <app-select-input label="Comparison period" [options]="comparisonOptions" [(value)]="selectedComparison"></app-select-input>
+    <app-select-input label="Reporting period (UTC)" [options]="periodOptions" [(value)]="selectedPeriod" (valueChange)="onFilterChange()"></app-select-input>
+    <app-select-input label="Instrument" [options]="instrumentOptions" [(value)]="selectedInstrument" (valueChange)="onFilterChange()"></app-select-input>
+    <app-select-input label="Client segment" [options]="segmentOptions" [(value)]="selectedSegment" (valueChange)="onFilterChange()"></app-select-input>
+    <app-select-input label="Comparison period" [options]="comparisonOptions" [(value)]="selectedComparison" (valueChange)="onFilterChange()"></app-select-input>
   </div>
 
   <!-- KPI Grid -->
   <div class="metrics-grid">
-    <app-metric-card title="TRADED VOLUME · USD NOTIONAL" value="$128.40M" badge="+12.6%" subtext="Filled quantity × execution price, in USD"></app-metric-card>
-    <app-metric-card title="FILLED ORDERS · COUNT" value="18,420" badge="+9.6%" subtext="Distinct orders with ≥1 fill · vs 16,800 in Aug"></app-metric-card>
-    <app-metric-card title="ACTIVE CLIENTS · COUNT" value="1,248" badge="+5.8%" subtext="Distinct clients with ≥1 fill · vs 1,180 in Aug"></app-metric-card>
-    <app-metric-card title="AVG. NOTIONAL / FILLED ORDER" value="$6,970.68" badge="+2.7%" subtext="USD notional ÷ filled orders · vs $6,785.71"></app-metric-card>
+    <app-metric-card title="TRADED VOLUME · USD NOTIONAL" [value]="tradedVolume" [badge]="tradedVolumeDelta" subtext="Filled quantity × execution price, in USD"></app-metric-card>
+    <app-metric-card title="FILLED ORDERS · COUNT" [value]="filledOrders" [badge]="filledOrdersDelta" subtext="Distinct orders with >=1 fill"></app-metric-card>
+    <app-metric-card title="ACTIVE CLIENTS · COUNT" [value]="activeAccounts" [badge]="activeAccountsDelta" subtext="Distinct clients with >=1 fill"></app-metric-card>
+    <app-metric-card title="AVG. NOTIONAL / FILLED ORDER" [value]="avgNotional" [badge]="avgNotionalDelta" subtext="USD notional / filled orders"></app-metric-card>
   </div>
 
   <!-- Charts & Instruments Section -->
