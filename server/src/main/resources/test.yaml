@@ -521,6 +521,7 @@ components:
         ticker: { type: string }
         quantity: { type: number }
         submittedValue: { type: number, example: 2500.00 }
+        prevCashBalance: { type: number, nullable: true, example: 10000.00 }
         executedValue: { type: number, nullable: true, example: 2512.50 }
         status: { $ref: '#/components/schemas/OrderStatus' }
         submittedOn: { type: string, format: date-time }
@@ -537,6 +538,7 @@ components:
         action: { $ref: '#/components/schemas/OrderAction' }
         ticker: { type: string }
         quantity: { type: number }
+        prevCashBalance: { type: number, nullable: true, example: 10000.00 }
         status: { $ref: '#/components/schemas/OrderStatus' }
         submittedOn: { type: string, format: date-time }
         verifiedOn: { type: string, format: date-time, nullable: true }

@@ -80,6 +80,10 @@ class OrderTest {
         assertEquals(testAccount, order.getAccount(), "Account should match");
         assertEquals(new BigDecimal("1500.00"), order.getSubmittedValue(), "Submitted value should match");
         assertEquals(201, order.getStatusCode(), "Status code should be 201");
+
+        order.setPrevCashBalance(new BigDecimal("10000.00"));
+        assertEquals(new BigDecimal("10000.00"), order.getPrevCashBalance(),
+            "Cash balance before purchase should match");
     }
 
     @Test

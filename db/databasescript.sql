@@ -128,6 +128,8 @@ CREATE TABLE Orders (
 
     submittedValue NUMERIC(18,2) NOT NULL,
 
+    prevcashbalance NUMERIC(18,2),
+
     executedValue NUMERIC(18,2),
 
     status VARCHAR(20) NOT NULL
