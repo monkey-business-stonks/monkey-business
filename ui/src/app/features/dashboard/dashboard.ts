@@ -41,6 +41,17 @@ export class Dashboard implements OnInit {
     return acc ? acc.balance : 0;
   });
 
+  totalCashBalance = computed(() => {
+    const filter = this.selectedAccountFilter();
+    const allAccounts = this.accounts();
+
+    if (filter === 'ALL') {
+      return allAccounts.reduce((sum, acc) => sum + (acc.cashBalance || 0), 0);
+    }
+    const acc = allAccounts.find(a => a.accountId === filter || a.accountType === filter);
+    return acc ? acc.cashBalance : 0;
+  });
+
   /**
    * Aggregate holdings from backend account response
    */
