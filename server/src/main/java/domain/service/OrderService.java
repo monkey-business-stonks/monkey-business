@@ -175,7 +175,7 @@ public class OrderService {
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
             .submittedValue(order.getSubmittedValue())
-            .cashBalanceBeforePurchase(order.getPrevCashBalance())
+            .prevCashBalance(order.getPrevCashBalance())
             .executedValue(order.getExecutedValue())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
@@ -196,7 +196,7 @@ public class OrderService {
             .action(OrderAction.valueOf(order.getAction()))
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
-            .cashBalanceBeforePurchase(order.getPrevCashBalance())
+            .prevCashBalance(order.getPrevCashBalance())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
             .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
