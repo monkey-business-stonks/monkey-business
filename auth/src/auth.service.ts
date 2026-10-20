@@ -70,7 +70,6 @@ export class AuthService {
       throw new UnauthorizedException("invalid or expired refresh token");
     }
   }
-  
 
   revokeToken(token: string, username: string): void {
     try {
@@ -98,7 +97,7 @@ export class AuthService {
         jti,
         username,
         revokedAt: new Date(),
-        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // Keep for max token lifetime
+        expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
       });
       revokedCount++;
     });
@@ -107,7 +106,7 @@ export class AuthService {
     return revokedCount;
   }
 
-  private isTokenBlocked(jti: string): boolean {
+  public isTokenBlocked(jti: string): boolean {
     return this.tokenBlocklist.has(jti);
   }
 
@@ -126,9 +125,6 @@ export class AuthService {
     }
   }
 
-  /**
-   * Cleanup expired entries from blocklist (runs periodically)
-   */
   private cleanupExpiredBlocklistEntries(): void {
     const now = new Date();
     let cleanedCount = 0;

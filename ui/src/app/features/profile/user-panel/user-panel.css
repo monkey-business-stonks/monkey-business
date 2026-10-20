@@ -71,3 +71,42 @@ th, td {
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
 }
+
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-hr {
+  width: 100%;
+  border: 0;
+  border-top: var(--width-xs) solid var(--text-secondary-transparent);
+  margin: var(--space-xs) 0;
+}
+
+.logout-cell {
+  padding-top: var(--space-sm);
+  text-align: center;
+}
+
+.logout-btn {
+  width: 100%;
+  padding: var(--space-sm) var(--space-md);
+  background-color: transparent;
+  color: var(--accent-negative);
+  border: var(--width-xs) solid var(--accent-negative);
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  font-family: 'Inter', sans-serif;
+  cursor: pointer;
+  transition: all var(--transition-duration);
+}
+
+.logout-btn:hover {
+  background-color: var(--accent-negative-transparent-secondary);
+}
+
+.logout-btn:active {
+  opacity: 0.7;
+}

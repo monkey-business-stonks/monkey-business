@@ -59,7 +59,7 @@ export class CreateUser {
         // Alert user or navigate to login with query param
         this.router.navigate(['/login'], { queryParams: { registered: 'true' } });
       },
-      error: (err) => {
+      error: (err: any) => {
         this.loading.set(false);
         const backendMessage = err?.error?.message || err?.error?.error || null;
 

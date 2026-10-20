@@ -1,7 +1,7 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, throwError, map } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { Observable, BehaviorSubject, throwError, merge, Subscription, fromEvent, of } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
@@ -18,17 +18,57 @@ export class AuthService {
     map(token => this.getRoleFromToken(token))
   );
 
-  constructor(private http: HttpClient) {
+  private idleTimer?: any;
+  private activitySubscription?: Subscription;
+  private readonly IDLE_TIMEOUT_MS = 5 * 60 * 1000; // 5 minute idle limit
+
+  constructor(private http: HttpClient, private ngZone: NgZone) {
     const storedToken = this.getStoredAccessToken();
     if (storedToken) {
       this.tokenSubject.next(storedToken);
+      this.startIdleTracking();
     }
+  }
+
+  // --- Idle Activity Tracking ---
+  public startIdleTracking(): void {
+    this.stopIdleTracking();
+
+    this.ngZone.runOutsideAngular(() => {
+      const activity$ = merge(
+        fromEvent(window, 'mousemove'),
+        fromEvent(window, 'keydown'),
+        fromEvent(window, 'click'),
+        fromEvent(window, 'scroll'),
+        fromEvent(window, 'touchstart')
+      );
+
+      this.activitySubscription = activity$.subscribe(() => this.resetIdleTimer());
+    });
+
+    this.resetIdleTimer();
+  }
+
+  public stopIdleTracking(): void {
+    if (this.idleTimer) clearTimeout(this.idleTimer);
+    if (this.activitySubscription) this.activitySubscription.unsubscribe();
+  }
+
+  private resetIdleTimer(): void {
+    if (this.idleTimer) clearTimeout(this.idleTimer);
+    this.idleTimer = setTimeout(() => {
+      this.ngZone.run(() => {
+        console.warn('[AuthService] User inactive for 15 minutes. Logging out...');
+        this.logout().subscribe();
+      });
+    }, this.IDLE_TIMEOUT_MS);
   }
 
   private getBackendUrl(): string {
     return `${window.location.origin}/api`;
   }
 
+  // --- Authentication Methods ---
   authenticate(username: string, password: string): Observable<any> {
     return this.http.post<any>(`${this.getBackendUrl()}/users/authenticate`, {
       username,
@@ -36,9 +76,9 @@ export class AuthService {
     }).pipe(
       tap((response: any) => {
         console.log('[AuthService] Raw login response from backend:', response);
-
         if (response && response.accessToken) {
           this.storeTokens(response.accessToken, response.refreshToken, response.userId);
+          this.startIdleTracking();
         }
       })
     );
@@ -79,26 +119,15 @@ export class AuthService {
   }
 
   logout(): Observable<any> {
+    this.stopIdleTracking();
     const userId = localStorage.getItem(this.userIdKey);
-    const accessToken = this.getStoredAccessToken();
-    
-    if (accessToken && userId) {
-      this.http.post(`${this.getBackendUrl()}/auth/revoke`, {
-        token: accessToken,
-        username: userId
-      }).subscribe({
-        next: () => {
-          console.log('[AuthService] Token revoked on auth service');
-        },
-        error: (err) => {
-          console.warn('[AuthService] Failed to revoke token:', err);
-        }
-      });
+
+    if (!userId) {
+      this.clearTokens();
+      return of(null);
     }
 
-    const logoutUrl = userId 
-      ? `${this.getBackendUrl()}/users/logout?userId=${userId}`
-      : `${this.getBackendUrl()}/users/logout`;
+    const logoutUrl = `${this.getBackendUrl()}/users/logout?userId=${userId}`;
 
     return this.http.post(logoutUrl, {}).pipe(
       tap({
@@ -108,6 +137,7 @@ export class AuthService {
     );
   }
 
+  // --- Helper Getters & Guards Utilities ---
   getUserRole(): string | null {
     return this.getRoleFromToken(this.getToken());
   }
@@ -162,18 +192,16 @@ export class AuthService {
 
   private storeTokens(accessToken: string, refreshToken: string, userId: string): void {
     localStorage.setItem(this.accessTokenKey, accessToken);
-    if (refreshToken) {
-      localStorage.setItem(this.refreshTokenKey, refreshToken);
-    }
+    if (refreshToken) localStorage.setItem(this.refreshTokenKey, refreshToken);
     if (userId) {
       console.log('[AuthService] Storing userId to localStorage:', userId);
-      
       localStorage.setItem(this.userIdKey, userId);
     }
     this.tokenSubject.next(accessToken);
   }
 
   private clearTokens(): void {
+    this.stopIdleTracking();
     localStorage.removeItem(this.accessTokenKey);
     localStorage.removeItem(this.refreshTokenKey);
     localStorage.removeItem(this.userIdKey);
