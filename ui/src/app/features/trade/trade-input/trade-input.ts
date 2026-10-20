@@ -90,6 +90,11 @@ export class TradeInput {
     return (this.quantity || 0) * this.sharePrice;
   }
 
+  get canReviewOrder(): boolean {
+    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
+    return !!account && this.estimatedTotal <= account.cashBalance;
+  }
+
   get orderData(): OrderReviewData {
     return {
       action: this.selectedAction,
@@ -105,6 +110,8 @@ export class TradeInput {
   }
 
   reviewOrder(): void {
+    if (!this.canReviewOrder) return;
+
     this.showConfirmation = true;
   }
 
