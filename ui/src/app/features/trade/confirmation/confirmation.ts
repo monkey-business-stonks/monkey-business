@@ -29,6 +29,7 @@ export class Confirmation {
   @Input() rejectionMessage: string | null = null;
   @Output() onConfirm = new EventEmitter<OrderReviewData>();
   @Output() onClose = new EventEmitter<void>();
+  @Output() onMakeAnotherTrade = new EventEmitter<void>();
 
   confirm(): void {
     if (this.orderData) {
@@ -37,7 +38,7 @@ export class Confirmation {
   }
 
   completeOrder(): void {
-    this.closeModal();
+    this.onMakeAnotherTrade.emit();
   }
 
   closeModal(): void {

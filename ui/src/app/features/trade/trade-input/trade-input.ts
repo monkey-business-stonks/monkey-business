@@ -1,5 +1,5 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, ConfirmationStatus, OrderReviewData } from '../confirmation/confirmation';
 import { PricingService } from '@/app/core/services/pricing-service';
@@ -44,7 +44,8 @@ export class TradeInput {
     private pricingService: PricingService,
     private accountService: AccountService,
     private authService: AuthService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private changeDetectorRef: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
@@ -129,7 +130,7 @@ export class TradeInput {
       },
       error: error => {
         this.orderError.set(error?.error?.message || 'Unable to place the order. Please try again.');
-        this.orderStatus = 'REJECTED';
+        this.updateOrderStatus('REJECTED');
         this.rejectionMessage = this.orderError();
       }
     });
@@ -148,7 +149,7 @@ export class TradeInput {
         }
       },
       error: error => {
-        this.orderStatus = 'REJECTED';
+        this.updateOrderStatus('REJECTED');
         this.rejectionMessage = error?.error?.message || 'Unable to retrieve the final order status.';
       }
     });
@@ -156,6 +157,7 @@ export class TradeInput {
 
   private updateOrderStatus(status: string): void {
     this.orderStatus = status.toUpperCase() as ConfirmationStatus;
+    this.changeDetectorRef.detectChanges();
   }
 
   private getSelectedAssetType(): 'EQUITY' | 'FOREIGN EXCHANGE' | 'CRYPTO' {
@@ -171,6 +173,11 @@ export class TradeInput {
     this.showConfirmation = false;
     this.orderStatus = null;
     this.rejectionMessage = null;
+  }
+
+  makeAnotherTrade(): void {
+    this.onCancelTrade();
+    this.handleBack();
   }
 
   handleBack(): void {

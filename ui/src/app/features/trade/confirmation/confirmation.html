@@ -72,11 +72,9 @@
       @if (!status) {
         <app-button variant="secondary" (click)="confirm()">Confirm {{ orderData?.action }}</app-button>
         <app-button variant="secondary" (click)="closeModal()">Edit Order</app-button>
-      } @else if (status === 'FILLED' || status === 'SETTLED' || status === 'REJECTED') {
+      } @else {
         <app-button variant="secondary" routerLink="/dashboard">View Portfolio</app-button>
         <app-button variant="secondary" (click)="completeOrder()">Make Another Trade</app-button>
-      } @else {
-        <span class="processing-label"> </span>
       }
     </div>
   </div>
