@@ -14,6 +14,8 @@ export interface OrderReviewData {
   ticker?: string;
 }
 
+export type ConfirmationStatus = 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED' | 'REJECTED' | null;
+
 @Component({
   imports: [CommonModule, ButtonComponent, RouterLink],
   selector: 'app-confirmation',
@@ -23,17 +25,15 @@ export interface OrderReviewData {
 })
 export class Confirmation {
   @Input() orderData: OrderReviewData | null = null;
+  @Input() status: ConfirmationStatus = null;
+  @Input() rejectionMessage: string | null = null;
   @Output() onConfirm = new EventEmitter<OrderReviewData>();
   @Output() onClose = new EventEmitter<void>();
-
-  showSuccessState: boolean = false;
-  // currentState: tradeState = tradeState.PENDING;
 
   confirm(): void {
     if (this.orderData) {
       this.onConfirm.emit(this.orderData);
     }
-    this.showSuccessState = true;
   }
 
   completeOrder(): void {

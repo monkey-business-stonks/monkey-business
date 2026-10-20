@@ -1,12 +1,22 @@
 <div class="confirmation-overlay" (click)="closeModal()">
   <div class="confirmation-content" (click)="$event.stopPropagation()">
     <div class="confirmation-header">
-      @if (!showSuccessState) {
+      @if (!status) {
         <h2 class="title">Review Order</h2>
+      } @else if (status === 'REJECTED') {
+        <div class="success-header rejected-header">
+          <span class="rejected-mark">!</span>
+          <h2 class="title status-title rejected-title">Order Rejected</h2>
+        </div>
       } @else {
         <div class="success-header">
-          <span class="success-checkmark">✓</span>
-          <h2 class="title">Order Confirmed</h2>
+          @if (status === 'SUBMITTED' || status === 'ACCEPTED') {
+            <span class="processing-mark" role="img" aria-label="Order processing">🍌</span>
+            <h2 class="title status-title processing-title">Processing Order</h2>
+          } @else {
+            <span class="success-checkmark">✓</span>
+            <h2 class="title status-title confirmed-title">Order Confirmed</h2>
+          }
         </div>
       }
     </div>
@@ -51,16 +61,22 @@
           <span class="detail-label">Total</span>
           <span class="detail-value">{{ orderData.estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
         </div>
+
+        @if (status === 'REJECTED' && rejectionMessage) {
+          <p class="rejection-message" role="alert">{{ rejectionMessage }}</p>
+        }
       </div>
     }
 
     <div class="confirmation-footer">
-      @if (!showSuccessState) {
+      @if (!status) {
         <app-button variant="secondary" (click)="confirm()">Confirm {{ orderData?.action }}</app-button>
         <app-button variant="secondary" (click)="closeModal()">Edit Order</app-button>
-      } @else {
+      } @else if (status === 'FILLED' || status === 'SETTLED' || status === 'REJECTED') {
         <app-button variant="secondary" routerLink="/dashboard">View Portfolio</app-button>
         <app-button variant="secondary" (click)="completeOrder()">Make Another Trade</app-button>
+      } @else {
+        <span class="processing-label"> </span>
       }
     </div>
   </div>

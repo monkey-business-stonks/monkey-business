@@ -442,6 +442,7 @@ components:
         phone: { type: string, nullable: true }
         dob: { type: string, format: date }
         accessLevel: { $ref: '#/components/schemas/AccessLevel' }
+        createdOn: { type: string, format: date-time }
         lastLogin: { type: string, format: date-time, nullable: true }
 
     AuthResponse:

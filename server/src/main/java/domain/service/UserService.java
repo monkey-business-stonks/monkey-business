@@ -186,6 +186,7 @@ public class UserService {
         response.setPhone(JsonNullable.of(user.getPhone()));
         response.setDob(user.getDob());
         response.setAccessLevel(domain.dto.AccessLevel.valueOf(user.getAccessLevel().toString()));
+        response.setCreatedOn(user.getCreatedAt().toOffsetDateTime());
         response.setLastLogin(JsonNullable.of(user.getCreatedAt().toOffsetDateTime()));
         return response;
     }

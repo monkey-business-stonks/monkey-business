@@ -3,6 +3,7 @@ package domain.service;
 import domain.entities.*;
 import domain.dto.*;
 import domain.repository.OrderRepository;
+import domain.repository.AccountRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,6 +32,9 @@ public class OrderService {
 
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
 
     @Autowired
     private OrderEventPublisher orderEventPublisher;
@@ -148,6 +152,16 @@ public class OrderService {
     }
 
     /**
+     * List all orders across every account owned by a user.
+     */
+    public List<OrderResponse> listOrdersForUser(UUID userId) {
+        return accountRepository.findByUserUserId(userId).stream()
+            .flatMap(account -> orderRepository.findByAccountAccountId(account.getAccountId()).stream()
+                .map(order -> toOrderResponse(order, account.getAccountId())))
+            .toList();
+    }
+
+    /**
      * Convert Order to OrderResponse
      * Uses actual orderType from Order entity (not hardcoded)
      */
@@ -155,7 +169,7 @@ public class OrderService {
         return new OrderResponse()
             .orderId(order.getOrderID())
             .accountId(accountId)
-            .orderType(OrderType.valueOf(order.getOrderType()))  // Actual type from order
+            .orderType(OrderType.fromValue(order.getOrderType()))
             .action(OrderAction.valueOf(order.getAction()))
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
@@ -176,7 +190,7 @@ public class OrderService {
     private OrderSummary toOrderSummary(Order order) {
         return new OrderSummary()
             .orderId(order.getOrderID())
-            .orderType(OrderType.valueOf(order.getOrderType()))  // Actual type from order
+            .orderType(OrderType.fromValue(order.getOrderType()))
             .action(OrderAction.valueOf(order.getAction()))
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
