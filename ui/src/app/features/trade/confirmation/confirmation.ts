@@ -6,6 +6,7 @@ import { ButtonComponent } from '@/app/shared/components/button/button';
 export interface OrderReviewData {
   action: string;
   account: string;
+  accountId?: string;
   orderType: string;
   quantity: number;
   sharePrice: number;
@@ -13,11 +14,7 @@ export interface OrderReviewData {
   ticker?: string;
 }
 
-// enum tradeState {
-//   PENDING,
-//   SUCCESS,
-//   FAILURE,
-// }
+export type ConfirmationStatus = 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED' | 'REJECTED' | null;
 
 @Component({
   imports: [CommonModule, ButtonComponent, RouterLink],
@@ -28,20 +25,18 @@ export interface OrderReviewData {
 })
 export class Confirmation {
   @Input() orderData: OrderReviewData | null = null;
+  @Input() status: ConfirmationStatus = null;
+  @Input() rejectionMessage: string | null = null;
   @Output() onConfirm = new EventEmitter<OrderReviewData>();
   @Output() onClose = new EventEmitter<void>();
 
-  showSuccessState: boolean = false;
-  // currentState: tradeState = tradeState.PENDING;
-
   confirm(): void {
-    this.showSuccessState = true;
-  }
-
-  completeOrder(): void {
     if (this.orderData) {
       this.onConfirm.emit(this.orderData);
     }
+  }
+
+  completeOrder(): void {
     this.closeModal();
   }
 

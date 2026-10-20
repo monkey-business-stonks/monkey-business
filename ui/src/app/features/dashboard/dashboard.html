@@ -9,7 +9,8 @@
 
     <app-button 
       variant="primary"
-      [class.active]="selectedAccountFilter() === 'ALL'"
+      [active]="selectedAccountFilter() === 'ALL'"
+      [attr.aria-pressed]="selectedAccountFilter() === 'ALL'"
       (click)="selectAccountFilter('ALL')">
       ALL
     </app-button>
@@ -17,7 +18,8 @@
     @for (acc of accounts(); track acc.accountId) {
       <app-button 
         variant="primary"
-        [class.active]="selectedAccountFilter() === acc.accountId"
+        [active]="selectedAccountFilter() === acc.accountId"
+        [attr.aria-pressed]="selectedAccountFilter() === acc.accountId"
         (click)="selectAccountFilter(acc.accountId)">
         {{ acc.accountType }}
       </app-button>

@@ -18,8 +18,9 @@
   <div class="form-fields">
     <app-select-input
       label="Account"
-      [options]="accountOptions"
-      [(value)]="selectedAccount"
+      [options]="accountOptions()"
+      [value]="selectedAccount()"
+      (valueChange)="selectedAccount.set($event)"
     ></app-select-input>
 
     <app-select-input
@@ -31,7 +32,7 @@
     <app-base-input
       label="Quantity (Shares)"
       type="number"
-      suffix="Max: 679"
+      suffix="Max: ?"
       [(value)]="quantity"
     ></app-base-input>
   </div>
@@ -55,12 +56,18 @@
   <app-button variant="secondary" (click)="reviewOrder()">
     Review Order
   </app-button>
+
+  @if (orderError()) {
+    <p class="order-error" role="alert">{{ orderError() }}</p>
+  }
 </div>
 
 <!-- Order Confirmation Modal -->
 @if (showConfirmation) {
   <app-confirmation 
     [orderData]="orderData"
+    [status]="orderStatus"
+    [rejectionMessage]="rejectionMessage"
     (onConfirm)="onConfirmTrade($event)"
     (onClose)="onCancelTrade()"
   ></app-confirmation>

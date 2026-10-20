@@ -1,5 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component } from '@angular/core';
+import { Component, input } from '@angular/core';
+import { U } from '@/app/core/models/user';
 
 @Component({
   imports: [SharedModule],
@@ -8,8 +9,8 @@ import { Component } from '@angular/core';
   templateUrl: './user-panel.html',
 })
 export class UserPanel {
+  user = input<U | null>(null);
   avatar: string = 'https://via.placeholder.com/150';
-  status: string = "ACTIVE"
 
   onAvatarUpload(event: any) {
     const file = event.target.files[0];

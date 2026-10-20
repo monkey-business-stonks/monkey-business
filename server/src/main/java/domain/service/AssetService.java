@@ -5,9 +5,12 @@ import domain.entities.Account;
 import domain.repository.AssetRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.Optional;
+
+import domain.error.BusinessConflictException;
 
 @Service
 public class AssetService {
@@ -61,24 +64,29 @@ public class AssetService {
      * Update asset for a SELL order
      * Reduces quantity and removes asset if quantity becomes 0 or negative
      */
-    public void updateAssetOnSell(Account account, String ticker, Double quantity) {
+    @Transactional
+    public Asset updateAssetOnSell(Account account, String ticker, Double quantity) {
         ticker = ticker.toUpperCase();
-        
-        Optional<Asset> existing = assetRepository.findByAccountAccountIdAndTicker(account.getAccID(), ticker);
 
-        if (existing.isPresent()) {
-            Asset asset = existing.get();
-            Double newQuantity = asset.quantity() - quantity;
-            
-            if (newQuantity <= 0) {
-                // Remove asset if quantity is 0 or negative
-                assetRepository.delete(asset);
-                account.removeAsset(asset);
-            } else {
-                // Update asset with new quantity
-                asset.setQuantity(newQuantity);
-                assetRepository.save(asset);
-            }
+        int updatedRows = assetRepository.sellAsset(
+            account.getAccID(), ticker, BigDecimal.valueOf(quantity)
+        );
+        if (updatedRows == 0) {
+            throw new BusinessConflictException(
+                "Insufficient holdings to sell " + quantity + " of " + ticker,
+                "INSUFFICIENT_HOLDINGS"
+            );
+        }
+
+        Asset asset = assetRepository.findByAccountAccountIdAndTicker(account.getAccID(), ticker)
+            .orElse(null);
+
+        if (asset == null || asset.quantity() == 0) {
+            assetRepository.delete(asset);
+            account.removeAsset(asset);
+            return null;
+        } else {
+            return asset;
         }
     }
 

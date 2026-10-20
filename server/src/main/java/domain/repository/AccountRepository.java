@@ -47,4 +47,9 @@ public interface AccountRepository extends JpaRepository<Account, UUID> {
            "WHERE accountId = :id", 
            nativeQuery = true)
     int updateCashBalance(@Param("id") UUID accountId, @Param("amount") BigDecimal amount);
+
+       @Modifying
+       @Query(value = "UPDATE Accounts SET balance = :balance, updatedAt = CURRENT_TIMESTAMP " +
+                 "WHERE accountId = :id", nativeQuery = true)
+       int updateBalance(@Param("id") UUID accountId, @Param("balance") BigDecimal balance);
 }

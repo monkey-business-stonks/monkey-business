@@ -1,9 +1,12 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component } from '@angular/core';
+import { Component, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { UserPanel } from '@/app/features/profile/user-panel/user-panel';
 import { EditPanel } from './edit-panel/edit-panel';
 import { AccountsPanel } from './accounts-panel/accounts-panel';
+import { AuthService } from '@/app/core/services/auth.service';
+import { UserService } from '@/app/core/services/user.service';
+import { U } from '@/app/core/models/user';
 
 // Profile component - displays and manages user profile information
 @Component({
@@ -13,7 +16,9 @@ import { AccountsPanel } from './accounts-panel/accounts-panel';
   templateUrl: './profile.html',
   styleUrl: './profile.css',
 })
-export class Profile {
+export class Profile implements OnInit {
+  user = signal<U | null>(null);
+
   // User information properties
   username: string = '';
   firstName: string = '';
@@ -30,8 +35,21 @@ export class Profile {
   notifyByEmail: boolean = true;
 
   constructor(
-    private router: Router
+    private router: Router,
+    private authService: AuthService,
+    private userService: UserService
   ) {}
+
+  ngOnInit(): void {
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      return;
+    }
+
+    this.userService.getUser(userId).subscribe({
+      next: (user) => this.user.set(user),
+    });
+  }
 
   // Toggle between view and edit mode
   toggleEditMode() {
