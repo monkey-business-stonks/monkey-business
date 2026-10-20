@@ -133,23 +133,25 @@ public class SecurityConfig {
     // Filter chain for PUBLIC endpoints 
     @Bean
     @Order(1)
-    public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
-        http
-            .securityMatcher(
-                "/users",
-                "/users/authenticate",
-                "/users/refresh",
-                "/users/health",
-                "/market/health",
-                "/market/price/**",
-                "/market/quotes",
-                "/market/candles/**"
-            )
-            .cors(cors -> {})
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-            .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
-        return http.build();
+        public SecurityFilterChain publicFilterChain(HttpSecurity http) throws Exception {
+            http
+                .securityMatcher(
+                    "/users",
+                    "/users/authenticate",
+                    "/users/refresh",
+                    "/users/health",
+                    "/market/health",
+                    "/ws",
+                    "/ws/**",
+                    "/market/price/**",
+                    "/market/quotes",
+                    "/market/candles/**"
+                )
+                .cors(cors -> {})
+                .csrf(csrf -> csrf.disable())
+                .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth.anyRequest().permitAll());
+            return http.build();
     }
 
     // Filter chain for PROTECTED endpoints with OAuth2
