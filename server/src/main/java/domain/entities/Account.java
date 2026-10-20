@@ -32,7 +32,16 @@ public class Account {
 	
 	@Column(name = "cashbalance")
 	private BigDecimal cashBalance;
-	
+
+	@Column(name = "tradingexperience")
+	private String tradingExperience;
+
+	@Column(name = "investmentobjective")
+	private String investmentObjective;
+
+	@Column(name = "risktolerance")
+	private String riskTolerance;
+
 	@Column(name = "updatedat")
 	private ZonedDateTime updatedAt;
 	
@@ -98,6 +107,13 @@ public class Account {
 
 	// Returns available cash
 	public BigDecimal getCashBalance() { return cashBalance; }
+	public String getTradingExperience() { return tradingExperience; }
+	public String getInvestmentObjective() { return investmentObjective; }
+	public String getRiskTolerance() { return riskTolerance; }
+
+	public void setTradingExperience(String tradingExperience) { this.tradingExperience = tradingExperience; }
+	public void setInvestmentObjective(String investmentObjective) { this.investmentObjective = investmentObjective; }
+	public void setRiskTolerance(String riskTolerance) { this.riskTolerance = riskTolerance; }
 	// Sets available cash (validates not null or negative)
 	public void setCashBalance(BigDecimal cashBalance) {
 		if (cashBalance == null) {
