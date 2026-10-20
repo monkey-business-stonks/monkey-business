@@ -37,6 +37,11 @@
   letter-spacing: -1px;
 }
 
+.cash-balance {
+  color: var(--text-primary);
+  /* font-family: 'Roboto Mono', sans-serif; */
+}
+
 .daily-summary-container {
   display: flex;
   flex-direction: row;

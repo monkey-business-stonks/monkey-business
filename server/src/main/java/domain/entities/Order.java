@@ -49,6 +49,9 @@ public class Order {
     
     @Column(name = "submittedvalue")
     private BigDecimal submittedValue;
+
+    @Column(name = "prevcashbalance")
+    private BigDecimal prevCashBalance;
     
     @Column(name = "executedvalue")
     private BigDecimal executedValue;
@@ -82,6 +85,7 @@ public class Order {
         this.verifiedOn = null;
         this.settledOn = null;
         this.submittedValue = null;
+        this.prevCashBalance = null;
         this.executedValue = null;
         this.status = null;
         this.statusCode = null;
@@ -98,6 +102,10 @@ public class Order {
     public ZonedDateTime getVerifiedOn() { return this.verifiedOn; }
     public ZonedDateTime getSettledOn() { return this.settledOn; }
     public BigDecimal getSubmittedValue() { return this.submittedValue; }
+    public BigDecimal getPrevCashBalance() { return this.prevCashBalance; }
+    public void setPrevCashBalance(BigDecimal prevCashBalance) {
+        this.prevCashBalance = prevCashBalance;
+    }
     public BigDecimal getExecutedValue() { return this.executedValue; }
     public OrderStatus getStatus() { return this.status; }
     public Integer getStatusCode() { return this.statusCode; }

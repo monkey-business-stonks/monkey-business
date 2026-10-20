@@ -83,6 +83,7 @@ public class OrderService {
             throw new NoSuchElementException("Account not found with ID: " + accountId);
         }
         order.setAccount(account);
+        order.setPrevCashBalance(account.getCashBalance());
         orderRepository.save(order);
 
         // Step 4: Publish OrderSubmittedEvent to Kafka
@@ -174,6 +175,7 @@ public class OrderService {
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
             .submittedValue(order.getSubmittedValue())
+            .cashBalanceBeforePurchase(order.getPrevCashBalance())
             .executedValue(order.getExecutedValue())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
@@ -194,6 +196,7 @@ public class OrderService {
             .action(OrderAction.valueOf(order.getAction()))
             .ticker(order.getTicker())
             .quantity(new BigDecimal(order.getQuantity()))
+            .cashBalanceBeforePurchase(order.getPrevCashBalance())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
             .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
