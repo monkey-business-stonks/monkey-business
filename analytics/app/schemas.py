@@ -83,3 +83,51 @@ class OperationsOverviewResponse(BaseModel):
     summary: OperationsSummary
     status_tabs: list[str]
     orders: list[OperationsOrderRow]
+
+
+class OperationsLifecycleEvent(BaseModel):
+    event: str
+    event_id: str
+    event_time: datetime | None = None
+    actor: str
+    detail: str
+    is_success: bool = False
+
+
+class OperationsLedgerPosting(BaseModel):
+    dimension: str
+    posting_id: str
+    description: str
+    event_id: str
+    event_time: datetime | None = None
+    before: float | None = None
+    delta: float | None = None
+    after: float | None = None
+    unit: str
+    is_negative: bool = False
+    is_positive: bool = False
+
+
+class OperationsOrderDetailResponse(BaseModel):
+    meta: MetricsMeta
+    order_id: str
+    client_ref: str
+    account_id: str
+    account_type: str
+    ticker: str
+    action: str
+    order_type: str
+    quantity: float
+    submitted_value_usd: float
+    execution_price_usd: float | None = None
+    principal_usd: float | None = None
+    fees_usd: float = 0.0
+    status: str
+    submitted_on: datetime | None = None
+    accepted_on: datetime | None = None
+    executed_on: datetime | None = None
+    settled_on: datetime | None = None
+    cash_balance_usd: float | None = None
+    previous_cash_balance_usd: float | None = None
+    lifecycle: list[OperationsLifecycleEvent]
+    ledger: list[OperationsLedgerPosting]

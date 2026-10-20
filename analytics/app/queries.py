@@ -168,3 +168,33 @@ def fetch_operations_overview(conn: Connection, filters: OrderFilters, limit: in
         rows = cur.fetchall()
 
     return {"summary": summary or {}, "rows": rows}
+
+
+def fetch_operations_order_detail(conn: Connection, order_id: str) -> dict[str, Any] | None:
+    sql = """
+        SELECT
+            o.orderid,
+            u.userid,
+            a.accountid,
+            a.accounttype,
+            a.cashbalance,
+            o.ordertype,
+            o.ticker,
+            o.action,
+            o.quantity,
+            o.submittedvalue,
+            o.executedvalue,
+            o.prevcashbalance,
+            o.status,
+            o.submittedon,
+            o.verifiedon,
+            o.executedon,
+            o.settledon
+        FROM orders o
+        JOIN accounts a ON a.accountid = o.accountid
+        JOIN users u ON u.userid = a.userid
+        WHERE o.orderid = %s
+    """
+    with conn.cursor() as cur:
+        cur.execute(sql, [order_id])
+        return cur.fetchone()
