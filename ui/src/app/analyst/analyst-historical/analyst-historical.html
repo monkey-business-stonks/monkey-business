@@ -6,6 +6,9 @@
       <h1>Monthly trading & client activity</h1>
       <p class="subtitle">Executive committee report · Saved report RPT-MONTH-004 · Live analytics snapshot</p>
     </div>
+    <div class="header-actions">
+      <app-button variant="primary" [disabled]="loading" (click)="refresh()">↻ Refresh</app-button>
+    </div>
   </header>
 
   <!-- Shared Banner Component -->

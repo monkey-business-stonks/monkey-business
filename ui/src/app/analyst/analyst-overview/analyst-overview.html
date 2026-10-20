@@ -5,6 +5,9 @@
       <h1>Trading activity overview</h1>
       <p class="subtitle">Monthly visibility into volumes, instruments and client participation.</p>
     </div>
+    <div class="header-actions">
+      <app-button variant="primary" [disabled]="loading" (click)="refresh()">↻ Refresh</app-button>
+    </div>
   </header>
 
   <app-banner-message 

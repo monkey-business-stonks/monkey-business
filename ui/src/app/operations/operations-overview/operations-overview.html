@@ -5,7 +5,9 @@
       <h1>Trading records overview</h1>
       <p class="subtitle">Every order request and accepted order, from admission to its final outcome.</p>
     </div>
-    <div class="header-actions"></div>
+    <div class="header-actions">
+      <app-button variant="primary" [disabled]="loading" (click)="refresh()">↻ Refresh</app-button>
+    </div>
   </header>
 
   <app-banner-message 
