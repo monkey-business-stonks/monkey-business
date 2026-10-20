@@ -7,6 +7,7 @@ import {
   OnDestroy,
   SimpleChanges,
   ViewChild,
+  ChangeDetectorRef,
 } from '@angular/core';
 import {
   CandlestickData,
@@ -17,7 +18,7 @@ import {
   UTCTimestamp,
 } from 'lightweight-charts';
 import { Subscription } from 'rxjs';
-import { PricingService } from '@/app/core/services/pricing-service';
+import { PricingService } from '@/app/core/services/pricing.service';
 
 @Component({
   imports: [],
@@ -41,7 +42,10 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
   private loadedTicker?: string;
   private resizeObserver?: ResizeObserver;
 
-  constructor(private pricingService: PricingService) {}
+  constructor(
+    private pricingService: PricingService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngAfterViewInit(): void {
     this.createChart();
@@ -74,7 +78,11 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
         horzLines: { color: 'rgba(148, 163, 184, 0.12)', visible: true, style: 0 },
       },
       rightPriceScale: { borderVisible: false },
-      timeScale: { borderVisible: false },
+      timeScale: {
+        borderVisible: false,
+        fixLeftEdge: true,
+        fixRightEdge: true, 
+      },
     };
 
     this.chart = createChart(container, options);
@@ -100,7 +108,9 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
 
   private loadCandles(): void {
     const ticker = this.selectedTicker?.data?.symbol;
+
     if (!this.candleSeries) {
+      this.loading = false;
       return;
     }
 
@@ -115,6 +125,8 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
     }
 
     if (ticker === this.loadedTicker) {
+      // Already loaded this ticker; ensure loading is off
+      this.loading = false;
       return;
     }
 
@@ -123,6 +135,7 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
     this.loading = true;
     this.error = false;
     this.hasCandles = false;
+
     const to = this.formatDate(new Date());
     const fromDate = new Date();
     fromDate.setDate(fromDate.getDate() - 90);
@@ -140,10 +153,11 @@ export class InstrumentChart implements AfterViewInit, OnChanges, OnDestroy {
         this.candleSeries?.setData(candles);
         this.chart?.timeScale().fitContent();
         this.hasCandles = candles.length > 0;
-        this.loading = false;
+        this.loading = false; 
+        this.cdr.markForCheck();
       },
       error: () => {
-        this.loading = false;
+        this.loading = false; 
         this.error = true;
         this.hasCandles = false;
         this.candleSeries?.setData([]);

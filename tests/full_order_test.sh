@@ -79,7 +79,7 @@ echo "▶ STEP 3: Creating BROKERAGE account (Initial Balance = 10,000)..."
 ACCOUNT_RESPONSE=$(curl -s -X POST "$BASE_URL/users/$USER_ID/accounts" \
   -H "Content-Type: application/json" \
   -H "Authorization: Bearer $JWT_TOKEN" \
-  -d '{"accountType":"BROKERAGE","initialDeposit":10000}')
+  -d '{"accountType":"BROKERAGE","initialDeposit":10000,"tradingExperience":"INTERMEDIATE","investmentObjective":"GROWTH","riskTolerance":"MODERATE","acceptsDisclosure":true}')
 
 ACCOUNT_ID=$(echo "$ACCOUNT_RESPONSE" | jq -r '.accountId')
 INITIAL_BALANCE=$(echo "$ACCOUNT_RESPONSE" | jq -r '.balance')

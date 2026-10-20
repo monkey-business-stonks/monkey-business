@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, map } from 'rxjs';
+import { Observable, map, shareReplay } from 'rxjs';
 import { Candle, Quote } from '../models';
 
 @Injectable({
@@ -9,6 +9,17 @@ import { Candle, Quote } from '../models';
 })
 export class PricingService {
 	constructor(private http: HttpClient) {}
+
+  private topInstrumentsCache$: Observable<Quote[]> | null = null;
+
+  preloadTopInstruments(symbols: string[]): Observable<Quote[]> {
+    if (!this.topInstrumentsCache$) {
+      this.topInstrumentsCache$ = this.getPrices(symbols.join(',')).pipe(
+        shareReplay(1) // Cache the last emitted result for subscribers
+      );
+    }
+    return this.topInstrumentsCache$;
+  }
 
 	getQuote(ticker: string): Observable<Quote> {
 		return this.http.get<Quote>(`${window.location.origin}/api/market/price/${ticker}`);

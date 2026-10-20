@@ -1,18 +1,23 @@
 .instrument-details-container {
   box-sizing: border-box;
   min-width: 0;
-  height: calc(100vh - 180px);
+  height: calc(100vh - 160px);
   padding: var(--space-lg);
   background-color: var(--background-secondary);
   border: var(--width-sm) solid var(--background-tertiary);
   border-radius: var(--radius-md);
-  overflow-y: auto
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  overflow: hidden; /* Prevents container overflow */
 }
 
 .instrument-details-header {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
+  flex-shrink: 0;
+  height: 52px;
 }
 
 .instrument-details-header-left {
@@ -20,7 +25,7 @@
   font-family: 'Inter', sans-serif;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 2px;
 }
 
 .ticker {
@@ -48,7 +53,7 @@
   font-family: 'Roboto Mono', sans-serif;
   display: flex;
   flex-direction: column;
-  gap: var(--space-xs);
+  gap: 2px;
 }
 
 .instrument-details-header-title {
@@ -79,20 +84,22 @@
 
 .instrument-caption {
   width: 100%;
-  height: 80px;
+  height: 36px;
+  flex-shrink: 0;
   background-color: var(--background-tertiary);
   border-radius: var(--radius-md);
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  text-align: center;
-  padding: var(--space-md) var(--space-xl);
+  justify-content: space-around;
+  align-items: center;
+  padding: 0 var(--space-md);
   box-sizing: border-box;
 }
 
 .instrument-caption-pair {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  align-items: center; 
   gap: var(--space-xs);
 }
 
@@ -100,10 +107,15 @@
   font-family: 'Inter', sans-serif;
   color: var(--text-secondary);
   font-size: var(--font-size-xs);
+  margin: 0;
+  line-height: 1; 
 }
 
 .val {
   font-family: 'Roboto Mono', sans-serif;
   color: var(--text-primary);
-  font-size: var(--font-size-sm);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  margin: 0;
+  line-height: 1;
 }

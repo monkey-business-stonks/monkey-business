@@ -6,3 +6,4 @@ export * from './user';
 export * from './data';
 export * from './meta';
 export * from './candle';
+export * from './analytics';

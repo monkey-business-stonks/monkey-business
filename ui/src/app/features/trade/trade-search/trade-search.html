@@ -37,44 +37,69 @@
     <ng-container *ngIf="hasSearched()">
       <div class="subsection-header">Results</div>
 
-      <div *ngIf="searchError()" class="search-error-message">
-        {{ searchError() }}
+      <div *ngIf="searchError()" class="search-error-row">
+        <div class="error-info">
+          <span class="error-title">Instrument "{{ searchQuery() }}" not found</span>
+          <span class="error-description">
+            Please verify the symbol and try again.
+          </span>
+        </div>
       </div>
 
       <ng-container *ngIf="!searchError()">
-        <div *ngIf="resultsList().length > 0; else noResultsTemplate">
-          <trade-search-row
-            *ngFor="let asset of resultsList()"
-            [row]="asset"
-            [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
-            (rowClick)="handleSelect($event)"
-          ></trade-search-row>
+        <!-- Search Loading: Exactly 1 Shimmer Row -->
+        <div *ngIf="isSearching(); else searchResultsTemplate" class="shimmer-rows">
+          <div class="shimmer-row"></div>
         </div>
-        <ng-template #noResultsTemplate>
-          <div class="no-results-message">no results to display</div>
+
+        <ng-template #searchResultsTemplate>
+          <div *ngIf="resultsList().length > 0; else noResultsTemplate" class="rows-group">
+            <trade-search-row
+              *ngFor="let asset of resultsList()"
+              [row]="asset"
+              [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
+              (rowClick)="handleSelect($event)"
+            ></trade-search-row>
+          </div>
+          <ng-template #noResultsTemplate>
+            <div class="no-results-message">no results to display</div>
+          </ng-template>
         </ng-template>
       </ng-container>
     </ng-container>
 
     <ng-container *ngIf="recentsList().length > 0">
       <div class="subsection-header">Recents</div>
-      <trade-search-row
-        *ngFor="let asset of recentsList()"
-        [row]="asset"
-        [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
-        (rowClick)="handleSelect($event)"
-      ></trade-search-row>
+      <div class="rows-group">
+        <trade-search-row
+          *ngFor="let asset of recentsList()"
+          [row]="asset"
+          [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
+          (rowClick)="handleSelect($event)"
+        ></trade-search-row>
+      </div>
     </ng-container>
 
-    <ng-container *ngIf="topInstrumentsList().length > 0">
-      <div class="subsection-header">Top Instruments</div>
+    <div class="subsection-header">Top Instruments</div>
+    
+    <!-- Top 25 Loading: Exactly 6 Shimmer Rows -->
+    <div *ngIf="isTopLoading()" class="shimmer-rows">
+      <div class="shimmer-row"></div>
+      <div class="shimmer-row"></div>
+      <div class="shimmer-row"></div>
+      <div class="shimmer-row"></div>
+      <div class="shimmer-row"></div>
+      <div class="shimmer-row"></div>
+    </div>
+
+    <div *ngIf="!isTopLoading() && topInstrumentsList().length > 0" class="rows-group">
       <trade-search-row
         *ngFor="let asset of topInstrumentsList()"
         [row]="asset"
         [selected]="selectedAsset?.data?.symbol === asset.data.symbol"
         (rowClick)="handleSelect($event)"
       ></trade-search-row>
-    </ng-container>
+    </div>
   </div>
 
   <app-button

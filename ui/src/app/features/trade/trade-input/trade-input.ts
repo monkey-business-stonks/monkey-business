@@ -2,7 +2,7 @@ import { SharedModule } from '@/app/shared/shared.module';
 import { ChangeDetectorRef, Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, ConfirmationStatus, OrderReviewData } from '../confirmation/confirmation';
-import { PricingService } from '@/app/core/services/pricing-service';
+import { PricingService } from '@/app/core/services/pricing.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';

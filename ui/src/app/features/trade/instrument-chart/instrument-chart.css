@@ -1,15 +1,19 @@
+:host {
+  display: block;
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  width: 100%;
+}
+
 .instrument-chart {
   position: relative;
   box-sizing: border-box;
   display: block;
   min-width: 0;
-  min-height: 320px;
-  overflow: hidden;
-  margin-top: var(--space-md);
-  margin-bottom: var(--space-md);
   width: 100%;
-  max-width: 100%;
-  height: calc(100vh - 340px);
+  height: 100%; 
+  overflow: hidden;
   background-color: var(--background-primary);
   border-radius: var(--radius-md);
   border: var(--width-sm) solid var(--background-tertiary);
@@ -32,4 +36,45 @@
   place-items: center;
   color: var(--text-secondary);
   pointer-events: none;
+}
+
+.chart-shimmer-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--background-secondary);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  padding: var(--space-lg);
+  box-sizing: border-box;
+  z-index: 10;
+}
+
+.shimmer-line {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--background-tertiary) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    var(--background-tertiary) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
+.line-high { height: 30%; }
+.line-mid  { height: 40%; }
+.line-low  { height: 20%; }
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
 }

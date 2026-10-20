@@ -1,7 +1,15 @@
 <div class="instrument-chart">
-	<div #chartContainer class="chart-container"></div>
+  <div #chartContainer class="chart-container"></div>
 
-	@if (error) {
-		<div class="chart-status">Historical data is unavailable.</div>
-	}
+  @if (loading) {
+    <div class="chart-shimmer-overlay">
+      <div class="shimmer-line line-high"></div>
+      <div class="shimmer-line line-mid"></div>
+      <div class="shimmer-line line-low"></div>
+    </div>
+  }
+
+  @if (error) {
+    <div class="chart-status">Historical data is unavailable.</div>
+  }
 </div>
