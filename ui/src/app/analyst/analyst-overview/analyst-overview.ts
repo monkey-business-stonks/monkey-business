@@ -1,8 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
+import { ButtonComponent } from '@/app/shared/components/button/button';
 import { AnalyticsService } from '@/app/core/services/analytics.service';
 import { AnalystOverviewResponse } from '@/app/core/models';
 import { finalize } from 'rxjs';
@@ -14,7 +15,8 @@ import { finalize } from 'rxjs';
     CommonModule, 
     MetricCardComponent, 
     BannerMessageComponent, 
-    SelectInputComponent
+    SelectInputComponent,
+    ButtonComponent
   ],
   templateUrl: './analyst-overview.html',
   styleUrls: [
@@ -56,13 +58,20 @@ export class AnalystOverviewComponent implements OnInit {
     volumeVsAug: string;
   }> = [];
 
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(
+    private analyticsService: AnalyticsService,
+    private changeDetector: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadOverview();
   }
 
   onFilterChange(): void {
+    this.loadOverview();
+  }
+
+  refresh(): void {
     this.loadOverview();
   }
 
@@ -87,13 +96,20 @@ export class AnalystOverviewComponent implements OnInit {
         instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
         account_type: this.selectedSegment === 'All account types' ? undefined : this.selectedSegment,
       })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.changeDetector.detectChanges();
+      }))
       .subscribe({
-        next: (data) => this.applyOverview(data),
+        next: (data) => {
+          this.applyOverview(data);
+          this.changeDetector.detectChanges();
+        },
         error: (err) => {
           const message = err?.error?.message || err?.message || 'Unable to load analytics overview.';
           this.error = message;
           this.bannerDetail = `Analytics request failed: ${message}`;
+          this.changeDetector.detectChanges();
         },
       });
   }

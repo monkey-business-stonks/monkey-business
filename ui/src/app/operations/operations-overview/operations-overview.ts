@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
@@ -93,7 +93,10 @@ export class OperationsOverviewComponent implements OnInit {
     exception: string;
   }> = [];
 
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(
+    private analyticsService: AnalyticsService,
+    private changeDetector: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadOverview();
@@ -104,6 +107,10 @@ export class OperationsOverviewComponent implements OnInit {
   }
 
   onSearch(): void {
+    this.loadOverview();
+  }
+
+  refresh(): void {
     this.loadOverview();
   }
 
@@ -125,13 +132,20 @@ export class OperationsOverviewComponent implements OnInit {
         limit: 50,
         offset: 0,
       })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.changeDetector.detectChanges();
+      }))
       .subscribe({
-        next: (data) => this.applyOverview(data),
+        next: (data) => {
+          this.applyOverview(data);
+          this.changeDetector.detectChanges();
+        },
         error: (err) => {
           const message = err?.error?.message || err?.message || 'Unable to load operations analytics.';
           this.error = message;
           this.bannerDetail = `Analytics request failed: ${message}`;
+          this.changeDetector.detectChanges();
         },
       });
   }

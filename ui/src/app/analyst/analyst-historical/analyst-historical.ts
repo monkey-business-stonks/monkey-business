@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
@@ -56,13 +56,20 @@ export class AnalystHistoricalComponent implements OnInit {
     vsAug: string;
   }> = [];
 
-  constructor(private analyticsService: AnalyticsService) {}
+  constructor(
+    private analyticsService: AnalyticsService,
+    private changeDetector: ChangeDetectorRef,
+  ) {}
 
   ngOnInit(): void {
     this.loadHistorical();
   }
 
   onFilterChange(): void {
+    this.loadHistorical();
+  }
+
+  refresh(): void {
     this.loadHistorical();
   }
 
@@ -87,13 +94,20 @@ export class AnalystHistoricalComponent implements OnInit {
         instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
         account_type: this.selectedSegment === 'All account types' ? undefined : this.selectedSegment,
       })
-      .pipe(finalize(() => (this.loading = false)))
+      .pipe(finalize(() => {
+        this.loading = false;
+        this.changeDetector.detectChanges();
+      }))
       .subscribe({
-        next: (data) => this.applyHistorical(data),
+        next: (data) => {
+          this.applyHistorical(data);
+          this.changeDetector.detectChanges();
+        },
         error: (err) => {
           const message = err?.error?.message || err?.message || 'Unable to load historical report.';
           this.error = message;
           this.bannerDetail = `Analytics request failed: ${message}`;
+          this.changeDetector.detectChanges();
         },
       });
   }
