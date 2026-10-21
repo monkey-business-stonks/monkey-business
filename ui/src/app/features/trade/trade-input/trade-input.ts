@@ -92,7 +92,7 @@ export class TradeInput {
 
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
-    return !!account && this.estimatedTotal <= account.cashBalance;
+    return !!account && this.estimatedTotal <= account.cashBalance && this.quantity > 0;
   }
 
   get orderData(): OrderReviewData {
