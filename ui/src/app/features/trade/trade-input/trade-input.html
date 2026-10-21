@@ -53,7 +53,7 @@
   </div>
 
   <!-- Action Button -->
-  <app-button variant="secondary" (click)="reviewOrder()">
+  <app-button variant="secondary" [disabled]="!canReviewOrder" (click)="reviewOrder()">
     Review Order
   </app-button>
 

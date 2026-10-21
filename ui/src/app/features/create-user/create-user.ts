@@ -16,10 +16,16 @@ export class CreateUser {
   lastName = signal('');
   email = signal('');
   password = signal('');
+  dateOfBirth = signal('');
   agreedToTerms = signal(false);
   
   loading = signal(false);
   error = signal<string | null>(null);
+
+  dateOfBirthError = computed(() => {
+    if (!this.dateOfBirth()) return '';
+    return this.isAtLeastEighteen() ? '' : 'You must be at least 18 years old to create an account.';
+  });
 
   isFormValid = computed(() => {
     return (
@@ -28,16 +34,44 @@ export class CreateUser {
       this.lastName().trim().length > 0 &&
       this.email().trim().length > 0 &&
       this.password().length >= 8 &&
+      this.isAtLeastEighteen() &&
       this.agreedToTerms()
     );
   });
 
   constructor(private router: Router, private authService: AuthService) {}
 
+  private isAtLeastEighteen(): boolean {
+    const dateParts = this.dateOfBirth().split('-').map(Number);
+    if (dateParts.length !== 3 || dateParts.some(part => !Number.isInteger(part))) return false;
+
+    const [year, month, day] = dateParts;
+    const birthDate = new Date(year, month - 1, day);
+    const today = new Date();
+    if (
+      birthDate.getFullYear() !== year ||
+      birthDate.getMonth() !== month - 1 ||
+      birthDate.getDate() !== day ||
+      birthDate > today
+    ) {
+      return false;
+    }
+
+    let age = today.getFullYear() - year;
+    const birthdayHasNotPassed =
+      today.getMonth() < month - 1 ||
+      (today.getMonth() === month - 1 && today.getDate() < day);
+    if (birthdayHasNotPassed) age--;
+
+    return age >= 18;
+  }
+
   onCreateAccount() {
     if (!this.isFormValid()) {
       if (this.password().length > 0 && this.password().length < 8) {
         this.error.set('Password must be at least 8 characters.');
+      } else if (this.dateOfBirthError()) {
+        this.error.set(this.dateOfBirthError());
       }
       return;
     }
@@ -50,7 +84,7 @@ export class CreateUser {
       name: `${this.firstName().trim()} ${this.lastName().trim()}`,
       email: this.email().trim(),
       password: this.password(),
-      dob: '1998-01-01'
+      dob: this.dateOfBirth()
     };
 
     this.authService.register(payload).subscribe({

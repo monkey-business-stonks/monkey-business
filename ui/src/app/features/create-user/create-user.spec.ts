@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
-import { CreateUser } from '@/app/login/create-user/create-user';
+import { CreateUser } from './create-user';
 import { CommonModule } from '@angular/common';
 
 /**
@@ -53,6 +53,7 @@ describe('CreateUser Component', () => {
     expect(component.lastName()).toBe('');
     expect(component.email()).toBe('');
     expect(component.password()).toBe('');
+    expect(component.dateOfBirth()).toBe('');
     expect(component.agreedToTerms()).toBe(false);
   });
 
@@ -137,9 +138,20 @@ describe('CreateUser Component', () => {
     component.lastName.set('Doe');
     component.email.set('john@example.com');
     component.password.set('password123');
+    component.dateOfBirth.set('2000-01-01');
     component.agreedToTerms.set(true);
     fixture.detectChanges();
     expect(component.isFormValid()).toBe(true);
+  });
+
+  it('should reject users who are under 18', () => {
+    const today = new Date();
+    const underageDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate() + 1);
+    component.dateOfBirth.set(
+      `${underageDate.getFullYear()}-${String(underageDate.getMonth() + 1).padStart(2, '0')}-${String(underageDate.getDate()).padStart(2, '0')}`
+    );
+
+    expect(component.isFormValid()).toBe(false);
   });
 
   /**

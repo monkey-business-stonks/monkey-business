@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-=======
-import { Component, OnDestroy, OnInit } from '@angular/core';
->>>>>>> ff15f24 (adding websockets for user and analyst pages)
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
@@ -63,17 +59,12 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
     volumeVsAug: string;
   }> = [];
 
-<<<<<<< HEAD
-  constructor(
-    private analyticsService: AnalyticsService,
-    private changeDetector: ChangeDetectorRef,
-=======
   private orderUpdateSubscription?: Subscription;
 
   constructor(
     private analyticsService: AnalyticsService,
+    private changeDetector: ChangeDetectorRef,
     private orderUpdateService: OrderUpdateService
->>>>>>> ff15f24 (adding websockets for user and analyst pages)
   ) {}
 
   ngOnInit(): void {
