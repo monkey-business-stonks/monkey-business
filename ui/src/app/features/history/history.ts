@@ -3,8 +3,9 @@ import { TableColumn } from '@/app/shared/models/table-column'
 import { Order } from '@/app/core/models';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { Component, OnInit, signal } from '@angular/core';
-import { catchError, finalize, of } from 'rxjs';
+import { catchError, finalize, of, Subscription } from 'rxjs';
 
 export interface OrderHistoryItem {
   date: string;
@@ -21,7 +22,7 @@ export interface OrderHistoryItem {
   templateUrl: './history.html',
   styleUrl: './history.css'
 })
-export class History {
+export class History implements OnInit {
   private static readonly STATUS_ORDER: Record<string, number> = {
     SUBMITTED: 0,
     ACCEPTED: 1,
@@ -42,13 +43,26 @@ export class History {
   ];
 
   orderData = signal<OrderHistoryItem[]>([]);
+  private orderUpdateSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private orderUpdateService: OrderUpdateService
   ) {}
 
   ngOnInit(): void {
+    this.loadOrderHistory();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => {
+      this.loadOrderHistory();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
+  }
+
+  private loadOrderHistory(): void {
     const userId = this.authService.getUserId();
 
     if (!userId) {

@@ -1,11 +1,12 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
 import { ButtonComponent } from '@/app/shared/components/button/button';
 import { AnalyticsService } from '@/app/core/services/analytics.service';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { AnalystOverviewResponse } from '@/app/core/models';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-analyst-historical',
@@ -22,7 +23,7 @@ import { finalize } from 'rxjs';
     './analyst-historical.css',
   ]
 })
-export class AnalystHistoricalComponent implements OnInit {
+export class AnalystHistoricalComponent implements OnDestroy, OnInit {
   selectedPeriod = 'Last 30 days';
   selectedInstrument = 'All instruments';
   selectedSegment = 'All account types';
@@ -56,13 +57,21 @@ export class AnalystHistoricalComponent implements OnInit {
     vsAug: string;
   }> = [];
 
+  private orderUpdateSubscription?: Subscription;
+
   constructor(
     private analyticsService: AnalyticsService,
+    private orderUpdateService: OrderUpdateService,
     private changeDetector: ChangeDetectorRef,
   ) {}
 
   ngOnInit(): void {
     this.loadHistorical();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => this.loadHistorical());
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
   }
 
   onFilterChange(): void {
