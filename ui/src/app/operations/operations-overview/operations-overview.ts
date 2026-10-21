@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-=======
-import { Component, OnDestroy, OnInit } from '@angular/core';
->>>>>>> ff15f24 (adding websockets for user and analyst pages)
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { Router } from '@angular/router';
@@ -96,18 +92,13 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
     source: OperationsOverviewResponse['orders'][number];
   }> = [];
 
-<<<<<<< HEAD
-  constructor(
-    private analyticsService: AnalyticsService,
-    private changeDetector: ChangeDetectorRef,
-    private router: Router,
-=======
   private orderUpdateSubscription?: Subscription;
 
   constructor(
     private analyticsService: AnalyticsService,
+    private changeDetector: ChangeDetectorRef,
+    private router: Router,
     private orderUpdateService: OrderUpdateService
->>>>>>> ff15f24 (adding websockets for user and analyst pages)
   ) {}
 
   ngOnInit(): void {
