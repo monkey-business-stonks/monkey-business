@@ -70,6 +70,18 @@
 
       <app-base-input
         variant="form"
+        label="DATE OF BIRTH"
+        type="date"
+        [(value)]="dateOfBirth"
+        name="dateOfBirth"
+        [required]="true"
+      />
+      <p *ngIf="dateOfBirthError()" class="field-error" role="alert">
+        {{ dateOfBirthError() }}
+      </p>
+
+      <app-base-input
+        variant="form"
         label="PASSWORD"
         type="password"
         placeholder="••••••••••"
