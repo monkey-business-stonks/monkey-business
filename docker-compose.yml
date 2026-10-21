@@ -232,8 +232,6 @@ services:
       context: ./auth
       dockerfile: Dockerfile
     container_name: monkey_business_auth
-    ports:
-      - "3000:3000"
     environment:
       PORT: 3000
       NODE_ENV: production
@@ -298,6 +296,8 @@ services:
       ANALYTICS_DB_NAME: monkey_business
       ANALYTICS_DB_USER: analytics_reader
       ANALYTICS_DB_PASSWORD: analytics_reader_change_me
+      JWT_SIGNING_KEY: my-secret-key-change-me-in-production
+      JWT_ALGORITHM: HS256
     ports:
       - "8001:8000"
     restart: unless-stopped

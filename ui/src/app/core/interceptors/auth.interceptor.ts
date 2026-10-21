@@ -12,7 +12,6 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
                    req.url.includes('/market/price') ||
                    req.url.includes('/market/quotes') ||
                    req.url.includes('/market/candles') ||
-                   req.url.includes('/analytics-api/') ||
                    req.url.includes('/health');
   const isLogout = req.url.includes('/users/logout');
 
