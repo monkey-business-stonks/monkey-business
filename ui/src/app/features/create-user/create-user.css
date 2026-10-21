@@ -96,6 +96,12 @@
   text-align: center;
 }
 
+.field-error {
+  color: var(--accent-negative);
+  font-size: var(--font-size-sm);
+  margin: calc(var(--space-lg) * -1) 0 0;
+}
+
 /* ===== FORM STYLES ===== */
 /* Form container with vertical flexbox layout and spacing between groups */
 form {
