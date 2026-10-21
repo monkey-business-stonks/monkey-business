@@ -2,14 +2,16 @@ from __future__ import annotations
 
 import json
 import os
+import jwt
 from urllib import error, parse, request
 from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import Depends, FastAPI, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
 from app.db import VALID_ACCOUNT_TYPES, get_conn
 from app.queries import (
@@ -35,6 +37,44 @@ from app.schemas import (
 )
 
 app = FastAPI(title="monkey-business-analytics", version="1.1.0")
+bearer_scheme = HTTPBearer(auto_error=False)
+
+
+def _require_role(*allowed_roles: str):
+    def dependency(credentials: HTTPAuthorizationCredentials | None = Depends(bearer_scheme)) -> dict[str, Any]:
+        if credentials is None or credentials.scheme.lower() != "bearer":
+            raise HTTPException(
+                status_code=401,
+                detail={"error": "unauthorized", "message": "A bearer access token is required."},
+                headers={"WWW-Authenticate": "Bearer"},
+            )
+
+        try:
+            payload = jwt.decode(
+                credentials.credentials,
+                os.getenv("JWT_SIGNING_KEY", "your-secret-key-change-me"),
+                algorithms=[os.getenv("JWT_ALGORITHM", "HS256")],
+                options={"require": ["sub", "role", "exp"]},
+            )
+        except jwt.PyJWTError as exc:
+            raise HTTPException(
+                status_code=401,
+                detail={"error": "unauthorized", "message": "The access token is invalid or expired."},
+                headers={"WWW-Authenticate": "Bearer"},
+            ) from exc
+
+        if payload.get("role") not in allowed_roles:
+            raise HTTPException(
+                status_code=403,
+                detail={"error": "forbidden", "message": "You do not have permission to access this analytics resource."},
+            )
+        return payload
+
+    return dependency
+
+
+analyst_access = _require_role("ANALYST", "OPERATIONS")
+operations_access = _require_role("OPERATIONS")
 
 
 def _utc_now() -> datetime:
@@ -178,7 +218,7 @@ def health() -> dict[str, str]:
     return {"status": "ok"}
 
 
-@app.get("/v1/analyst/overview", response_model=AnalystOverviewResponse)
+@app.get("/v1/analyst/overview", response_model=AnalystOverviewResponse, dependencies=[Depends(analyst_access)])
 def analyst_overview(
     period_from: datetime | None = Query(default=None, description="Inclusive current period start (UTC)."),
     period_to: datetime | None = Query(default=None, description="Inclusive current period end (UTC)."),
@@ -283,7 +323,7 @@ def analyst_overview(
     )
 
 
-@app.get("/v1/operations/overview", response_model=OperationsOverviewResponse)
+@app.get("/v1/operations/overview", response_model=OperationsOverviewResponse, dependencies=[Depends(operations_access)])
 def operations_overview(
     period_from: datetime | None = Query(default=None),
     period_to: datetime | None = Query(default=None),
@@ -365,7 +405,7 @@ def operations_overview(
     )
 
 
-@app.get("/v1/operations/orders/{order_id}", response_model=OperationsOrderDetailResponse)
+@app.get("/v1/operations/orders/{order_id}", response_model=OperationsOrderDetailResponse, dependencies=[Depends(operations_access)])
 def operations_order_detail(order_id: str) -> OperationsOrderDetailResponse:
     try:
         parsed_order_id = UUID(order_id)

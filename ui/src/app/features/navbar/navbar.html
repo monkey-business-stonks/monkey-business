@@ -24,4 +24,10 @@
     </button>
   </div>
   }
+
+  @if ((role$ | async) === 'ANALYST' || (role$ | async) === 'OPERATIONS') {
+  <div class="internal-session-actions">
+    <button type="button" class="logout-button" (click)="onLogout()">LOGOUT</button>
+  </div>
+  }
 </div>
