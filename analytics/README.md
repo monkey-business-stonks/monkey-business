@@ -32,8 +32,13 @@ This starts:
 Base URL: `http://localhost:8001`
 
 - `GET /health`
-- `GET /v1/analyst/overview`
-- `GET /v1/operations/overview`
+- `GET /v1/analyst/overview` (Bearer token; `ANALYST` or `OPERATIONS`)
+- `GET /v1/operations/overview` (Bearer token; `OPERATIONS`)
+- `GET /v1/operations/orders/{order_id}` (Bearer token; `OPERATIONS`)
+
+Analytics validates the same HS256 access tokens issued by the auth service. Set
+`JWT_SIGNING_KEY` to the auth service signing key when running the service outside
+Docker; `/health` remains public for container health checks.
 
 ## Logs
 
