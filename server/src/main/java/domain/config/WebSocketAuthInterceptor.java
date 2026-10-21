@@ -39,10 +39,6 @@ public class WebSocketAuthInterceptor implements ChannelInterceptor {
             accessor.setUser(jwtAuthenticationConverter.convert(jwt));
         }
 
-        if (StompCommand.SUBSCRIBE.equals(accessor.getCommand()) && accessor.getUser() == null) {
-            throw new IllegalArgumentException("WebSocket authentication is required");
-        }
-
         return message;
     }
 }

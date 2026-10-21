@@ -168,7 +168,9 @@ public class SecurityConfig {
                     .jwtAuthenticationConverter(jwtAuthenticationConverter())
                 )
             )
-            .authorizeHttpRequests(auth -> auth.anyRequest().authenticated());
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/ws", "/ws/**").permitAll()
+                .anyRequest().authenticated());
 
         return http.build();
     }

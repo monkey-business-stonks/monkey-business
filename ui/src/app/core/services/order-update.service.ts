@@ -24,35 +24,51 @@ export class OrderUpdateService {
 
   private readonly client: Client;
   private orderSubscription?: StompSubscription;
+  private platformSubscription?: StompSubscription;
+  private requestedToken: string | null = null;
+  private lifecycle: Promise<void> = Promise.resolve();
 
   constructor(private authService: AuthService) {
     this.client = new Client({
       brokerURL: this.getWebSocketUrl(),
       reconnectDelay: 5000,
       onConnect: () => this.subscribeToOrderUpdates(),
-      onWebSocketError: error => console.error('Order WebSocket error:', error)
+      onWebSocketError: error => console.error('Order WebSocket error:', error),
+      onWebSocketClose: event => console.warn('Order WebSocket closed:', event.code, event.reason),
+      onStompError: frame => console.error('Order STOMP error:', frame.headers['message'], frame.body)
     });
 
     this.authService.token$
       .pipe(distinctUntilChanged())
       .subscribe(token => {
-        if (token) {
-          this.connect(token);
-        } else {
-          this.disconnect();
-        }
+        this.requestedToken = token;
+        this.lifecycle = this.lifecycle
+          .then(() => this.applyToken(token))
+          .catch(error => console.error('Order WebSocket lifecycle error:', error));
       });
   }
 
-  private connect(token: string): void {
+  private async applyToken(token: string | null): Promise<void> {
+    if (!token) {
+      await this.disconnect();
+      return;
+    }
+
     this.client.connectHeaders = { Authorization: `Bearer ${token}` };
-    if (!this.client.active) {
-      this.client.activate();
+    if (this.client.active) {
+      if (this.client.connected) {
+        return;
+      }
+
+      await this.disconnect();
+    }
+
+    if (this.requestedToken === token) {
+      await this.client.activate();
     }
   }
 
   private subscribeToOrderUpdates(): void {
-    this.orderSubscription?.unsubscribe();
     this.orderSubscription = this.client.subscribe('/user/queue/order-updates', (message: IMessage) => {
       try {
         this.updatesSubject.next(JSON.parse(message.body) as OrderUpdate);
@@ -61,7 +77,7 @@ export class OrderUpdateService {
       }
     });
 
-    this.client.subscribe('/topic/platform-updates', (message: IMessage) => {
+    this.platformSubscription = this.client.subscribe('/topic/platform-updates', (message: IMessage) => {
       try {
         this.updatesSubject.next(JSON.parse(message.body) as PlatformUpdate);
       } catch (error) {
@@ -70,11 +86,15 @@ export class OrderUpdateService {
     });
   }
 
-  private disconnect(): void {
-    this.orderSubscription?.unsubscribe();
+  private async disconnect(): Promise<void> {
+    if (this.client.connected) {
+      this.orderSubscription?.unsubscribe();
+      this.platformSubscription?.unsubscribe();
+    }
     this.orderSubscription = undefined;
+    this.platformSubscription = undefined;
     if (this.client.active) {
-      void this.client.deactivate();
+      await this.client.deactivate();
     }
   }
 
