@@ -1,6 +1,6 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '@/app/core/services/auth.service';
 
 @Component({
@@ -12,4 +12,12 @@ import { AuthService } from '@/app/core/services/auth.service';
 export class NavigationBar {
   protected authService = inject(AuthService);
   protected role$ = this.authService.role$;
+  private router = inject(Router);
+
+  protected onLogout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/login']),
+      error: () => this.router.navigate(['/login']),
+    });
+  }
 }

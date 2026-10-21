@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
 import { Router } from '@angular/router';
@@ -8,8 +8,9 @@ import { SelectInputComponent } from '@/app/shared/components/select-input/selec
 import { TableComponent } from '@/app/shared/components/table/table';
 import { ButtonComponent } from '@/app/shared/components/button/button';
 import { AnalyticsService } from '@/app/core/services/analytics.service';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { OperationsOverviewResponse } from '@/app/core/models';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-order-register',
@@ -29,7 +30,7 @@ import { finalize } from 'rxjs';
     './operations-overview.css'
   ]
 })
-export class OperationsOverviewComponent implements OnInit {
+export class OperationsOverviewComponent implements OnDestroy, OnInit {
   searchQuery = '';
   selectedTimeRange = 'Last 30 days';
   selectedInstrument = 'All instruments';
@@ -91,14 +92,22 @@ export class OperationsOverviewComponent implements OnInit {
     source: OperationsOverviewResponse['orders'][number];
   }> = [];
 
+  private orderUpdateSubscription?: Subscription;
+
   constructor(
     private analyticsService: AnalyticsService,
     private changeDetector: ChangeDetectorRef,
     private router: Router,
+    private orderUpdateService: OrderUpdateService
   ) {}
 
   ngOnInit(): void {
     this.loadOverview();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => this.loadOverview());
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
   }
 
   onFilterChange(): void {

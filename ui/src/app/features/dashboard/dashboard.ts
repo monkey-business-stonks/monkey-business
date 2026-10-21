@@ -1,10 +1,12 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, computed } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { Account } from '@/app/core/models'; 
 import { TableColumn } from '@/app/shared/models/table-column';
+import { Subscription } from 'rxjs';
 
 @Component({
   imports: [SharedModule],
@@ -12,7 +14,7 @@ import { TableColumn } from '@/app/shared/models/table-column';
   styleUrl: './dashboard.css',
   templateUrl: './dashboard.html',
 })
-export class Dashboard implements OnInit {
+export class Dashboard implements OnDestroy, OnInit {
   columns: TableColumn[] = [
     { key: 'ticker', header: 'Asset / Ticker', align: 'left' },
     { key: 'quantity', header: 'Quantity', isMonospace: true, paddingX: 'var(--space-xl)' },
@@ -26,6 +28,7 @@ export class Dashboard implements OnInit {
   selectedAccountFilter = signal<string>('ALL'); // 'ALL' or specific accountType/accountId
   loading = signal(false);
   error = signal<string | null>(null);
+  private orderUpdateSubscription?: Subscription;
 
   /**
    * Total balance across all accounts or the currently selected account
@@ -98,11 +101,19 @@ export class Dashboard implements OnInit {
   constructor(
     private router: Router,
     private authService: AuthService,
-    private accountService: AccountService
+    private accountService: AccountService,
+    private orderUpdateService: OrderUpdateService
   ) {}
 
   ngOnInit(): void {
     this.loadUserAccounts();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => {
+      this.loadUserAccounts();
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
   }
 
   loadUserAccounts(): void {
