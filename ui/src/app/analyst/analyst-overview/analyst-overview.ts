@@ -1,12 +1,17 @@
+<<<<<<< HEAD
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+=======
+import { Component, OnDestroy, OnInit } from '@angular/core';
+>>>>>>> ff15f24 (adding websockets for user and analyst pages)
 import { CommonModule } from '@angular/common';
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
 import { ButtonComponent } from '@/app/shared/components/button/button';
 import { AnalyticsService } from '@/app/core/services/analytics.service';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { AnalystOverviewResponse } from '@/app/core/models';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-analyst-overview',
@@ -24,7 +29,7 @@ import { finalize } from 'rxjs';
     './analyst-overview.css',
   ]
 })
-export class AnalystOverviewComponent implements OnInit {
+export class AnalystOverviewComponent implements OnDestroy, OnInit {
   selectedPeriod = 'Last 30 days';
   selectedInstrument = 'All instruments';
   selectedSegment = 'All account types';
@@ -58,13 +63,26 @@ export class AnalystOverviewComponent implements OnInit {
     volumeVsAug: string;
   }> = [];
 
+<<<<<<< HEAD
   constructor(
     private analyticsService: AnalyticsService,
     private changeDetector: ChangeDetectorRef,
+=======
+  private orderUpdateSubscription?: Subscription;
+
+  constructor(
+    private analyticsService: AnalyticsService,
+    private orderUpdateService: OrderUpdateService
+>>>>>>> ff15f24 (adding websockets for user and analyst pages)
   ) {}
 
   ngOnInit(): void {
     this.loadOverview();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => this.loadOverview());
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
   }
 
   onFilterChange(): void {

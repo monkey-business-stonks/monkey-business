@@ -3,7 +3,10 @@ package domain.service;
 import domain.event.OrderSubmittedEvent;
 import domain.event.OrderFilledEvent;
 import domain.event.OrderRejectedEvent;
+import domain.event.OrderUpdateMessage;
+import domain.event.PlatformUpdateMessage;
 import domain.entities.Order;
+import domain.repository.AccountRepository;
 import domain.repository.OrderRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,9 +14,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.stream.function.StreamBridge;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.ZonedDateTime;
 import java.util.UUID;
 
 /**
@@ -35,6 +40,12 @@ public class OrderEventPublisher {
     
     @Autowired
     private OrderRepository orderRepository;
+
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @Autowired
+    private SimpMessagingTemplate messagingTemplate;
     
     /**
      * Publishes order.submitted event to Kafka.
@@ -147,6 +158,7 @@ public class OrderEventPublisher {
             
             if (result) {
                 log.info("Published order.filled: orderId={}", orderId);
+                publishOrderUpdate(order, "SETTLED", "Order settled");
             } else {
                 log.error("Failed to publish order.filled: orderId={}", orderId);
             }
@@ -194,11 +206,41 @@ public class OrderEventPublisher {
             
             if (result) {
                 log.info("Published order.rejected: orderId={}, reason={}", orderId, reason);
+                orderRepository.findById(UUID.fromString(orderId))
+                    .ifPresent(order -> publishOrderUpdate(order, "REJECTED", reason));
             } else {
                 log.error("Failed to publish order.rejected: orderId={}", orderId);
             }
         } catch (Exception e) {
             log.error("Error publishing order.rejected: orderId={}, error={}", orderId, e.getMessage(), e);
         }
+    }
+
+    private void publishOrderUpdate(Order order, String status, String message) {
+        ZonedDateTime occurredAt = ZonedDateTime.now();
+        accountRepository.findById(order.getAccount().getAccountId()).ifPresent(account -> {
+            if (account.getUserId() == null) {
+                log.warn("Cannot publish order update without account owner: orderId={}", order.getOrderId());
+                return;
+            }
+
+            messagingTemplate.convertAndSendToUser(
+                account.getUserId().toString(),
+                "/queue/order-updates",
+                new OrderUpdateMessage(
+                    order.getOrderId().toString(),
+                    account.getAccountId().toString(),
+                    status,
+                    order.getExecutedValue(),
+                    occurredAt,
+                    message
+                )
+            );
+        });
+
+        messagingTemplate.convertAndSend(
+            "/topic/platform-updates",
+            new PlatformUpdateMessage("ORDER_STATUS_CHANGED", occurredAt)
+        );
     }
 }

@@ -1,10 +1,11 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { Component, EventEmitter, Input, OnInit, Output, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, signal } from '@angular/core';
 import { TradeSearchRow } from '@/app/features/trade/trade-search-row/trade-search-row';
 import { Quote } from '@/app/core/models/quote';
 import { PricingService } from '@/app/core/services/pricing.service';
 import { OrderService } from '@/app/core/services/order.service';
-import { forkJoin, of } from 'rxjs';
+import { OrderUpdateService } from '@/app/core/services/order-update.service';
+import { forkJoin, of, Subscription } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
 export type AssetFilter = 'EQUITY' | 'CRYPTO' | 'FOREX';
@@ -15,7 +16,7 @@ export type AssetFilter = 'EQUITY' | 'CRYPTO' | 'FOREX';
   styleUrl: './trade-search.css',
   templateUrl: './trade-search.html',
 })
-export class TradeSearch implements OnInit {
+export class TradeSearch implements OnDestroy, OnInit {
   private static readonly TOP_EQUITY_SYMBOLS = [
     'AAPL', 'MSFT', 'NVDA', 'AMZN', 'META', 'GOOGL'
   ];
@@ -36,7 +37,8 @@ export class TradeSearch implements OnInit {
 
   constructor(
     private pricingService: PricingService,
-    private orderService: OrderService
+    private orderService: OrderService,
+    private orderUpdateService: OrderUpdateService
   ) {}
 
   selectedAsset: Quote | null = null;
@@ -53,14 +55,20 @@ export class TradeSearch implements OnInit {
 
   isTopLoading = signal<boolean>(true);
   isSearching = signal<boolean>(false);
+  private orderUpdateSubscription?: Subscription;
 
   ngOnInit(): void {
     this.loadTopInstruments();
     this.loadRecents();
+    this.orderUpdateSubscription = this.orderUpdateService.updates$.subscribe(() => this.loadRecents());
 
     if (this.selectedTickerFromParent) {
       this.selectedAsset = this.selectedTickerFromParent;
     }
+  }
+
+  ngOnDestroy(): void {
+    this.orderUpdateSubscription?.unsubscribe();
   }
 
   private loadTopInstruments(): void {
