@@ -62,7 +62,7 @@
   </div>
 
   <div class="table-card">
-    <app-table [columns]="tableColumns" [data]="ordersData"></app-table>
+    <app-table [columns]="tableColumns" [data]="ordersData" (rowSelected)="selectOrder($event)"></app-table>
   </div>
 
   @if (selectedOrder) {
@@ -92,7 +92,7 @@
       </div>
 
       <!-- Primary Green Action Button -->
-      <app-button variant="primary">
+      <app-button variant="primary" (click)="viewSelectedOrder()">
         → View trade lifecycle
       </app-button>
     </div>

@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { AnalystOverviewResponse, OperationsOverviewResponse } from '@/app/core/models';
+import { AnalystOverviewResponse, OperationsOrderDetailResponse, OperationsOverviewResponse } from '@/app/core/models';
 
 export interface AnalystOverviewQuery {
   period_from?: string;
@@ -38,6 +38,12 @@ export class AnalyticsService {
     return this.http.get<OperationsOverviewResponse>(`${window.location.origin}/analytics-api/v1/operations/overview`, {
       params: this.buildParams(query),
     });
+  }
+
+  getOperationsOrderDetail(orderId: string): Observable<OperationsOrderDetailResponse> {
+    return this.http.get<OperationsOrderDetailResponse>(
+      `${window.location.origin}/analytics-api/v1/operations/orders/${encodeURIComponent(orderId)}`,
+    );
   }
 
   private buildParams<T extends object>(query: T): HttpParams {

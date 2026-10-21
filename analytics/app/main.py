@@ -5,13 +5,19 @@ import os
 from urllib import error, parse, request
 from datetime import datetime, timezone
 from typing import Any
+from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, Query
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
 from app.db import VALID_ACCOUNT_TYPES, get_conn
-from app.queries import OrderFilters, fetch_analyst_overview, fetch_operations_overview
+from app.queries import (
+    OrderFilters,
+    fetch_analyst_overview,
+    fetch_operations_order_detail,
+    fetch_operations_overview,
+)
 from app.schemas import (
     AccountTypeBreakdownRow,
     AnalystKpiDeltas,
@@ -20,6 +26,9 @@ from app.schemas import (
     ErrorResponse,
     MetricsMeta,
     OperationsOrderRow,
+    OperationsOrderDetailResponse,
+    OperationsLifecycleEvent,
+    OperationsLedgerPosting,
     OperationsOverviewResponse,
     OperationsSummary,
     TopInstrumentRow,
@@ -353,4 +362,105 @@ def operations_overview(
         ),
         status_tabs=status_tabs,
         orders=orders,
+    )
+
+
+@app.get("/v1/operations/orders/{order_id}", response_model=OperationsOrderDetailResponse)
+def operations_order_detail(order_id: str) -> OperationsOrderDetailResponse:
+    try:
+        parsed_order_id = UUID(order_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail="order_id must be a UUID") from exc
+
+    with get_conn() as conn:
+        row = fetch_operations_order_detail(conn, str(parsed_order_id))
+
+    if not row:
+        raise HTTPException(status_code=404, detail="Order not found")
+
+    order_id_value = str(row["orderid"])
+    quantity = float(row["quantity"] or 0)
+    executed_value = float(row["executedvalue"]) if row["executedvalue"] is not None else None
+    execution_price = executed_value / quantity if executed_value is not None and quantity else None
+    submitted_value = float(row["submittedvalue"] or 0)
+    previous_cash = float(row["prevcashbalance"]) if row["prevcashbalance"] is not None else None
+    cash_balance = float(row["cashbalance"]) if row["cashbalance"] is not None else None
+
+    lifecycle_specs = [
+        ("Submitted", "submittedon", "order-service", "Order accepted for processing", False),
+        ("Accepted", "verifiedon", "order-validator", "Funds and eligibility validation", False),
+        ("Filled", "executedon", "execution-service", "Execution recorded", True),
+        ("Settled", "settledon", "settlement-service", "Settlement recorded", True),
+    ]
+    lifecycle = [
+        OperationsLifecycleEvent(
+            event=event,
+            event_id=f"{order_id_value}:{event.lower()}",
+            event_time=row[timestamp_key],
+            actor=actor,
+            detail=detail,
+            is_success=is_success,
+        )
+        for event, timestamp_key, actor, detail, is_success in lifecycle_specs
+        if row[timestamp_key] is not None
+    ]
+
+    ledger: list[OperationsLedgerPosting] = []
+    if executed_value is not None and row["executedon"] is not None:
+        ledger.append(OperationsLedgerPosting(
+            dimension="Cash",
+            posting_id=f"{order_id_value}:cash",
+            description="Executed principal",
+            event_id=f"{order_id_value}:filled",
+            event_time=row["executedon"],
+            before=previous_cash,
+            delta=-executed_value,
+            after=previous_cash - executed_value if previous_cash is not None else None,
+            unit="USD",
+            is_negative=True,
+        ))
+
+    if quantity and row["executedon"] is not None:
+        ledger.append(OperationsLedgerPosting(
+            dimension=f"Holding · {row['ticker']}",
+            posting_id=f"{order_id_value}:holding",
+            description="Shares received at execution",
+            event_id=f"{order_id_value}:filled",
+            event_time=row["executedon"],
+            before=0,
+            delta=quantity if row["action"] == "BUY" else -quantity,
+            after=quantity if row["action"] == "BUY" else -quantity,
+            unit="shares",
+            is_positive=row["action"] == "BUY",
+            is_negative=row["action"] != "BUY",
+        ))
+
+    complete_through = row["settledon"] or row["executedon"] or row["verifiedon"] or row["submittedon"]
+    return OperationsOrderDetailResponse(
+        meta=MetricsMeta(
+            computed_at=_utc_now(),
+            data_complete_through=complete_through,
+            market_as_of=complete_through or _utc_now(),
+            lifecycle_source="derived",
+        ),
+        order_id=order_id_value,
+        client_ref=f"CL-{str(row['userid'])[:8]}",
+        account_id=str(row["accountid"]),
+        account_type=row["accounttype"],
+        ticker=row["ticker"],
+        action=row["action"],
+        order_type=row["ordertype"],
+        quantity=quantity,
+        submitted_value_usd=submitted_value,
+        execution_price_usd=execution_price,
+        principal_usd=executed_value,
+        status=row["status"],
+        submitted_on=row["submittedon"],
+        accepted_on=row["verifiedon"],
+        executed_on=row["executedon"],
+        settled_on=row["settledon"],
+        cash_balance_usd=cash_balance,
+        previous_cash_balance_usd=previous_cash,
+        lifecycle=lifecycle,
+        ledger=ledger,
     )

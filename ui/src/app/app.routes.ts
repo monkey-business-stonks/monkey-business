@@ -41,6 +41,7 @@ export const routes: Routes = [
       { path: '', redirectTo: 'overview', pathMatch: 'full' },
       { path: 'overview', component: OperationsOverviewComponent },
       { path: 'trade-details', component: OperationsDetailsComponent },
+      { path: 'trade-details/:orderId', component: OperationsDetailsComponent },
     ]
   },
 

@@ -71,3 +71,51 @@ export interface OperationsOverviewResponse {
   status_tabs: string[];
   orders: OperationsOrderRow[];
 }
+
+export interface OperationsLifecycleEvent {
+  event: string;
+  event_id: string;
+  event_time: string | null;
+  actor: string;
+  detail: string;
+  is_success: boolean;
+}
+
+export interface OperationsLedgerPosting {
+  dimension: string;
+  posting_id: string;
+  description: string;
+  event_id: string;
+  event_time: string | null;
+  before: number | null;
+  delta: number | null;
+  after: number | null;
+  unit: string;
+  is_negative: boolean;
+  is_positive: boolean;
+}
+
+export interface OperationsOrderDetailResponse {
+  meta: MetricsMeta;
+  order_id: string;
+  client_ref: string;
+  account_id: string;
+  account_type: string;
+  ticker: string;
+  action: string;
+  order_type: string;
+  quantity: number;
+  submitted_value_usd: number;
+  execution_price_usd: number | null;
+  principal_usd: number | null;
+  fees_usd: number;
+  status: string;
+  submitted_on: string | null;
+  accepted_on: string | null;
+  executed_on: string | null;
+  settled_on: string | null;
+  cash_balance_usd: number | null;
+  previous_cash_balance_usd: number | null;
+  lifecycle: OperationsLifecycleEvent[];
+  ledger: OperationsLedgerPosting[];
+}
