@@ -2,6 +2,8 @@ package domain.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -15,10 +17,12 @@ import org.slf4j.LoggerFactory;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 @Service
 public class PricingEngine {
@@ -27,12 +31,18 @@ public class PricingEngine {
     
     @Autowired
     private RestTemplate restTemplate;
+
+    @Autowired(required = false)
+    private CacheManager cacheManager;
     
     @Value("${market-data.api-url:https://y4t9nq2bqf.execute-api.eu-west-2.amazonaws.com/v1}")
     private String apiUrl;
     
     @Value("${market-data.api-key:}")
     private String apiKey;
+
+    private static final String INDIA_EQUITY_SUFFIX = ".NS";
+    private static final String USD_TO_INR_SYMBOL = "FX:USDINR";
     
     /**
      * Get current quote for a single symbol from Fauxnance API
@@ -42,6 +52,35 @@ public class PricingEngine {
     public Map<String, Object> getQuote(String ticker) {
         String url = apiUrl + "/quotes/" + ticker;
         return callFauxnanceApi(url);
+    }
+
+    private String buildCandlesUrl(String ticker, LocalDate from, LocalDate to) {
+        return UriComponentsBuilder
+                .fromHttpUrl(apiUrl + "/candles/" + ticker)
+                .queryParam("from", from)
+                .queryParam("to", to)
+                .queryParam("interval", "1d")
+                .toUriString();
+    }
+
+    private Map<String, Object> getCachedFxCandles(LocalDate from, LocalDate to) {
+        String cacheKey = USD_TO_INR_SYMBOL + ":" + from + ":" + to;
+        Cache cache = cacheManager == null ? null : cacheManager.getCache("candles");
+        if (cache != null) {
+            Object cachedValue = cache.get(cacheKey, Object.class);
+            if (cachedValue instanceof Map<?, ?> cachedMap) {
+                Map<String, Object> cached = new LinkedHashMap<>();
+                cachedMap.forEach((key, value) -> cached.put(key.toString(), value));
+                return cached;
+            }
+        }
+
+        Map<String, Object> response = callFauxnanceApi(
+                buildCandlesUrl(USD_TO_INR_SYMBOL, from, to));
+        if (cache != null) {
+            cache.put(cacheKey, response);
+        }
+        return response;
     }
     
     /**
@@ -65,6 +104,7 @@ public class PricingEngine {
 
         Map<String, Object> response = callFauxnanceApi(url);
         Map<String, Map<String, Object>> result = new LinkedHashMap<>();
+        BigDecimal usdToInrRate = null;
         Object data = response.get("data");
         if (data instanceof Map<?, ?> dataMap && dataMap.get("quotes") instanceof List<?> quotes) {
             for (Object item : quotes) {
@@ -77,6 +117,12 @@ public class PricingEngine {
                 if (symbol != null && quote instanceof Map<?, ?> quoteMap) {
                     Map<String, Object> normalizedQuote = new HashMap<>();
                     quoteMap.forEach((key, value) -> normalizedQuote.put(key.toString(), value));
+                    if (isIndiaEquity(symbol.toString())) {
+                        if (usdToInrRate == null) {
+                            usdToInrRate = getUsdToInrRate();
+                        }
+                        convertIndiaEquityQuote(normalizedQuote, usdToInrRate);
+                    }
                     result.put(symbol.toString(), normalizedQuote);
                 }
             }
@@ -99,7 +145,12 @@ public class PricingEngine {
                 .queryParam("interval", "1d")
                 .toUriString();
 
-        return callFauxnanceApi(url);
+        Map<String, Object> response = callFauxnanceApi(url);
+        if (isIndiaEquity(ticker)) {
+            Map<String, Object> fxResponse = getCachedFxCandles(from, to);
+            convertIndiaEquityCandles(response, fxResponse);
+        }
+        return response;
     }
     
     /**
@@ -155,6 +206,9 @@ public class PricingEngine {
             
             Map<String, Object> result = response.getBody();
             logger.info("API Response: {}", result);
+            if (isIndiaEquity(ticker)) {
+                convertIndiaEquityResponse(result, getUsdToInrRate());
+            }
             return result;
         } catch (Exception e) {
             logger.error("Error fetching market data for {}: {}", ticker, e.getMessage(), e);
@@ -224,5 +278,104 @@ public class PricingEngine {
             logger.error("Error calling Fauxnance API at {}: {}", url, e.getMessage(), e);
             throw new RuntimeException("API call failed: " + e.getMessage(), e);
         }
+    }
+
+    private boolean isIndiaEquity(String ticker) {
+        return ticker != null && ticker.toUpperCase().endsWith(INDIA_EQUITY_SUFFIX);
+    }
+
+    private BigDecimal getUsdToInrRate() {
+        Map<String, Object> response = callFauxnanceApi(apiUrl + "/quotes/" + USD_TO_INR_SYMBOL);
+        return extractPrice(response, USD_TO_INR_SYMBOL);
+    }
+
+    private BigDecimal extractPrice(Map<String, Object> response, String symbol) {
+        if (response != null && response.get("data") instanceof Map<?, ?> data
+                && data.get("price") instanceof Number price) {
+            return new BigDecimal(price.toString());
+        }
+        throw new RuntimeException("Could not extract FX conversion rate for " + symbol);
+    }
+
+    private void convertIndiaEquityResponse(Map<String, Object> response, BigDecimal usdToInrRate) {
+        if (response != null && response.get("data") instanceof Map<?, ?> data) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> quote = (Map<String, Object>) data;
+            convertIndiaEquityQuote(quote, usdToInrRate);
+        }
+    }
+
+    private void convertIndiaEquityQuote(Map<String, Object> quote, BigDecimal usdToInrRate) {
+        for (String field : List.of("price", "bid", "ask", "previousClose", "change")) {
+            Object value = quote.get(field);
+            if (value instanceof Number number) {
+                quote.put(field, new BigDecimal(number.toString()).divide(
+                        usdToInrRate, 10, java.math.RoundingMode.HALF_UP));
+            }
+        }
+        quote.put("currency", "USD");
+    }
+
+    private void convertIndiaEquityCandles(Map<String, Object> stockResponse,
+                                           Map<String, Object> fxResponse) {
+        if (!(stockResponse != null && stockResponse.get("data") instanceof Map<?, ?> stockData)
+                || !(fxResponse != null && fxResponse.get("data") instanceof Map<?, ?> fxData)) {
+            throw new RuntimeException("Could not extract candle data for Indian equity conversion");
+        }
+
+        Object stockCandlesValue = stockData.get("candles");
+        Object fxCandlesValue = fxData.get("candles");
+        if (!(stockCandlesValue instanceof List<?> stockCandles)
+                || !(fxCandlesValue instanceof List<?> fxCandles)) {
+            throw new RuntimeException("Could not extract candle series for Indian equity conversion");
+        }
+
+        TreeMap<LocalDate, BigDecimal> ratesByDate = new TreeMap<>();
+        for (Object item : fxCandles) {
+            if (item instanceof Map<?, ?> candle) {
+                LocalDate date = parseCandleDate(candle.get("date"));
+                BigDecimal rate = toDecimal(candle.get("close"));
+                if (date != null && rate != null && rate.signum() > 0) {
+                    ratesByDate.put(date, rate);
+                }
+            }
+        }
+
+        List<Map<String, Object>> convertedCandles = new ArrayList<>();
+        for (Object item : stockCandles) {
+            if (!(item instanceof Map<?, ?> rawCandle)) {
+                continue;
+            }
+
+            LocalDate date = parseCandleDate(rawCandle.get("date"));
+            BigDecimal rate = date == null ? null : ratesByDate.floorEntry(date) != null
+                    ? ratesByDate.floorEntry(date).getValue() : null;
+            if (rate == null) {
+                throw new RuntimeException("Missing USDINR rate for candle date " + date);
+            }
+
+            Map<String, Object> candle = new LinkedHashMap<>();
+            rawCandle.forEach((key, value) -> candle.put(key.toString(), value));
+            for (String field : List.of("open", "high", "low", "close", "adjclose")) {
+                BigDecimal value = toDecimal(candle.get(field));
+                if (value != null) {
+                    candle.put(field, value.divide(rate, 10, java.math.RoundingMode.HALF_UP));
+                }
+            }
+            convertedCandles.add(candle);
+        }
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> mutableStockData = (Map<String, Object>) stockData;
+        mutableStockData.put("candles", convertedCandles);
+        mutableStockData.put("currency", "USD");
+    }
+
+    private LocalDate parseCandleDate(Object value) {
+        return value instanceof String date ? LocalDate.parse(date) : null;
+    }
+
+    private BigDecimal toDecimal(Object value) {
+        return value instanceof Number number ? new BigDecimal(number.toString()) : null;
     }
 }

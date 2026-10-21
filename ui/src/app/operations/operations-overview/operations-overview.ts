@@ -1,6 +1,7 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms'; 
+import { Router } from '@angular/router';
 import { MetricCardComponent } from '@/app/shared/components/metric-card/metric-card';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
 import { SelectInputComponent } from '@/app/shared/components/select-input/select-input';
@@ -61,11 +62,7 @@ export class OperationsOverviewComponent implements OnInit {
     id: string;
     details: string;
     summary: string;
-  } | null = {
-    id: 'APX-928731-NASDAQ',
-    details: '50 AAPL @ $187.42',
-    summary: 'Filled and settled · Principal $9,371.00 · Fees $0.00 · Net cash debit $9,371.00 · Full recorded lifecycle available'
-  };
+  } | null = null;
 
   tableColumns = [
     { key: 'orderId', header: 'Order / Trade ID', isMonospace: true, align: 'left' as const },
@@ -91,11 +88,13 @@ export class OperationsOverviewComponent implements OnInit {
     settlement: string;
     latestEvent: string;
     exception: string;
+    source: OperationsOverviewResponse['orders'][number];
   }> = [];
 
   constructor(
     private analyticsService: AnalyticsService,
     private changeDetector: ChangeDetectorRef,
+    private router: Router,
   ) {}
 
   ngOnInit(): void {
@@ -112,6 +111,21 @@ export class OperationsOverviewComponent implements OnInit {
 
   refresh(): void {
     this.loadOverview();
+  }
+
+  selectOrder(row: { source: OperationsOverviewResponse['orders'][number] }): void {
+    const order = row.source;
+    this.selectedOrder = {
+      id: order.order_id,
+      details: `${this.formatDecimal(order.quantity)} ${order.instrument}`,
+      summary: `${order.execution_status} and ${order.settlement_status.toLowerCase()} · Principal ${this.formatCurrency(order.principal_usd)}`,
+    };
+  }
+
+  viewSelectedOrder(): void {
+    if (this.selectedOrder) {
+      this.router.navigate(['/operations-dashboard/trade-details', this.selectedOrder.id]);
+    }
   }
 
   private loadOverview(): void {
@@ -177,6 +191,7 @@ export class OperationsOverviewComponent implements OnInit {
       settlement: row.settlement_status,
       latestEvent: row.latest_event_utc ? this.formatUtc(row.latest_event_utc) : 'n/a',
       exception: row.exception,
+      source: row,
     }));
 
     const uniqueInstruments = [...new Set(data.orders.map((row) => row.instrument.split(' ')[0]))];
@@ -185,14 +200,9 @@ export class OperationsOverviewComponent implements OnInit {
       ...uniqueInstruments.map((instrument) => ({ label: instrument, value: instrument })),
     ];
 
-    const firstOrder = data.orders[0];
-    this.selectedOrder = firstOrder
-      ? {
-          id: firstOrder.order_id,
-          details: `${this.formatDecimal(firstOrder.quantity)} ${firstOrder.instrument}`,
-          summary: `${firstOrder.execution_status} and ${firstOrder.settlement_status.toLowerCase()} · Principal ${this.formatCurrency(firstOrder.principal_usd)}`,
-        }
-      : null;
+    if (this.selectedOrder && !data.orders.some((row) => row.order_id === this.selectedOrder?.id)) {
+      this.selectedOrder = null;
+    }
   }
 
   private formatCurrency(value: number): string {
