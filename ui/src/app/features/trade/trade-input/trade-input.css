@@ -47,6 +47,20 @@
   gap: var(--space-md);
 }
 
+.cash-balance {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-md);
+  padding: var(--space-sm) 0;
+  font-size: var(--font-size-sm);
+}
+
+.cash-balance-value {
+  color: var(--text-primary);
+  font-weight: var(--font-weight-bold);
+}
+
 .divider {
   border: none;
   border-top: 1px solid var(--background-secondary);
