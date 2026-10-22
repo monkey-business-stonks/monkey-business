@@ -23,10 +23,10 @@ import { finalize } from 'rxjs';
   ]
 })
 export class AnalystHistoricalComponent implements OnInit {
-  selectedPeriod = 'Last 30 days';
+  selectedPeriod = 'all';
   selectedInstrument = 'All instruments';
   selectedSegment = 'All account types';
-  selectedComparison = 'Previous 30 days';
+  selectedComparison = '30';
   loading = false;
   error: string | null = null;
   bannerDetail = 'Loading analytics snapshot...';
@@ -41,10 +41,14 @@ export class AnalystHistoricalComponent implements OnInit {
   totalActiveClientsDelta = '0.0%';
   totalShare = '100.00%';
 
-  periodOptions = [{ label: 'Last 30 days', value: 'Last 30 days' }];
+  periodOptions = [{ label: 'All available', value: 'all' }];
   instrumentOptions = [{ label: 'All instruments', value: 'All instruments' }];
   segmentOptions = [{ label: 'All account types', value: 'All account types' }];
-  comparisonOptions = [{ label: 'Previous 30 days', value: 'Previous 30 days' }];
+  comparisonOptions = [
+    { label: 'Previous 30 days', value: '30' },
+    { label: 'Previous 60 days', value: '60' },
+    { label: 'Previous 90 days', value: '90' },
+  ];
 
   reportRows: Array<{
     period: string;
@@ -78,17 +82,17 @@ export class AnalystHistoricalComponent implements OnInit {
     this.error = null;
 
     const now = new Date();
+    const selectedRange = this.selectedPeriod === 'all' ? null : this.selectedPeriod.split('|');
+    const comparisonDays = Number(this.selectedComparison);
     const periodTo = new Date(now);
-    const periodFrom = new Date(now);
-    periodFrom.setUTCDate(periodFrom.getUTCDate() - 30);
-    const compareTo = new Date(periodFrom);
-    const compareFrom = new Date(periodFrom);
-    compareFrom.setUTCDate(compareFrom.getUTCDate() - 30);
+    const compareTo = new Date(selectedRange?.[0] ?? periodTo);
+    const compareFrom = new Date(compareTo);
+    compareFrom.setUTCDate(compareFrom.getUTCDate() - comparisonDays);
 
     this.analyticsService
       .getAnalystOverview({
-        period_from: periodFrom.toISOString(),
-        period_to: periodTo.toISOString(),
+        period_from: selectedRange?.[0],
+        period_to: selectedRange?.[1],
         compare_from: compareFrom.toISOString(),
         compare_to: compareTo.toISOString(),
         instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
@@ -117,8 +121,10 @@ export class AnalystHistoricalComponent implements OnInit {
     const completeThrough = data.meta.data_complete_through ? this.formatUtc(data.meta.data_complete_through) : 'n/a';
     this.bannerDetail = `Complete through ${completeThrough} · As of ${asOf}`;
 
-    const fromLabel = this.formatDateLabel(this.daysAgoUtc(30));
-    const toLabel = this.formatDateLabel(new Date());
+    this.periodOptions = this.buildPeriodOptions(data.meta.earliest_trade, data.meta.latest_trade);
+    const selectedRange = this.selectedPeriod === 'all' ? null : this.selectedPeriod.split('|');
+    const fromLabel = selectedRange ? this.formatDateLabel(new Date(selectedRange[0])) : 'All available';
+    const toLabel = selectedRange ? this.formatDateLabel(new Date(selectedRange[1])) : this.formatDateLabel(new Date(data.meta.latest_trade || Date.now()));
     this.summaryTitle = `${fromLabel} to ${toLabel} · Report summary`;
     this.summarySubtitle = `${completeThrough} · ${data.top_instruments.length} instruments`;
     this.generatedAt = `Generated ${this.formatUtc(data.meta.computed_at)}`;
@@ -140,13 +146,13 @@ export class AnalystHistoricalComponent implements OnInit {
       vsAug: this.totalNotionalDelta,
     }));
 
-    const instrumentValues = data.top_instruments.map((row) => row.symbol);
+    const instrumentValues = data.available_instruments;
     this.instrumentOptions = [
       { label: 'All instruments', value: 'All instruments' },
       ...instrumentValues.map((symbol) => ({ label: symbol, value: symbol })),
     ];
 
-    const accountTypes = data.account_type_breakdown.map((row) => row.account_type);
+    const accountTypes = data.available_account_types;
     this.segmentOptions = [
       { label: 'All account types', value: 'All account types' },
       ...accountTypes.map((segment) => ({ label: segment, value: segment })),
@@ -157,6 +163,30 @@ export class AnalystHistoricalComponent implements OnInit {
     const d = new Date();
     d.setUTCDate(d.getUTCDate() - days);
     return d;
+  }
+
+  private buildPeriodOptions(earliest: string | null, latest: string | null): Array<{ label: string; value: string }> {
+    if (!earliest || !latest) {
+      return [{ label: 'All available', value: 'all' }];
+    }
+
+    const options: Array<{ label: string; value: string }> = [];
+    let start = new Date(earliest);
+    const last = new Date(latest);
+    while (start <= last) {
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 29);
+      if (end > last) {
+        end.setTime(last.getTime());
+      }
+      options.push({
+        label: `${this.formatDateLabel(start)} - ${this.formatDateLabel(end)}`,
+        value: `${start.toISOString()}|${end.toISOString()}`,
+      });
+      start = new Date(end);
+      start.setUTCDate(start.getUTCDate() + 1);
+    }
+    return [{ label: 'All available', value: 'all' }, ...options.reverse()];
   }
 
   private formatDateLabel(value: Date): string {
