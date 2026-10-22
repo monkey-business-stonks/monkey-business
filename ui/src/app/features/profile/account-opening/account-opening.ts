@@ -39,6 +39,7 @@ export class AccountOpening implements OnInit {
   createdAccountId = '';
   ownerName = '';
   ownerEmail = '';
+  ownerDateOfBirth = '';
 
   readonly fundingMethodsByAccountType: Record<string, string[]> = {
     BROKERAGE: [
@@ -114,6 +115,7 @@ export class AccountOpening implements OnInit {
       next: (user) => {
         this.ownerName = user.name;
         this.ownerEmail = user.email;
+        this.ownerDateOfBirth = user.dob;
       }
     });
   }
@@ -130,6 +132,36 @@ export class AccountOpening implements OnInit {
 
   get fundingMethods(): string[] {
     return this.selectedAccountType ? this.fundingMethodsByAccountType[this.selectedAccountType] || [] : [];
+  }
+
+  get maximumContribution(): number {
+    if (this.selectedAccountType === 'ROTH IRA') {
+      return this.getOwnerAge() >= 50 ? 8600 : 7500;
+    }
+
+    if (this.selectedAccountType === '401K') {
+      const age = this.getOwnerAge();
+      if (age >= 60 && age <= 63) return 35750;
+      if (age >= 50) return 32500;
+      return 24500;
+    }
+
+    return this.maximumDeposit;
+  }
+
+  private getOwnerAge(): number {
+    if (!this.ownerDateOfBirth) return 0;
+
+    const [year, month, day] = this.ownerDateOfBirth.split('-').map(Number);
+    const today = new Date();
+    let age = today.getFullYear() - year;
+    if (
+      today.getMonth() + 1 < month ||
+      (today.getMonth() + 1 === month && today.getDate() < day)
+    ) {
+      age--;
+    }
+    return Number.isFinite(age) ? age : 0;
   }
 
   confirmType(): void {
@@ -174,8 +206,8 @@ export class AccountOpening implements OnInit {
       return;
     }
 
-    if (amount > this.maximumDeposit) {
-      this.errorMessage = 'The maximum opening deposit is $250,000.';
+    if (amount > this.maximumContribution) {
+      this.errorMessage = `The maximum contribution for this account is $${this.maximumContribution.toLocaleString()}.`;
       return;
     }
 

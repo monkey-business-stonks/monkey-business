@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -25,6 +26,9 @@ public class AccountService {
 
     @Autowired
     private AssetRepository assetRepository;
+
+    @Autowired
+    private PricingEngine pricingEngine;
 
     /**
      * Create account for user
@@ -49,8 +53,9 @@ public class AccountService {
             throw new IllegalArgumentException("Initial deposit must be greater than 0");
         }
 
-        if (request.getInitialDeposit().compareTo(new BigDecimal("250000")) > 0) {
-            throw new IllegalArgumentException("Initial deposit cannot exceed 250,000");
+        BigDecimal maximumContribution = getMaximumContribution(request.getAccountType().toString(), user.getDob());
+        if (request.getInitialDeposit().compareTo(maximumContribution) > 0) {
+            throw new IllegalArgumentException("Initial deposit cannot exceed " + maximumContribution.toPlainString());
         }
 
         if (request.getTradingExperience() == null || request.getTradingExperience().isBlank()
@@ -86,6 +91,27 @@ public class AccountService {
         accountRepository.save(account);
 
         return toAccountResponse(account, userId);
+    }
+
+    private BigDecimal getMaximumContribution(String accountType, LocalDate dateOfBirth) {
+        if ("ROTH IRA".equals(accountType) || "ROTH_IRA".equals(accountType)) {
+            return dateOfBirth != null && getAge(dateOfBirth) >= 50
+                ? new BigDecimal("8600")
+                : new BigDecimal("7500");
+        }
+
+        if ("401K".equals(accountType) || "_401K".equals(accountType)) {
+            int age = dateOfBirth == null ? 0 : getAge(dateOfBirth);
+            if (age >= 60 && age <= 63) return new BigDecimal("35750");
+            if (age >= 50) return new BigDecimal("32500");
+            return new BigDecimal("24500");
+        }
+
+        return new BigDecimal("250000");
+    }
+
+    private int getAge(LocalDate dateOfBirth) {
+        return dateOfBirth.until(LocalDate.now()).getYears();
     }
 
     /**
@@ -176,6 +202,7 @@ public class AccountService {
         // Load assets for this account
         List<domain.dto.AssetResponse> heldAssets = new ArrayList<>();
         for (domain.entities.Asset asset : assetRepository.findAssetsByAccountIdOrderByValue(account.getAccID())) {
+            BigDecimal currentPrice = pricingEngine.getPrice(asset.ticker());
             heldAssets.add(new domain.dto.AssetResponse()
                 .assetId(asset.getAssetId())
                 .assetClass(domain.dto.AssetClass.valueOf(asset.getAssetClass()))
@@ -183,6 +210,7 @@ public class AccountService {
                 .name(asset.getName())
                 .quantity(new BigDecimal(asset.quantity().toString()))
                 .boughtAverage(asset.averageCost())
+                .currentPrice(currentPrice)
             );
         }
 

@@ -554,6 +554,7 @@ components:
         name: { type: string, example: Apple Inc. }
         quantity: { type: number, example: 25 }
         boughtAverage: { type: number, description: Stored as averageCost in the database., example: 187.50 }
+        currentPrice: { type: number, description: Latest cached market price., example: 192.25 }
 
     ErrorResponse:
       type: object
