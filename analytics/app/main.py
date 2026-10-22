@@ -19,6 +19,7 @@ from app.queries import (
     fetch_analyst_overview,
     fetch_operations_order_detail,
     fetch_operations_overview,
+    fetch_trade_bounds,
 )
 from app.schemas import (
     AccountTypeBreakdownRow,
@@ -165,6 +166,18 @@ def _normalize_account_type(value: str | None) -> str | None:
     )
 
 
+def _normalize_filter(value: str | None, allowed: set[str], label: str) -> str | None:
+    if value is None:
+        return None
+    normalized = value.strip().upper().replace(" ", "_")
+    if normalized in allowed:
+        return normalized
+    raise HTTPException(
+        status_code=400,
+        detail={"error": f"invalid_{label}", "message": f"{label} is not a supported filter."},
+    )
+
+
 def _must_be_pair(from_ts: datetime | None, to_ts: datetime | None, label: str) -> None:
     if (from_ts is None) != (to_ts is None):
         raise HTTPException(
@@ -248,6 +261,7 @@ def analyst_overview(
 
     with get_conn() as conn:
         payload = fetch_analyst_overview(conn, current_filters, compare_filters)
+        trade_bounds = fetch_trade_bounds(conn)
 
     current = payload["current"]
     comparison = payload["comparison"] or {}
@@ -282,15 +296,23 @@ def analyst_overview(
     comparison_notional_by_account = {
         row["accounttype"]: float(row["notional"] or 0) for row in comparison_breakdown_rows
     }
+    comparison_active_accounts_by_account = {
+        row["accounttype"]: int(row["active_accounts"] or 0) for row in comparison_breakdown_rows
+    }
     for row in breakdown_rows:
         current_notional = float(row["notional"] or 0)
         comparison_notional = comparison_notional_by_account.get(row["accounttype"], 0.0)
+        current_active_accounts = int(row["active_accounts"] or 0)
+        comparison_active_accounts = comparison_active_accounts_by_account.get(row["accounttype"], 0)
         account_breakdown.append(
             AccountTypeBreakdownRow(
                 account_type=row["accounttype"],
                 notional_usd=current_notional,
                 filled_orders=int(row["filled_orders"] or 0),
-                active_accounts=int(row["active_accounts"] or 0),
+                active_accounts=current_active_accounts,
+                active_accounts_vs_comparison_pct=_pct_delta(
+                    float(current_active_accounts), float(comparison_active_accounts)
+                ),
                 notional_vs_comparison_pct=_pct_delta(current_notional, comparison_notional),
             )
         )
@@ -303,6 +325,8 @@ def analyst_overview(
         meta=MetricsMeta(
             computed_at=computed_at,
             data_complete_through=current.get("data_complete_through"),
+            earliest_trade=trade_bounds.get("earliest_trade"),
+            latest_trade=trade_bounds.get("latest_trade"),
             market_as_of=market_as_of,
             lifecycle_source="derived",
         ),
@@ -320,6 +344,8 @@ def analyst_overview(
         ),
         top_instruments=top_instruments,
         account_type_breakdown=account_breakdown,
+        available_instruments=payload["available_instruments"],
+        available_account_types=payload["available_account_types"],
     )
 
 
@@ -330,11 +356,19 @@ def operations_overview(
     instrument: str | None = Query(default=None),
     account_type: str | None = Query(default=None),
     search: str | None = Query(default=None, max_length=120),
+    execution_status: str | None = Query(default=None),
+    settlement_status: str | None = Query(default=None),
+    exception_filter: str | None = Query(default=None),
     limit: int = Query(default=25, ge=1, le=200),
     offset: int = Query(default=0, ge=0),
 ) -> OperationsOverviewResponse:
     _must_be_pair(period_from, period_to, "period")
     account_type_norm = _normalize_account_type(account_type)
+    execution_status_norm = _normalize_filter(
+        execution_status, {"SUBMITTED", "ACCEPTED", "FILLED", "SETTLED", "REJECTED"}, "execution_status"
+    )
+    settlement_status_norm = _normalize_filter(settlement_status, {"SETTLED", "AWAITING", "NA"}, "settlement_status")
+    exception_filter_norm = _normalize_filter(exception_filter, {"EXCEPTIONS", "NO_EXCEPTIONS"}, "exception_filter")
 
     filters = OrderFilters(
         from_ts=period_from,
@@ -342,10 +376,14 @@ def operations_overview(
         instrument=instrument,
         account_type=account_type_norm,
         search=search,
+        execution_status=execution_status_norm,
+        settlement_status=settlement_status_norm,
+        exception_filter=exception_filter_norm,
     )
 
     with get_conn() as conn:
         payload = fetch_operations_overview(conn, filters, limit, offset)
+        trade_bounds = fetch_trade_bounds(conn)
 
     summary = payload["summary"]
     rows = payload["rows"]
@@ -388,6 +426,8 @@ def operations_overview(
         meta=MetricsMeta(
             computed_at=_utc_now(),
             data_complete_through=summary.get("data_complete_through"),
+            earliest_trade=trade_bounds.get("earliest_trade"),
+            latest_trade=trade_bounds.get("latest_trade"),
             market_as_of=summary.get("data_complete_through") or _utc_now(),
             lifecycle_source="derived",
         ),

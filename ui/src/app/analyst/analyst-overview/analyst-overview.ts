@@ -25,11 +25,11 @@ import { finalize, Subscription } from 'rxjs';
     './analyst-overview.css',
   ]
 })
-export class AnalystOverviewComponent implements OnDestroy, OnInit {
-  selectedPeriod = 'Last 30 days';
+export class AnalystOverviewComponent implements OnInit {
+  selectedPeriod = 'all';
   selectedInstrument = 'All instruments';
   selectedSegment = 'All account types';
-  selectedComparison = 'Previous 30 days';
+  selectedComparison = '30';
   loading = false;
   error: string | null = null;
   bannerDetail = 'Loading analytics snapshot...';
@@ -43,10 +43,14 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
   avgNotional = '$0.00';
   avgNotionalDelta = '0.0%';
 
-  periodOptions = [{ label: 'Last 30 days', value: 'Last 30 days' }];
+  periodOptions = [{ label: 'All available', value: 'all' }];
   instrumentOptions = [{ label: 'All instruments', value: 'All instruments' }];
   segmentOptions = [{ label: 'All account types', value: 'All account types' }];
-  comparisonOptions = [{ label: 'Previous 30 days', value: 'Previous 30 days' }];
+  comparisonOptions = [
+    { label: 'Previous 30 days', value: '30' },
+    { label: 'Previous 60 days', value: '60' },
+    { label: 'Previous 90 days', value: '90' },
+  ];
 
   topInstruments: Array<{ symbol: string; orders: string; notional: string; percentage: number }> = [];
 
@@ -88,18 +92,16 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
     this.loading = true;
     this.error = null;
 
-    const now = new Date();
-    const periodTo = new Date(now);
-    const periodFrom = new Date(now);
-    periodFrom.setUTCDate(periodFrom.getUTCDate() - 30);
-    const compareTo = new Date(periodFrom);
-    const compareFrom = new Date(periodFrom);
-    compareFrom.setUTCDate(compareFrom.getUTCDate() - 30);
+    const selectedRange = this.selectedPeriod === 'all' ? null : this.selectedPeriod.split('|');
+    const comparisonDays = Number(this.selectedComparison);
+    const compareTo = new Date(selectedRange?.[0] ?? new Date().toISOString());
+    const compareFrom = new Date(compareTo);
+    compareFrom.setUTCDate(compareFrom.getUTCDate() - comparisonDays);
 
     this.analyticsService
       .getAnalystOverview({
-        period_from: periodFrom.toISOString(),
-        period_to: periodTo.toISOString(),
+        period_from: selectedRange?.[0],
+        period_to: selectedRange?.[1],
         compare_from: compareFrom.toISOString(),
         compare_to: compareTo.toISOString(),
         instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
@@ -137,6 +139,7 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
     this.filledOrdersDelta = this.formatPct(data.kpi_deltas.filled_orders_pct);
     this.activeAccountsDelta = this.formatPct(data.kpi_deltas.active_accounts_pct);
     this.avgNotionalDelta = this.formatPct(data.kpi_deltas.avg_notional_pct);
+    this.periodOptions = this.buildPeriodOptions(data.meta.earliest_trade, data.meta.latest_trade);
 
     this.topInstruments = data.top_instruments.map((row) => ({
       symbol: row.symbol,
@@ -150,21 +153,45 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
       notional: this.formatCurrency(row.notional_usd),
       orders: this.formatInt(row.filled_orders),
       clients: this.formatInt(row.active_accounts),
-      clientsVsAug: 'n/a',
+      clientsVsAug: this.formatPct(row.active_accounts_vs_comparison_pct),
       volumeVsAug: this.formatPct(row.notional_vs_comparison_pct),
     }));
 
-    const instrumentValues = data.top_instruments.map((row) => row.symbol);
+    const instrumentValues = data.available_instruments;
     this.instrumentOptions = [
       { label: 'All instruments', value: 'All instruments' },
       ...instrumentValues.map((symbol) => ({ label: symbol, value: symbol })),
     ];
 
-    const accountTypes = data.account_type_breakdown.map((row) => row.account_type);
+    const accountTypes = data.available_account_types;
     this.segmentOptions = [
       { label: 'All account types', value: 'All account types' },
       ...accountTypes.map((segment) => ({ label: segment, value: segment })),
     ];
+  }
+
+  private buildPeriodOptions(earliest: string | null, latest: string | null): Array<{ label: string; value: string }> {
+    if (!earliest || !latest) {
+      return [{ label: 'All available', value: 'all' }];
+    }
+
+    const options: Array<{ label: string; value: string }> = [];
+    let start = new Date(earliest);
+    const last = new Date(latest);
+    while (start <= last) {
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 29);
+      if (end > last) {
+        end.setTime(last.getTime());
+      }
+      options.push({
+        label: `${this.formatDateLabel(start)} - ${this.formatDateLabel(end)}`,
+        value: `${start.toISOString()}|${end.toISOString()}`,
+      });
+      start = new Date(end);
+      start.setUTCDate(start.getUTCDate() + 1);
+    }
+    return [{ label: 'All available', value: 'all' }, ...options.reverse()];
   }
 
   private formatCurrency(value: number): string {
@@ -187,6 +214,14 @@ export class AnalystOverviewComponent implements OnDestroy, OnInit {
     }
     const prefix = value > 0 ? '+' : '';
     return `${prefix}${value.toFixed(1)}%`;
+  }
+
+  private formatDateLabel(value: Date): string {
+    return value.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      timeZone: 'UTC',
+    });
   }
 
   private formatUtc(value: string): string {
