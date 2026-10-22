@@ -11,6 +11,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.time.ZonedDateTime;
+import java.time.Clock;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -37,6 +40,8 @@ class OrderValidatorTest {
 
     @BeforeEach
     void setUp() {
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-21T16:00:00Z"), ZoneOffset.UTC));
+
         brokerageAccount = new Account(
             UUID.randomUUID(),
             ZonedDateTime.now(),
@@ -377,5 +382,45 @@ class OrderValidatorTest {
 
         // Assert
         assertTrue(isValid);
+    }
+
+    @Test
+    void testIsWithinTradingHours_USAndIndiaEquities() {
+        assertTrue(orderValidator.isWithinTradingHours("EQUITY", "AAPL"));
+        assertTrue(orderValidator.isWithinTradingHours("EQUITY", "INFY.NS"));
+
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-21T14:14:59Z"), ZoneOffset.UTC));
+        assertFalse(orderValidator.isWithinTradingHours("EQUITY", "INFY.NS"));
+        assertFalse(orderValidator.isWithinTradingHours("EQUITY", "AAPL"));
+    }
+
+    @Test
+    void testIsWithinTradingHours_EquitiesClosedOnWeekend() {
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-24T16:00:00Z"), ZoneOffset.UTC));
+
+        assertFalse(orderValidator.isWithinTradingHours("EQUITY", "AAPL"));
+        assertFalse(orderValidator.isWithinTradingHours("EQUITY", "INFY.NS"));
+    }
+
+    @Test
+    void testIsWithinTradingHours_CryptoAlwaysOpen() {
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-24T16:00:00Z"), ZoneOffset.UTC));
+
+        assertTrue(orderValidator.isWithinTradingHours("CRYPTO", "BTC"));
+    }
+
+    @Test
+    void testIsWithinTradingHours_ForexSundayAndFridayBoundaries() {
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-25T20:59:59Z"), ZoneOffset.UTC));
+        assertFalse(orderValidator.isWithinTradingHours("FOREX", "EURUSD"));
+
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-25T21:00:00Z"), ZoneOffset.UTC));
+        assertTrue(orderValidator.isWithinTradingHours("FOREX", "EURUSD"));
+
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-30T20:59:59Z"), ZoneOffset.UTC));
+        assertTrue(orderValidator.isWithinTradingHours("FOREIGN EXCHANGE", "EURUSD"));
+
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-30T21:00:00Z"), ZoneOffset.UTC));
+        assertFalse(orderValidator.isWithinTradingHours("FOREX", "EURUSD"));
     }
 }

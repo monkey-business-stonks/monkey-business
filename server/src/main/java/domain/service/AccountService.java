@@ -27,6 +27,9 @@ public class AccountService {
     @Autowired
     private AssetRepository assetRepository;
 
+    @Autowired
+    private PricingEngine pricingEngine;
+
     /**
      * Create account for user
      */
@@ -199,6 +202,7 @@ public class AccountService {
         // Load assets for this account
         List<domain.dto.AssetResponse> heldAssets = new ArrayList<>();
         for (domain.entities.Asset asset : assetRepository.findAssetsByAccountIdOrderByValue(account.getAccID())) {
+            BigDecimal currentPrice = pricingEngine.getPrice(asset.ticker());
             heldAssets.add(new domain.dto.AssetResponse()
                 .assetId(asset.getAssetId())
                 .assetClass(domain.dto.AssetClass.valueOf(asset.getAssetClass()))
@@ -206,6 +210,7 @@ public class AccountService {
                 .name(asset.getName())
                 .quantity(new BigDecimal(asset.quantity().toString()))
                 .boughtAverage(asset.averageCost())
+                .currentPrice(currentPrice)
             );
         }
 

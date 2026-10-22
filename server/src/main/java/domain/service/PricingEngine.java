@@ -129,6 +129,36 @@ public class PricingEngine {
         }
         return result;
     }
+
+    /**
+     * Refresh the five-minute price cache for a batch of symbols.
+     * This deliberately bypasses getPrice's cache lookup so scheduled refreshes
+     * always call the market API.
+     */
+    public Map<String, BigDecimal> refreshPrices(List<String> symbols) {
+        Map<String, BigDecimal> refreshedPrices = new HashMap<>();
+        if (symbols == null || symbols.isEmpty()) {
+            return refreshedPrices;
+        }
+
+        Cache priceCache = cacheManager == null ? null : cacheManager.getCache("prices");
+        for (int start = 0; start < symbols.size(); start += 25) {
+            List<String> batch = symbols.subList(start, Math.min(start + 25, symbols.size()));
+            Map<String, Map<String, Object>> quotes = getPrices(batch);
+            if (priceCache == null) {
+                continue;
+            }
+            quotes.forEach((symbol, quote) -> {
+                Object price = quote.get("price");
+                if (price instanceof Number number) {
+                    BigDecimal refreshedPrice = new BigDecimal(number.toString());
+                    priceCache.put(symbol, refreshedPrice);
+                    refreshedPrices.put(symbol, refreshedPrice);
+                }
+            });
+        }
+        return refreshedPrices;
+    }
     
     /**
      * Get historical candles (OHLCV data) for a symbol
