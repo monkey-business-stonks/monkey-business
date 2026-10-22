@@ -69,6 +69,7 @@ public class Asset {
 
     // Getters
     public UUID getAssetId() { return this.assetId; }
+    public UUID getAccountId() { return this.accountId; }
     public String getAssetClass() { return this.assetClass; }
     public String ticker() { return this.ticker; }
     public String getName() { return this.name; }

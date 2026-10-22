@@ -5,4 +5,5 @@ export interface Asset {
   name: string;
   quantity: number;
   averageCost: number;
+  currentPrice?: number;
 }

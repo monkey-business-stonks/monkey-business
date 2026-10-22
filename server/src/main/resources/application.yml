@@ -138,6 +138,8 @@ server:
 market-data:
   api-url: ${MARKET_DATA_API_URL:https://y4t9nq2bqf.execute-api.eu-west-2.amazonaws.com/v1}
   api-key: ${MARKET_DATA_API_KEY:fnx_dev_IFOonKTo37axWB4TH8MpbXit6W4QMHED}
+  refresh-interval-ms: ${MARKET_DATA_REFRESH_INTERVAL_MS:300000}
+  refresh-initial-delay-ms: ${MARKET_DATA_REFRESH_INITIAL_DELAY_MS:10000}
 
 jwt:
   signing-key: ${JWT_SIGNING_KEY:your-secret-key-change-me}

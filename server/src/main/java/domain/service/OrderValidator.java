@@ -1,6 +1,11 @@
 package domain.service;
 
 import java.math.BigDecimal;
+import java.time.Clock;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -10,6 +15,16 @@ import domain.entities.Order;
 
 @Service
 public class OrderValidator {
+
+    private static final ZoneId UTC = ZoneId.of("UTC");
+    private static final ZoneId NEW_YORK = ZoneId.of("America/New_York");
+    private static final LocalTime US_EQUITY_OPEN = LocalTime.of(14, 30);
+    private static final LocalTime US_EQUITY_CLOSE = LocalTime.of(23, 0);
+    private static final LocalTime INDIA_EQUITY_OPEN = LocalTime.of(14, 15);
+    private static final LocalTime INDIA_EQUITY_CLOSE = LocalTime.of(22, 30);
+    private static final LocalTime FOREX_OPEN = LocalTime.of(17, 0);
+
+    private Clock clock = Clock.systemUTC();
 
     @Autowired
     private PricingEngine pricingEngine;
@@ -56,6 +71,10 @@ public class OrderValidator {
             return false;
         }
 
+        if (!isWithinTradingHours(order.getOrderType(), order.getTicker())) {
+            return false;
+        }
+
         // For BUY orders: check cash balance is sufficient
         if (action.equalsIgnoreCase("BUY")) {
             // Get current price from PricingEngine
@@ -76,6 +95,46 @@ public class OrderValidator {
         }
 
         return true;
+    }
+
+    boolean isWithinTradingHours(String assetType, String ticker) {
+        String normalizedAssetType = assetType.toUpperCase();
+
+        if (normalizedAssetType.equals("CRYPTO")) {
+            return true;
+        }
+
+        ZonedDateTime nowUtc = ZonedDateTime.now(clock.withZone(UTC));
+        DayOfWeek day = nowUtc.getDayOfWeek();
+
+        if (normalizedAssetType.equals("EQUITY")) {
+            if (day == DayOfWeek.SATURDAY || day == DayOfWeek.SUNDAY) {
+                return false;
+            }
+
+            boolean indiaEquity = ticker.toUpperCase().endsWith(".NS")
+                || ticker.toUpperCase().endsWith(".BO");
+            LocalTime open = indiaEquity ? INDIA_EQUITY_OPEN : US_EQUITY_OPEN;
+            LocalTime close = indiaEquity ? INDIA_EQUITY_CLOSE : US_EQUITY_CLOSE;
+            LocalTime time = nowUtc.toLocalTime();
+            return !time.isBefore(open) && time.isBefore(close);
+        }
+
+        if (normalizedAssetType.equals("FOREX") || normalizedAssetType.equals("FOREIGN EXCHANGE")) {
+            ZonedDateTime nowNewYork = ZonedDateTime.now(clock.withZone(NEW_YORK));
+            return switch (nowNewYork.getDayOfWeek()) {
+                case SUNDAY -> !nowNewYork.toLocalTime().isBefore(FOREX_OPEN);
+                case MONDAY, TUESDAY, WEDNESDAY, THURSDAY -> true;
+                case FRIDAY -> nowNewYork.toLocalTime().isBefore(FOREX_OPEN);
+                case SATURDAY -> false;
+            };
+        }
+
+        return false;
+    }
+
+    void setClock(Clock clock) {
+        this.clock = clock;
     }
 
     /**

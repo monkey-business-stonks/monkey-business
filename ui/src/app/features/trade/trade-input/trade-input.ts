@@ -90,6 +90,15 @@ export class TradeInput {
     return (this.quantity || 0) * this.sharePrice;
   }
 
+  get selectedAccountCashBalance(): number | null {
+    return this.accounts().find(account => account.accountId === this.selectedAccount())?.cashBalance ?? null;
+  }
+
+  get canReviewOrder(): boolean {
+    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
+    return !!account && this.estimatedTotal <= account.cashBalance && this.quantity > 0;
+  }
+
   get orderData(): OrderReviewData {
     return {
       action: this.selectedAction,
@@ -105,6 +114,8 @@ export class TradeInput {
   }
 
   reviewOrder(): void {
+    if (!this.canReviewOrder) return;
+
     this.showConfirmation = true;
   }
 
