@@ -34,3 +34,6 @@ dist/
 
 # Logs
 *.log
+
+__pycache__/
+*.py[cod]

@@ -14,6 +14,8 @@ class ErrorResponse(BaseModel):
 class MetricsMeta(BaseModel):
     computed_at: datetime
     data_complete_through: datetime | None = None
+    earliest_trade: datetime | None = None
+    latest_trade: datetime | None = None
     market_as_of: datetime
     lifecycle_source: Literal["derived", "recorded"] = "derived"
 
@@ -44,6 +46,7 @@ class AccountTypeBreakdownRow(BaseModel):
     notional_usd: float
     filled_orders: int
     active_accounts: int
+    active_accounts_vs_comparison_pct: float | None = None
     notional_vs_comparison_pct: float = 0.0
 
 
@@ -53,6 +56,8 @@ class AnalystOverviewResponse(BaseModel):
     kpi_deltas: AnalystKpiDeltas
     top_instruments: list[TopInstrumentRow]
     account_type_breakdown: list[AccountTypeBreakdownRow]
+    available_instruments: list[str] = []
+    available_account_types: list[str] = []
 
 
 class OperationsSummary(BaseModel):

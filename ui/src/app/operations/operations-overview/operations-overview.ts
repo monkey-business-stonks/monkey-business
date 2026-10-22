@@ -32,11 +32,11 @@ import { finalize, Subscription } from 'rxjs';
 })
 export class OperationsOverviewComponent implements OnDestroy, OnInit {
   searchQuery = '';
-  selectedTimeRange = 'Last 30 days';
+  selectedTimeRange = 'all';
   selectedInstrument = 'All instruments';
-  selectedExecution = 'All outcomes';
-  selectedSettlement = 'All statuses';
-  selectedException = 'All records';
+  selectedExecution = 'ALL';
+  selectedSettlement = 'ALL';
+  selectedException = 'ALL';
   loading = false;
   error: string | null = null;
   bannerDetail = 'Loading operations analytics...';
@@ -50,11 +50,27 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
   awaitingSubtext = 'Filled and pending settlement';
   exceptionsSubtext = 'Records requiring review';
 
-  timeRangeOptions = [{ label: 'Last 30 days', value: 'Last 30 days' }];
+  timeRangeOptions = [{ label: 'All available', value: 'all' }];
   instrumentOptions = [{ label: 'All instruments', value: 'All instruments' }];
-  executionOptions = [{ label: 'All outcomes', value: 'All outcomes' }];
-  settlementOptions = [{ label: 'All statuses', value: 'All statuses' }];
-  exceptionOptions = [{ label: 'All records', value: 'All records' }];
+  executionOptions = [
+    { label: 'All outcomes', value: 'ALL' },
+    { label: 'Submitted', value: 'SUBMITTED' },
+    { label: 'Accepted', value: 'ACCEPTED' },
+    { label: 'Filled', value: 'FILLED' },
+    { label: 'Settled', value: 'SETTLED' },
+    { label: 'Rejected', value: 'REJECTED' },
+  ];
+  settlementOptions = [
+    { label: 'All statuses', value: 'ALL' },
+    { label: 'Settled', value: 'SETTLED' },
+    { label: 'Awaiting settlement', value: 'AWAITING' },
+    { label: 'Not applicable', value: 'NA' },
+  ];
+  exceptionOptions = [
+    { label: 'All records', value: 'ALL' },
+    { label: 'Exceptions only', value: 'EXCEPTIONS' },
+    { label: 'No exceptions', value: 'NO_EXCEPTIONS' },
+  ];
 
   statusTabs: string[] = [];
   activeTab = '';
@@ -141,17 +157,17 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
     this.loading = true;
     this.error = null;
 
-    const now = new Date();
-    const periodTo = new Date(now);
-    const periodFrom = new Date(now);
-    periodFrom.setUTCDate(periodFrom.getUTCDate() - 30);
+    const selectedRange = this.selectedTimeRange === 'all' ? null : this.selectedTimeRange.split('|');
 
     this.analyticsService
       .getOperationsOverview({
-        period_from: periodFrom.toISOString(),
-        period_to: periodTo.toISOString(),
+        period_from: selectedRange?.[0],
+        period_to: selectedRange?.[1],
         instrument: this.selectedInstrument === 'All instruments' ? undefined : this.selectedInstrument,
         search: this.searchQuery.trim() || undefined,
+        execution_status: this.selectedExecution === 'ALL' ? undefined : this.selectedExecution,
+        settlement_status: this.selectedSettlement === 'ALL' ? undefined : this.selectedSettlement,
+        exception_filter: this.selectedException === 'ALL' ? undefined : this.selectedException,
         limit: 50,
         offset: 0,
       })
@@ -188,6 +204,7 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
 
     this.statusTabs = data.status_tabs;
     this.activeTab = data.status_tabs[0] || '';
+    this.timeRangeOptions = this.buildTimeRangeOptions(data.meta.earliest_trade, data.meta.latest_trade);
 
     this.ordersData = data.orders.map((row) => ({
       orderId: row.order_id,
@@ -214,6 +231,32 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
     }
   }
 
+  private buildTimeRangeOptions(earliest: string | null, latest: string | null): Array<{ label: string; value: string }> {
+    if (!earliest || !latest) {
+      return [{ label: 'All available', value: 'all' }];
+    }
+
+    const options: Array<{ label: string; value: string }> = [];
+    let start = new Date(earliest);
+    const last = new Date(latest);
+
+    while (start <= last) {
+      const end = new Date(start);
+      end.setUTCDate(end.getUTCDate() + 29);
+      if (end > last) {
+        end.setTime(last.getTime());
+      }
+      options.push({
+        label: `${this.formatDateLabel(start)} - ${this.formatDateLabel(end)}`,
+        value: `${start.toISOString()}|${end.toISOString()}`,
+      });
+      start = new Date(end);
+      start.setUTCDate(start.getUTCDate() + 1);
+    }
+
+    return [{ label: 'All available', value: 'all' }, ...options.reverse()];
+  }
+
   private formatCurrency(value: number): string {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
@@ -233,6 +276,14 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
       minimumFractionDigits: value % 1 === 0 ? 0 : 2,
       maximumFractionDigits: 2,
     }).format(value);
+  }
+
+  private formatDateLabel(value: Date): string {
+    return value.toLocaleDateString('en-US', {
+      month: 'short',
+      day: '2-digit',
+      timeZone: 'UTC',
+    });
   }
 
   private formatUtc(value: string): string {

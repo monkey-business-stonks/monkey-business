@@ -14,6 +14,9 @@ class OrderFilters:
     instrument: str | None = None
     account_type: str | None = None
     search: str | None = None
+    execution_status: str | None = None
+    settlement_status: str | None = None
+    exception_filter: str | None = None
 
 
 def _event_ts_expr(alias: str = "o") -> str:
@@ -37,6 +40,19 @@ def _build_where(filters: OrderFilters, alias: str = "o", include_search: bool =
     if filters.account_type:
         conditions.append("a.accounttype = %s")
         params.append(filters.account_type)
+    if filters.execution_status:
+        conditions.append(f"{alias}.status = %s")
+        params.append(filters.execution_status)
+    if filters.settlement_status == "SETTLED":
+        conditions.append(f"{alias}.status = 'SETTLED'")
+    elif filters.settlement_status == "AWAITING":
+        conditions.append(f"{alias}.status = 'FILLED'")
+    elif filters.settlement_status == "NA":
+        conditions.append(f"{alias}.status NOT IN ('FILLED', 'SETTLED')")
+    if filters.exception_filter == "EXCEPTIONS":
+        conditions.append(f"{alias}.status = 'REJECTED'")
+    elif filters.exception_filter == "NO_EXCEPTIONS":
+        conditions.append(f"{alias}.status <> 'REJECTED'")
     if include_search and filters.search:
         conditions.append(
             f"({alias}.orderid::text ILIKE %s OR {alias}.ticker ILIKE %s OR u.userid::text ILIKE %s)"
@@ -112,6 +128,20 @@ def fetch_analyst_overview(
 
     breakdown_rows = _fetch_account_breakdown(conn, filters)
 
+    option_filters = OrderFilters(from_ts=filters.from_ts, to_ts=filters.to_ts)
+    options_where_sql, options_params = _build_where(option_filters, alias="o")
+    options_sql = f"""
+        SELECT DISTINCT o.ticker, a.accounttype
+        FROM orders o
+        JOIN accounts a ON a.accountid = o.accountid
+        {options_where_sql}
+        ORDER BY o.ticker, a.accounttype
+    """
+
+    with conn.cursor() as cur:
+        cur.execute(options_sql, options_params)
+        option_rows = cur.fetchall()
+
     with conn.cursor() as cur:
         cur.execute(top_sql, params)
         top_rows = cur.fetchall()
@@ -122,7 +152,21 @@ def fetch_analyst_overview(
         "top_rows": top_rows,
         "breakdown_rows": breakdown_rows,
         "comparison_breakdown_rows": comparison_breakdown_rows,
+        "available_instruments": sorted({row["ticker"] for row in option_rows}),
+        "available_account_types": sorted({row["accounttype"] for row in option_rows}),
     }
+
+
+def fetch_trade_bounds(conn: Connection) -> dict[str, Any]:
+    sql = f"""
+        SELECT
+            MIN({_event_ts_expr('o')}) AS earliest_trade,
+            MAX({_event_ts_expr('o')}) AS latest_trade
+        FROM orders o
+    """
+    with conn.cursor() as cur:
+        cur.execute(sql)
+        return cur.fetchone() or {}
 
 
 def fetch_operations_overview(conn: Connection, filters: OrderFilters, limit: int, offset: int) -> dict[str, Any]:

@@ -18,6 +18,9 @@ export interface OperationsOverviewQuery {
   instrument?: string;
   account_type?: string;
   search?: string;
+  execution_status?: string;
+  settlement_status?: string;
+  exception_filter?: string;
   limit?: number;
   offset?: number;
 }

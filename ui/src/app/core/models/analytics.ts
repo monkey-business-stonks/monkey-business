@@ -1,6 +1,8 @@
 export interface MetricsMeta {
   computed_at: string;
   data_complete_through: string | null;
+  earliest_trade: string | null;
+  latest_trade: string | null;
   market_as_of: string;
   lifecycle_source: 'derived' | 'recorded';
 }
@@ -31,6 +33,7 @@ export interface AccountTypeBreakdownRow {
   notional_usd: number;
   filled_orders: number;
   active_accounts: number;
+  active_accounts_vs_comparison_pct: number | null;
   notional_vs_comparison_pct: number | null;
 }
 
@@ -40,6 +43,8 @@ export interface AnalystOverviewResponse {
   kpi_deltas: AnalystKpiDeltas;
   top_instruments: TopInstrumentRow[];
   account_type_breakdown: AccountTypeBreakdownRow[];
+  available_instruments: string[];
+  available_account_types: string[];
 }
 
 export interface OperationsSummary {
