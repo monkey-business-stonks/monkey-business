@@ -23,15 +23,18 @@ public class OwnedAssetPriceRefreshService {
     private final AssetRepository assetRepository;
     private final AccountRepository accountRepository;
     private final PricingEngine pricingEngine;
+    private final OrderEventPublisher orderEventPublisher;
 
     public OwnedAssetPriceRefreshService(
         AssetRepository assetRepository,
         AccountRepository accountRepository,
-        PricingEngine pricingEngine
+        PricingEngine pricingEngine,
+        OrderEventPublisher orderEventPublisher
     ) {
         this.assetRepository = assetRepository;
         this.accountRepository = accountRepository;
         this.pricingEngine = pricingEngine;
+        this.orderEventPublisher = orderEventPublisher;
     }
 
     @Scheduled(
@@ -81,6 +84,7 @@ public class OwnedAssetPriceRefreshService {
                 accountRepository.updateBalance(account.getAccID(), totalBalance);
             }
 
+            orderEventPublisher.publishPriceRefresh();
             logger.info("Refreshed market prices and persisted balances for {} owned symbols", symbols.size());
         } catch (Exception exception) {
             logger.error("Owned-asset price refresh failed; next schedule will retry", exception);

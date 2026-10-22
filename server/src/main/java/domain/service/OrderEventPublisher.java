@@ -243,4 +243,11 @@ public class OrderEventPublisher {
             new PlatformUpdateMessage("ORDER_STATUS_CHANGED", occurredAt)
         );
     }
+
+    public void publishPriceRefresh() {
+        messagingTemplate.convertAndSend(
+            "/topic/platform-updates",
+            new PlatformUpdateMessage("PRICE_REFRESHED", ZonedDateTime.now())
+        );
+    }
 }

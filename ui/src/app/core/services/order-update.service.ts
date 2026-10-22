@@ -32,7 +32,10 @@ export class OrderUpdateService {
     this.client = new Client({
       brokerURL: this.getWebSocketUrl(),
       reconnectDelay: 5000,
+      heartbeatIncoming: 10000,
+      heartbeatOutgoing: 10000,
       onConnect: () => this.subscribeToOrderUpdates(),
+      onDisconnect: frame => console.warn('Order WebSocket disconnected:', frame.headers['message'] ?? 'server disconnected'),
       onWebSocketError: error => console.error('Order WebSocket error:', error),
       onWebSocketClose: event => console.warn('Order WebSocket closed:', event.code, event.reason),
       onStompError: frame => console.error('Order STOMP error:', frame.headers['message'], frame.body)
