@@ -23,6 +23,15 @@
       (valueChange)="selectedAccount.set($event)"
     ></app-select-input>
 
+    <div class="cash-balance" aria-live="polite">
+      <span class="text-secondary">Available cash balance</span>
+      @if (selectedAccountCashBalance !== null) {
+        <span class="cash-balance-value font-mono">{{ selectedAccountCashBalance | currency:'USD':'symbol':'1.2-2' }}</span>
+      } @else {
+        <span class="cash-balance-value text-secondary">Loading...</span>
+      }
+    </div>
+
     <app-select-input
       label="Order Type"
       [options]="orderTypeOptions"
@@ -32,7 +41,7 @@
     <app-base-input
       label="Quantity (Shares)"
       type="number"
-      suffix="Max: ?"
+      [suffix]="selectedAccountCashBalance !== null ? 'Cash: ' + (selectedAccountCashBalance | currency:'USD':'symbol':'1.2-2') : 'Cash: --'"
       [(value)]="quantity"
     ></app-base-input>
   </div>
