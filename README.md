@@ -725,16 +725,15 @@ Monkey Business exposes two APIs:
 - `PATCH /users/{userId}` - Update own profile (or another user's profile as OPERATIONS)
 - `GET /users/{userId}/status` - Check authentication status
 
-User updates accept any subset of `username`, `name`, `email`, `phone`, `dob`,
-and `password`, and return the updated user profile with HTTP 200. Send a bearer
-token in the Authorization header. Omitted fields and null values are unchanged,
-except `phone: null`, which clears the phone number. Username and email must be
-unique, date of birth cannot be in the future, and passwords must be at least
+User updates accept any subset of `username`, `name`, `email`, and `dob`,
+and `password`, and return the updated user profile with HTTP 200. Changing the
+password also requires the correct `currentPassword`. Send a bearer
+token in the Authorization header. Omitted fields and null values are unchanged.
+Username and email must be unique, date of birth cannot be in the future, and passwords must be at least
 8 characters and at most 72 UTF-8 bytes. Passwords are BCrypt-hashed and never
 returned. Roles, IDs, tokens, accounts and timestamps are not writable.
 Validation failures return 400, unauthenticated requests 401, unauthorized requests
-403, missing users 404, and duplicate usernames/emails 409. The frontend edit
-panel must call this endpoint to persist its changes.
+403, missing users 404, and duplicate usernames/emails 409.
 
 **Account Endpoints**
 - `POST /users/{userId}/accounts` - Create new account

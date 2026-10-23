@@ -6,7 +6,7 @@ import { EditPanel } from './edit-panel/edit-panel';
 import { AccountsPanel } from './accounts-panel/accounts-panel';
 import { AuthService } from '@/app/core/services/auth.service';
 import { UserService } from '@/app/core/services/user.service';
-import { U } from '@/app/core/models/user';
+import { U, UserUpdateRequest } from '@/app/core/models/user';
 
 // Profile component - displays and manages user profile information
 @Component({
@@ -31,6 +31,8 @@ export class Profile implements OnInit {
   
   // Edit mode and notification preferences
   isEditMode: boolean = false;
+  isSavingProfile = false;
+  profileSaveError = '';
   notifyByPhone: boolean = true;
   notifyByEmail: boolean = true;
 
@@ -53,11 +55,37 @@ export class Profile implements OnInit {
 
   // Toggle between view and edit mode
   toggleEditMode() {
+    this.profileSaveError = '';
     this.isEditMode = !this.isEditMode;
   }
 
   saveAndReturnToAccounts(): void {
     this.isEditMode = false;
+    this.profileSaveError = '';
+  }
+
+  saveProfileChanges(changes: UserUpdateRequest): void {
+    const userId = this.user()?.userId ?? this.authService.getUserId();
+    if (!userId) {
+      this.profileSaveError = 'Unable to identify your profile. Please sign in again.';
+      return;
+    }
+
+    this.isSavingProfile = true;
+    this.profileSaveError = '';
+    this.userService.updateUser(userId, changes).subscribe({
+      next: (updatedUser) => {
+        this.user.set(updatedUser);
+        this.isSavingProfile = false;
+        this.saveAndReturnToAccounts();
+      },
+      error: (error) => {
+        this.isSavingProfile = false;
+        this.profileSaveError = error?.error?.message
+          || error?.message
+          || 'Unable to save your profile. Please try again.';
+      },
+    });
   }
 
   // Save profile changes and exit edit mode

@@ -21,8 +21,8 @@ export interface UserUpdateRequest {
   username?: string;
   name?: string;
   email?: string;
-  /** Set to null to clear the phone number. */
-  phone?: string | null;
   dob?: string;
+  /** Required by the backend when changing the password. */
+  currentPassword?: string;
   password?: string;
 }

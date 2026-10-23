@@ -76,14 +76,13 @@ public class UserService {
             .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
 
         // Validate all supplied details before changing the user.
-        validateUserUpdate(userId, request);
+        validateUserUpdate(user, request);
         String passwordHash = request.getPassword() == null ? null
             : BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
 
         updateUsername(user, request.getUsername());
         updateName(user, request.getName());
         updateEmail(user, request.getEmail());
-        updatePhone(user, request.getPhone());
         updateDob(user, request.getDob());
         updatePassword(user, passwordHash);
         user.setUpdatedAt(ZonedDateTime.now());
@@ -92,7 +91,7 @@ public class UserService {
         return toUserResponse(user);
     }
 
-    private void validateUserUpdate(UUID userId, UpdateUserRequest request) {
+    private void validateUserUpdate(User user, UpdateUserRequest request) {
         validateNonBlank(request.getUsername(), "Username");
         validateNonBlank(request.getName(), "Name");
         validateNonBlank(request.getEmail(), "Email");
@@ -104,16 +103,32 @@ public class UserService {
                 || request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72)) {
             throw new IllegalArgumentException("Password must be at least 8 characters and at most 72 UTF-8 bytes");
         }
+        validatePasswordChange(user, request);
 
         if (request.getUsername() != null) {
             userRepository.findByUsername(request.getUsername())
-                .filter(existing -> !userId.equals(existing.getUserId()))
+                .filter(existing -> !user.getUserId().equals(existing.getUserId()))
                 .ifPresent(existing -> { throw new BusinessConflictException("Username already exists"); });
         }
         if (request.getEmail() != null) {
             userRepository.findByEmail(request.getEmail())
-                .filter(existing -> !userId.equals(existing.getUserId()))
+                .filter(existing -> !user.getUserId().equals(existing.getUserId()))
                 .ifPresent(existing -> { throw new BusinessConflictException("Email already exists"); });
+        }
+    }
+
+    private void validatePasswordChange(User user, UpdateUserRequest request) {
+        if (request.getPassword() == null) {
+            if (request.getCurrentPassword() != null) {
+                throw new IllegalArgumentException("A new password is required with the current password");
+            }
+            return;
+        }
+        if (request.getCurrentPassword() == null || request.getCurrentPassword().isBlank()) {
+            throw new IllegalArgumentException("Current password is required to change the password");
+        }
+        if (!BCrypt.checkpw(request.getCurrentPassword(), user.getPasswordHash())) {
+            throw new IllegalArgumentException("Current password is incorrect");
         }
     }
 
@@ -132,12 +147,6 @@ public class UserService {
     private void updateEmail(User user, String email) {
         if (email != null) {
             user.setEmail(email);
-        }
-    }
-
-    private void updatePhone(User user, JsonNullable<String> phone) {
-        if (phone != null && phone.isPresent()) {
-            user.setPhone(phone.get());
         }
     }
 

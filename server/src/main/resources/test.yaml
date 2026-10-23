@@ -454,8 +454,14 @@ components:
         username: { type: string, minLength: 1, maxLength: 255, example: jdoe }
         name: { type: string, minLength: 1, maxLength: 255, example: Jane Doe }
         email: { type: string, format: email, minLength: 1, maxLength: 255, example: user@email.com }
-        phone: { type: string, maxLength: 50, nullable: true, example: "+353851234567" }
         dob: { type: string, format: date, description: Must not be in the future., example: "1998-04-12" }
+        currentPassword:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 1
+          maxLength: 72
+          description: Required to change the password.
         password:
           type: string
           format: password
