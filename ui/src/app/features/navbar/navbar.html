@@ -9,9 +9,9 @@
       @if ((role$ | async) === 'ANALYST' || (role$ | async) === 'OPERATIONS') {
         <span class="internal-workspace-text">Internal Workspace</span>
       } @else {
-        <app-button variant="nav" routerLink="/dashboard">Dashboard</app-button>
-        <app-button variant="nav" routerLink="/trade">Trade</app-button>
-        <app-button variant="nav" routerLink="/history">History</app-button>
+        <app-button variant="nav" routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" #dashboardRoute="routerLinkActive" [active]="dashboardRoute.isActive">Dashboard</app-button>
+        <app-button variant="nav" routerLink="/trade" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" #tradeRoute="routerLinkActive" [active]="tradeRoute.isActive">Trade</app-button>
+        <app-button variant="nav" routerLink="/history" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }" #historyRoute="routerLinkActive" [active]="historyRoute.isActive">History</app-button>
       }
     </div>
   </div>
@@ -19,8 +19,11 @@
   @if ((role$ | async) === 'USER') {
   <div class="profile-container">
     <button class="profile-icon-button" routerLink="/profile">
-      <img class="profile-icon">
-      <span class="profile-text">Edit Profile</span>
+      <img class="profile-icon" src="/monkey-face.png" alt="" aria-hidden="true">
+      <span class="profile-text">
+        <span class="profile-name">{{ userName || 'Profile' }}</span>
+        <span class="profile-role">BASE USER</span>
+      </span>
     </button>
   </div>
   }

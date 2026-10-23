@@ -12,7 +12,7 @@ import { U } from '@/app/core/models/user';
 })
 export class UserPanel {
   user = input<U | null>(null);
-  avatar: string = 'https://via.placeholder.com/150';
+  avatar: string = '/monkey-face.png';
 
   constructor(
     private authService: AuthService,
