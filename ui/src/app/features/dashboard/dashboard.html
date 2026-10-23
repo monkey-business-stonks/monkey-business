@@ -3,12 +3,6 @@
   <div class="account-select-container">
     <app-button 
       variant="primary"
-      (click)="openAccountPage()">
-      OPEN ACCOUNT
-    </app-button>
-
-    <app-button 
-      variant="primary"
       [active]="selectedAccountFilter() === 'ALL'"
       [attr.aria-pressed]="selectedAccountFilter() === 'ALL'"
       (click)="selectAccountFilter('ALL')">
@@ -24,6 +18,12 @@
         {{ acc.accountType }}
       </app-button>
     }
+
+    <app-button 
+      variant="primary"
+      (click)="openAccountPage()">
+      +
+    </app-button>
   </div>
 
   <!-- Dynamic Account Overview -->

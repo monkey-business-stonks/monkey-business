@@ -43,7 +43,7 @@ export class TradeSearch implements OnDestroy, OnInit {
 
   selectedAsset: Quote | null = null;
 
-  activeFilters = signal<AssetFilter[]>(['EQUITY', 'CRYPTO', 'FOREX']);
+  activeFilter = signal<AssetFilter | null>(null);
 
   resultsList = signal<Quote[]>([]);
   recentsList = signal<Quote[]>([]);
@@ -72,20 +72,20 @@ export class TradeSearch implements OnDestroy, OnInit {
   }
 
   private loadTopInstruments(): void {
-    const filters = this.activeFilters();
+    const filter = this.activeFilter();
     const formattedSymbols: string[] = [];
 
-    if (filters.length === 0 || filters.includes('EQUITY')) {
+    if (filter === null || filter === 'EQUITY') {
       formattedSymbols.push(...TradeSearch.TOP_EQUITY_SYMBOLS);
     }
 
-    if (filters.length === 0 || filters.includes('CRYPTO')) {
+    if (filter === null || filter === 'CRYPTO') {
       formattedSymbols.push(
         ...TradeSearch.TOP_CRYPTO_SYMBOLS.map(ticker => `X:${ticker}-USD`)
       );
     }
 
-    if (filters.length === 0 || filters.includes('FOREX')) {
+    if (filter === null || filter === 'FOREX') {
       formattedSymbols.push(
         ...TradeSearch.TOP_FOREX_SYMBOLS.map(ticker => `FX:${ticker}USD`)
       );
@@ -101,7 +101,7 @@ export class TradeSearch implements OnDestroy, OnInit {
 
     this.pricingService.getPrices(formattedSymbols.join(',')).subscribe({
       next: quotes => {
-        const currentFilters = this.activeFilters();
+        const currentFilter = this.activeFilter();
 
         const filteredQuotes = quotes.filter(quote => {
           const symbol = quote?.data?.symbol || '';
@@ -109,10 +109,10 @@ export class TradeSearch implements OnDestroy, OnInit {
           const isForex = symbol.startsWith('FX:');
           const isEquity = !isCrypto && !isForex;
 
-          if (currentFilters.length === 0) return true;
-          if (isEquity && currentFilters.includes('EQUITY')) return true;
-          if (isCrypto && currentFilters.includes('CRYPTO')) return true;
-          if (isForex && currentFilters.includes('FOREX')) return true;
+          if (currentFilter === null) return true;
+          if (isEquity && currentFilter === 'EQUITY') return true;
+          if (isCrypto && currentFilter === 'CRYPTO') return true;
+          if (isForex && currentFilter === 'FOREX') return true;
 
           return false;
         });
@@ -219,12 +219,7 @@ export class TradeSearch implements OnDestroy, OnInit {
   }
 
   toggleFilter(filter: AssetFilter): void {
-    const currentFilters = this.activeFilters();
-    if (currentFilters.includes(filter)) {
-      this.activeFilters.set(currentFilters.filter(currentFilter => currentFilter !== filter));
-    } else {
-      this.activeFilters.set([...currentFilters, filter]);
-    }
+    this.activeFilter.set(this.activeFilter() === filter ? null : filter);
 
     this.isTopLoading.set(true);
     this.loadTopInstruments();
@@ -236,24 +231,23 @@ export class TradeSearch implements OnDestroy, OnInit {
   }
 
   isFilterActive(filter: AssetFilter): boolean {
-    return this.activeFilters().includes(filter);
+    return this.activeFilter() === filter;
   }
 
   private formatTickerForFilters(ticker: string): string[] {
-    const filters = this.activeFilters();
+    const filter = this.activeFilter();
     const formatted: string[] = [];
 
-    if (filters.length === 0 || filters.includes('EQUITY')) {
+    if (filter === null || filter === 'EQUITY') {
       formatted.push(ticker);
       if (!ticker.endsWith('.NS')) {
         formatted.push(`${ticker}.NS`);
       }
     }
-    if (filters.length === 0 || filters.includes('CRYPTO')) {
-      const cryptoTicker = ticker.replace(/^X:/, '').replace(/-USD$/, '');
-      formatted.push(`X:${cryptoTicker}-USD`);
+    if (filter === null || filter === 'CRYPTO') {
+      formatted.push(`X:${ticker}-USD`);
     }
-    if (filters.length === 0 || filters.includes('FOREX')) {
+    if (filter === null || filter === 'FOREX') {
       formatted.push(`FX:${ticker}USD`);
     }
 

@@ -49,9 +49,6 @@ export class TradeInput {
   ) {}
 
   ngOnInit(): void {
-    if (this.getSelectedAssetType() === 'CRYPTO') {
-      this.quantity = 0.01;
-    }
     this.loadSharePrice();
     this.loadAccounts();
   }
