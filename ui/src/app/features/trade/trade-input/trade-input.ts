@@ -22,7 +22,7 @@ export class TradeInput {
   @Output() onBack = new EventEmitter<void>();
   @Output() onOrderConfirmed = new EventEmitter<OrderReviewData>();
 
-  actionOptions = ['Buy', 'Sell', 'Exchange'];
+  actionOptions = ['Buy', 'Sell'];
   selectedAction = 'Buy';
   accountOptions = signal<SelectOption[]>([{ label: 'Loading accounts...', value: '' }]);
   selectedAccount = signal('');
@@ -49,6 +49,9 @@ export class TradeInput {
   ) {}
 
   ngOnInit(): void {
+    if (this.getSelectedAssetType() === 'CRYPTO') {
+      this.quantity = 0.01;
+    }
     this.loadSharePrice();
     this.loadAccounts();
   }
@@ -62,12 +65,16 @@ export class TradeInput {
 
     this.accountService.getUserAccounts(userId).subscribe({
       next: accounts => {
-        this.accounts.set(accounts);
-        this.accountOptions.set(accounts.map(account => ({
+        const compatibleAccounts = accounts.filter(account => this.isCompatibleAccount(account));
+        this.accounts.set(compatibleAccounts);
+        this.accountOptions.set(compatibleAccounts.map(account => ({
           label: account.accountType,
           value: account.accountId
         })));
-        this.selectedAccount.set(accounts[0]?.accountId ?? '');
+        this.selectedAccount.set(compatibleAccounts[0]?.accountId ?? '');
+        if (!compatibleAccounts.length) {
+          this.orderError.set(`Open a compatible ${this.getSelectedAssetType()} account before trading this instrument.`);
+        }
       },
       error: () => this.orderError.set('Unable to load accounts.')
     });
@@ -96,7 +103,17 @@ export class TradeInput {
 
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
-    return !!account && this.estimatedTotal <= account.cashBalance && this.quantity > 0;
+    return !!account && this.isCompatibleAccount(account)
+      && Number.isFinite(this.quantity) && this.quantity > 0 && this.sharePrice > 0
+      && (this.selectedAction === 'Sell' || this.estimatedTotal <= account.cashBalance);
+  }
+
+  private isCompatibleAccount(account: Account): boolean {
+    switch (this.getSelectedAssetType()) {
+      case 'CRYPTO': return account.accountType === 'CRYPTO';
+      case 'FOREIGN EXCHANGE': return account.accountType === 'FOREX';
+      default: return ['BROKERAGE', '401K', '_401K', 'ROTH IRA', 'ROTH_IRA'].includes(account.accountType);
+    }
   }
 
   get orderData(): OrderReviewData {

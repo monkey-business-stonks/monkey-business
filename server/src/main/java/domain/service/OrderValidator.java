@@ -19,7 +19,7 @@ public class OrderValidator {
     private static final ZoneId UTC = ZoneId.of("UTC");
     private static final ZoneId NEW_YORK = ZoneId.of("America/New_York");
     private static final LocalTime US_EQUITY_OPEN = LocalTime.of(14, 30);
-    private static final LocalTime US_EQUITY_CLOSE = LocalTime.of(23, 0);
+    private static final LocalTime US_EQUITY_CLOSE = LocalTime.of(21, 0);
     private static final LocalTime INDIA_EQUITY_OPEN = LocalTime.of(14, 15);
     private static final LocalTime INDIA_EQUITY_CLOSE = LocalTime.of(22, 30);
     private static final LocalTime FOREX_OPEN = LocalTime.of(17, 0);

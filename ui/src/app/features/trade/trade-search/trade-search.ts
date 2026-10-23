@@ -250,7 +250,8 @@ export class TradeSearch implements OnDestroy, OnInit {
       }
     }
     if (filters.length === 0 || filters.includes('CRYPTO')) {
-      formatted.push(`X:${ticker}-USD`);
+      const cryptoTicker = ticker.replace(/^X:/, '').replace(/-USD$/, '');
+      formatted.push(`X:${cryptoTicker}-USD`);
     }
     if (filters.length === 0 || filters.includes('FOREX')) {
       formatted.push(`FX:${ticker}USD`);
