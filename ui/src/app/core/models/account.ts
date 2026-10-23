@@ -1,3 +1,5 @@
+import { Asset } from './asset';
+
 export enum AccountType {
   BROKERAGE = 'BROKERAGE',
   _401K = '_401K',
@@ -13,4 +15,5 @@ export interface Account {
   openedDate: Date;
   balance: number;
   cashBalance: number;
+  heldAssets?: Asset[];
 }

@@ -22,7 +22,7 @@ export class TradeInput {
   @Output() onBack = new EventEmitter<void>();
   @Output() onOrderConfirmed = new EventEmitter<OrderReviewData>();
 
-  actionOptions = ['Buy', 'Sell', 'Exchange'];
+  actionOptions = ['Buy', 'Sell'];
   selectedAction = 'Buy';
   accountOptions = signal<SelectOption[]>([{ label: 'Loading accounts...', value: '' }]);
   selectedAccount = signal('');
@@ -94,9 +94,22 @@ export class TradeInput {
     return this.accounts().find(account => account.accountId === this.selectedAccount())?.cashBalance ?? null;
   }
 
+  get availableShares(): number {
+    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
+    const ticker = this.selectedTicker?.data?.symbol?.toUpperCase();
+    const holding = account?.heldAssets?.find(asset => asset.ticker?.toUpperCase() === ticker);
+    return Number(holding?.quantity ?? 0);
+  }
+
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
-    return !!account && this.estimatedTotal <= account.cashBalance && this.quantity > 0;
+    if (!account || this.quantity <= 0) {
+      return false;
+    }
+
+    return this.selectedAction === 'Sell'
+      ? this.quantity <= this.availableShares
+      : this.estimatedTotal <= account.cashBalance;
   }
 
   get orderData(): OrderReviewData {
@@ -122,6 +135,11 @@ export class TradeInput {
   onConfirmTrade(data: OrderReviewData): void {
     if (!data.accountId) {
       this.orderError.set('Select a valid account before placing the order.');
+      return;
+    }
+
+    if (data.action === 'Sell' && data.quantity > this.availableShares) {
+      this.orderError.set('You do not have enough shares to sell.');
       return;
     }
 
