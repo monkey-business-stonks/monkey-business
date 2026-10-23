@@ -8,6 +8,14 @@ import { Account } from '@/app/core/models';
 import { TableColumn } from '@/app/shared/models/table-column';
 import { Subscription } from 'rxjs';
 
+interface BalanceAllocation {
+  id: string;
+  label: string;
+  value: number;
+  percentage: number;
+  color: string;
+}
+
 @Component({
   imports: [SharedModule],
   selector: 'dashboard',
@@ -53,6 +61,40 @@ export class Dashboard implements OnDestroy, OnInit {
     }
     const acc = allAccounts.find(a => a.accountId === filter || a.accountType === filter);
     return acc ? acc.cashBalance : 0;
+  });
+
+  balanceAllocation = computed<BalanceAllocation[]>(() => {
+    const colors = ['#16857b', '#507dd1', '#c68621', '#bc5980', '#7963bb', '#448da6', '#ad633e', '#6b8841'];
+    const filter = this.selectedAccountFilter();
+    const account = this.accounts().find(account => account.accountId === filter || account.accountType === filter);
+    const values = filter === 'ALL'
+      ? this.accounts().map(account => ({
+          id: account.accountId,
+          label: account.accountType.replace(/^_/, '').replaceAll('_', ' '),
+          value: Number(account.balance)
+        }))
+      : [
+          { id: 'cash', label: 'Cash', value: Number(account?.cashBalance ?? 0) },
+          ...(account?.heldAssets ?? []).map(asset => ({
+            id: asset.ticker,
+            label: asset.ticker,
+            value: Number(asset.quantity) * Number(asset.currentPrice ?? asset.averageCost ?? (asset as typeof asset & { boughtAverage?: number }).boughtAverage ?? 0)
+          }))
+        ];
+    const grouped = new Map<string, { id: string; label: string; value: number }>();
+    for (const item of values) {
+      if (!Number.isFinite(item.value) || item.value <= 0) {
+        continue;
+      }
+      const existing = grouped.get(item.id);
+      grouped.set(item.id, { ...item, value: (existing?.value ?? 0) + item.value });
+    }
+    const total = Array.from(grouped.values()).reduce((sum, item) => sum + item.value, 0);
+    return Array.from(grouped.values()).map((item, index) => ({
+      ...item,
+      percentage: item.value / total * 100,
+      color: colors[index % colors.length]
+    }));
   });
 
   /**
@@ -146,6 +188,28 @@ export class Dashboard implements OnDestroy, OnInit {
     }
 
     this.selectedAccountFilter.set(filter);
+  }
+
+  positionAllocationTooltip(event: MouseEvent | FocusEvent, tooltip: HTMLElement): void {
+    const viewport = tooltip.ownerDocument.defaultView;
+    if (!viewport) {
+      return;
+    }
+    const segment = event.currentTarget as HTMLElement;
+    const bounds = segment.getBoundingClientRect();
+    const pointer = 'clientX' in event;
+    const anchorX = pointer ? event.clientX : bounds.left + bounds.width / 2;
+    const anchorY = pointer ? event.clientY : bounds.top;
+    const width = tooltip.offsetWidth;
+    const height = tooltip.offsetHeight;
+    const left = Math.max(8, Math.min(anchorX + 12, viewport.innerWidth - width - 8));
+    const preferredTop = anchorY - height - 12;
+    const top = Math.max(8, Math.min(
+      preferredTop >= 8 ? preferredTop : anchorY + 12,
+      viewport.innerHeight - height - 8
+    ));
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
   }
 
   openAccountPage(): void {
