@@ -33,7 +33,8 @@
       label="Quantity (Shares)"
       type="number"
       [suffix]="selectedAccountCashBalance !== null ? 'Cash: ' + (selectedAccountCashBalance | currency:'USD':'symbol':'1.2-2') : 'Cash: --'"
-      [(value)]="quantity"
+      [value]="quantity"
+      (valueChange)="onQuantityChange($event)"
     ></app-base-input>
   </div>
 

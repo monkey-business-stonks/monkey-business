@@ -49,7 +49,11 @@ public class AssetService {
             // Asset doesn't exist - create new one
             Asset newAsset = new Asset(
                 java.util.UUID.randomUUID(),
-                "EQUITY", // assetClass - TODO: determine from ticker/market data
+                switch (account.getAccType()) {
+                    case CRYPTO -> "CRYPTO";
+                    case FOREX -> "FOREX";
+                    default -> "EQUITY";
+                },
                 ticker,
                 ticker, // name - use ticker as placeholder
                 quantity,

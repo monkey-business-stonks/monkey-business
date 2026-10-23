@@ -60,4 +60,23 @@ describe('History', () => {
       ['BUY EQUITY Order - MSFT', 'SETTLED']
     ]);
   });
+
+  it('should search the current user\'s orders by order ID', () => {
+    component.searchQuery = 'ORDER-SETTLED';
+    component.onSearch();
+
+    expect(component.orderData().map(order => order.description)).toEqual([
+      'BUY EQUITY Order - MSFT'
+    ]);
+  });
+
+  it('should combine instrument and status filters', () => {
+    component.selectedInstrument = 'AAPL';
+    component.selectedStatus = 'ACCEPTED';
+    component.onFilterChange();
+
+    expect(component.orderData().map(order => [order.description, order.status])).toEqual([
+      ['BUY EQUITY Order - AAPL', 'ACCEPTED']
+    ]);
+  });
 });
