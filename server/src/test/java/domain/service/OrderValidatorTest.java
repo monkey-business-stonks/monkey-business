@@ -4,6 +4,8 @@ import domain.entities.Account;
 import domain.entities.Order;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -382,6 +384,69 @@ class OrderValidatorTest {
 
         // Assert
         assertTrue(isValid);
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "AAPL, 2026-10-21T14:29:59Z, false",
+        "AAPL, 2026-10-21T14:30:00Z, true",
+        "AAPL, 2026-10-21T20:59:59Z, true",
+        "AAPL, 2026-10-21T21:00:00Z, false",
+        "AAPL, 2026-10-21T22:00:00Z, false",
+        "INFY.NS, 2026-10-21T14:14:59Z, false",
+        "INFY.NS, 2026-10-21T14:15:00Z, true",
+        "INFY.NS, 2026-10-21T22:29:59Z, true",
+        "INFY.NS, 2026-10-21T22:30:00Z, false",
+        "INFY.BO, 2026-10-21T14:15:00Z, true",
+        "INFY.BO, 2026-10-21T22:30:00Z, false",
+        "AAPL, 2026-10-24T16:00:00Z, false",
+        "INFY.NS, 2026-10-24T16:00:00Z, false",
+        "AAPL, 2026-10-25T16:00:00Z, false",
+        "INFY.NS, 2026-10-25T16:00:00Z, false"
+    })
+    void equityScheduleBoundaries(String ticker, String instant, boolean expected) {
+        orderValidator.setClock(Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
+        assertEquals(expected, orderValidator.isWithinTradingHours("EQUITY", ticker));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "2026-07-05T20:59:59Z, false",
+        "2026-07-05T21:00:00Z, true",
+        "2026-07-10T20:59:59Z, true",
+        "2026-07-10T21:00:00Z, false",
+        "2026-01-04T21:59:59Z, false",
+        "2026-01-04T22:00:00Z, true",
+        "2026-01-09T21:59:59Z, true",
+        "2026-01-09T22:00:00Z, false",
+        "2026-01-10T12:00:00Z, false",
+        "2026-01-07T00:00:00Z, true"
+    })
+    void forexScheduleHandlesEasternDaylightAndStandardTime(String instant, boolean expected) {
+        orderValidator.setClock(Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
+        assertEquals(expected, orderValidator.isWithinTradingHours("FOREX", "FX:EURUSD"));
+        assertEquals(expected, orderValidator.isWithinTradingHours("FOREIGN EXCHANGE", "FX:EURUSD"));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "2026-10-23T00:00:00Z",
+        "2026-10-24T00:00:00Z",
+        "2026-10-25T23:59:59Z"
+    })
+    void cryptoBuyAndSellRemainValidOutsideEquityHours(String instant) {
+        orderValidator.setClock(Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
+        when(pricingEngine.getPrice("X:BTC-USD")).thenReturn(BigDecimal.valueOf(60000));
+        when(assetService.getAsset(cryptoAccount, "X:BTC-USD")).thenReturn(
+            new domain.entities.Asset(UUID.randomUUID(), "CRYPTO", "X:BTC-USD", "Bitcoin",
+                0.1, BigDecimal.valueOf(60000))
+        );
+        for (String action : new String[]{"BUY", "SELL"}) {
+            Order order = new Order(UUID.randomUUID(), "CRYPTO", "X:BTC-USD", 0.01, action,
+                ZonedDateTime.now(), BigDecimal.valueOf(600), Order.OrderStatus.SUBMITTED, 202,
+                ZonedDateTime.now());
+            assertTrue(orderValidator.isValidTrade(order, cryptoAccount), action + " at " + instant);
+        }
     }
 
     @Test

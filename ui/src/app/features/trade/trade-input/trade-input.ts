@@ -49,6 +49,9 @@ export class TradeInput {
   ) {}
 
   ngOnInit(): void {
+    if (this.getSelectedAssetType() === 'CRYPTO') {
+      this.quantity = 0.01;
+    }
     this.loadSharePrice();
     this.loadAccounts();
   }
@@ -62,12 +65,16 @@ export class TradeInput {
 
     this.accountService.getUserAccounts(userId).subscribe({
       next: accounts => {
-        this.accounts.set(accounts);
-        this.accountOptions.set(accounts.map(account => ({
+        const compatibleAccounts = accounts.filter(account => this.isCompatibleAccount(account));
+        this.accounts.set(compatibleAccounts);
+        this.accountOptions.set(compatibleAccounts.map(account => ({
           label: account.accountType,
           value: account.accountId
         })));
-        this.selectedAccount.set(accounts[0]?.accountId ?? '');
+        this.selectedAccount.set(compatibleAccounts[0]?.accountId ?? '');
+        if (!compatibleAccounts.length) {
+          this.orderError.set(`Open a compatible ${this.getSelectedAssetType()} account before trading this instrument.`);
+        }
       },
       error: () => this.orderError.set('Unable to load accounts.')
     });
@@ -87,7 +94,17 @@ export class TradeInput {
   }
 
   get estimatedTotal(): number {
-    return (this.quantity || 0) * this.sharePrice;
+    return this.normalizedQuantity * this.sharePrice;
+  }
+
+  private get normalizedQuantity(): number {
+    return typeof this.quantity === 'number' ? this.quantity : Number(this.quantity);
+  }
+
+  onQuantityChange(value: unknown): void {
+    this.quantity = value === '' || value === null || value === undefined
+      ? 0
+      : Number(value);
   }
 
   get selectedAccountCashBalance(): number | null {
@@ -103,13 +120,17 @@ export class TradeInput {
 
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
-    if (!account || this.quantity <= 0) {
-      return false;
-    }
+    return !!account && this.isCompatibleAccount(account)
+      && Number.isFinite(this.normalizedQuantity) && this.normalizedQuantity > 0 && this.sharePrice > 0
+      && (this.selectedAction === 'Sell' || this.estimatedTotal <= account.cashBalance);
+  }
 
-    return this.selectedAction === 'Sell'
-      ? this.quantity <= this.availableShares
-      : this.estimatedTotal <= account.cashBalance;
+  private isCompatibleAccount(account: Account): boolean {
+    switch (this.getSelectedAssetType()) {
+      case 'CRYPTO': return account.accountType === 'CRYPTO';
+      case 'FOREIGN EXCHANGE': return account.accountType === 'FOREX';
+      default: return ['BROKERAGE', '401K', '_401K', 'ROTH IRA', 'ROTH_IRA'].includes(account.accountType);
+    }
   }
 
   get orderData(): OrderReviewData {
@@ -119,7 +140,7 @@ export class TradeInput {
         ?? this.selectedAccount(),
       accountId: this.selectedAccount(),
       orderType: this.selectedOrderType,
-      quantity: this.quantity,
+      quantity: this.normalizedQuantity,
       sharePrice: this.sharePrice,
       estimatedTotal: this.estimatedTotal,
       ticker: this.selectedTicker?.data?.symbol || 'UNKNOWN'
@@ -138,7 +159,7 @@ export class TradeInput {
       return;
     }
 
-    if (data.action === 'Sell' && data.quantity > this.availableShares) {
+    if (data.action === 'Sell' && Number(data.quantity) > this.availableShares) {
       this.orderError.set('You do not have enough shares to sell.');
       return;
     }
@@ -151,7 +172,7 @@ export class TradeInput {
       orderType: this.getSelectedAssetType(),
       action: data.action.toUpperCase() as 'BUY' | 'SELL',
       ticker: data.ticker ?? '',
-      quantity: data.quantity
+      quantity: Number(data.quantity)
     }).subscribe({
       next: order => {
         this.updateOrderStatus(order.status);

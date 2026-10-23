@@ -73,6 +73,22 @@ class AssetServiceTest {
     }
 
     @Test
+    void cryptoPurchaseRetainsCryptoAssetClass() {
+        Account cryptoAccount = new Account(UUID.randomUUID(), ZonedDateTime.now(),
+            Account.AccountType.CRYPTO, BigDecimal.valueOf(10000), BigDecimal.valueOf(10000),
+            new java.util.HashSet<>(), new java.util.HashSet<>());
+        when(assetRepository.findByAccountAccountIdAndTicker(cryptoAccount.getAccID(), "X:BTC-USD"))
+            .thenReturn(Optional.empty());
+        when(assetRepository.save(any(Asset.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        Asset result = assetService.updateAssetOnBuy(cryptoAccount, "X:BTC-USD", 0.01,
+            BigDecimal.valueOf(60000));
+
+        assertEquals("CRYPTO", result.getAssetClass());
+        assertEquals(0.01, result.quantity());
+    }
+
+    @Test
     void testUpdateAssetOnBuy_ExistingAsset_UpdatesAverageCost() {
         // Arrange
         Asset existingAsset = new Asset(
