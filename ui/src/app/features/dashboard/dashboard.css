@@ -7,6 +7,7 @@
 
 .account-select-container {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--space-m, 12px);
   align-items: center;
 }
@@ -65,5 +66,111 @@
 
 .asset-name {
   font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.balance-allocation {
+  min-width: 0;
+}
+
+.allocation-heading {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0;
+}
+
+.allocation-bar {
+  position: relative;
+  display: flex;
+  height: 28px;
+  width: 100%;
+  border-radius: 4px;
+  background: var(--background-tertiary);
+}
+
+.allocation-segment {
+  height: 100%;
+  min-width: 0;
+  box-shadow: inset -1px 0 0 var(--background-secondary);
+}
+
+.allocation-segment:first-child {
+  border-radius: 4px 0 0 4px;
+}
+
+.allocation-segment:last-child {
+  border-radius: 0 4px 4px 0;
+}
+
+.allocation-segment:only-child {
+  border-radius: 4px;
+}
+
+.allocation-segment:focus-visible {
+  outline: 2px solid var(--text-primary);
+  outline-offset: 3px;
+  z-index: 1;
+}
+
+.allocation-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 2;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: calc(100vw - 16px);
+  padding: 8px 12px;
+  border: 1px solid var(--background-tertiary);
+  border-radius: 4px;
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  overflow-wrap: anywhere;
+  pointer-events: none;
+  box-shadow: 0 3px 12px #0002;
+}
+
+.allocation-tooltip strong {
+  margin-right: 8px;
+}
+
+.allocation-segment:hover .allocation-tooltip,
+.allocation-segment:focus .allocation-tooltip {
+  display: block;
+}
+
+.allocation-legend {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  gap: 8px 16px;
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  font-size: var(--font-size-sm);
+}
+
+.allocation-legend li {
+  display: grid;
+  grid-template-columns: 10px minmax(0, 1fr);
+  max-width: 100%;
+  gap: 8px;
+  align-items: center;
+  color: var(--text-primary);
+}
+
+.allocation-swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+
+.allocation-name {
+  overflow-wrap: anywhere;
+}
+
+.allocation-empty {
   color: var(--text-secondary);
 }
