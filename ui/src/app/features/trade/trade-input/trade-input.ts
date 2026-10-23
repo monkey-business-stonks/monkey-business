@@ -49,6 +49,9 @@ export class TradeInput {
   ) {}
 
   ngOnInit(): void {
+    if (this.getSelectedAssetType() === 'CRYPTO') {
+      this.quantity = 0.01;
+    }
     this.loadSharePrice();
     this.loadAccounts();
   }
@@ -91,7 +94,17 @@ export class TradeInput {
   }
 
   get estimatedTotal(): number {
-    return (this.quantity || 0) * this.sharePrice;
+    return this.normalizedQuantity * this.sharePrice;
+  }
+
+  private get normalizedQuantity(): number {
+    return typeof this.quantity === 'number' ? this.quantity : Number(this.quantity);
+  }
+
+  onQuantityChange(value: unknown): void {
+    this.quantity = value === '' || value === null || value === undefined
+      ? 0
+      : Number(value);
   }
 
   get selectedAccountCashBalance(): number | null {
@@ -108,7 +121,7 @@ export class TradeInput {
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
     return !!account && this.isCompatibleAccount(account)
-      && Number.isFinite(this.quantity) && this.quantity > 0 && this.sharePrice > 0
+      && Number.isFinite(this.normalizedQuantity) && this.normalizedQuantity > 0 && this.sharePrice > 0
       && (this.selectedAction === 'Sell' || this.estimatedTotal <= account.cashBalance);
   }
 
@@ -127,7 +140,7 @@ export class TradeInput {
         ?? this.selectedAccount(),
       accountId: this.selectedAccount(),
       orderType: this.selectedOrderType,
-      quantity: this.quantity,
+      quantity: this.normalizedQuantity,
       sharePrice: this.sharePrice,
       estimatedTotal: this.estimatedTotal,
       ticker: this.selectedTicker?.data?.symbol || 'UNKNOWN'
@@ -146,7 +159,7 @@ export class TradeInput {
       return;
     }
 
-    if (data.action === 'Sell' && data.quantity > this.availableShares) {
+    if (data.action === 'Sell' && Number(data.quantity) > this.availableShares) {
       this.orderError.set('You do not have enough shares to sell.');
       return;
     }
@@ -159,7 +172,7 @@ export class TradeInput {
       orderType: this.getSelectedAssetType(),
       action: data.action.toUpperCase() as 'BUY' | 'SELL',
       ticker: data.ticker ?? '',
-      quantity: data.quantity
+      quantity: Number(data.quantity)
     }).subscribe({
       next: order => {
         this.updateOrderStatus(order.status);

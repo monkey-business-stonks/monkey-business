@@ -8,7 +8,7 @@ import { OrderService } from '@/app/core/services/order.service';
 import { Account } from '@/app/core/models/account';
 
 describe('TradeInput crypto trading', () => {
-  function createComponent(accounts: Account[]): TradeInput {
+  function createComponent(accounts: Account[], symbol = 'X:BTC-USD'): TradeInput {
     const component = new TradeInput(
       { getPrice: () => of(60000) } as unknown as PricingService,
       { getUserAccounts: () => of(accounts) } as unknown as AccountService,
@@ -16,7 +16,7 @@ describe('TradeInput crypto trading', () => {
       {} as OrderService,
       { detectChanges: () => undefined } as unknown as ChangeDetectorRef
     );
-    component.selectedTicker = { data: { symbol: 'X:BTC-USD', price: 60000 } };
+    component.selectedTicker = { data: { symbol, price: symbol.startsWith('X:') ? 60000 : 100 } };
     component.ngOnInit();
     return component;
   }
@@ -49,6 +49,17 @@ describe('TradeInput crypto trading', () => {
     const component = createComponent([crypto]);
     component.quantity = 1;
     expect(component.canReviewOrder).toBe(false);
+  });
+
+  it('accepts numeric text from the quantity input when account funds are sufficient', () => {
+    const account = { ...brokerage, cashBalance: 100000 };
+    const component = createComponent([account], 'AAPL');
+    component.sharePrice = 100;
+    component.onQuantityChange('2');
+
+    expect(component.quantity).toBe(2);
+    expect(component.estimatedTotal).toBe(200);
+    expect(component.canReviewOrder).toBe(true);
   });
 });
 
