@@ -40,6 +40,13 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PatchMapping("/{userId}")
+    @PreAuthorize("#userId == authentication.name or hasAuthority('ROLE_OPERATIONS')")
+    public ResponseEntity<UserResponse> updateUser(@PathVariable String userId,
+                                                  @Valid @RequestBody UpdateUserRequest request) {
+        return ResponseEntity.ok(userService.updateUser(UUID.fromString(userId), request));
+    }
+
     @PostMapping("/authenticate")
     public ResponseEntity<AuthResponse> authenticate(@Valid @RequestBody AuthenticateRequest request) {
         logger.info("User authentication attempt for username: {}", request.getUsername());

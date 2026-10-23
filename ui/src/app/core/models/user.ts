@@ -15,3 +15,14 @@ export interface U {
   createdOn: string;
   lastLogin: string | null;
 }
+
+/** Fields accepted by PATCH /users/{userId}. Omitted values are left unchanged. */
+export interface UserUpdateRequest {
+  username?: string;
+  name?: string;
+  email?: string;
+  dob?: string;
+  /** Required by the backend when changing the password. */
+  currentPassword?: string;
+  password?: string;
+}

@@ -192,7 +192,7 @@
                         <generateApis>false</generateApis>
                         <generateSupportingFiles>false</generateSupportingFiles>
                         <fullConstructorForRootObjects>true</fullConstructorForRootObjects>
-                        <modelsToGenerate>CreateUserRequest,AuthenticateRequest,UserResponse,AuthResponse,CreateAccountRequest,UpdateAccountRequest,AccountResponse,PlaceOrderRequest,OrderResponse,OrderSummary,AssetResponse,ErrorResponse,MarketDataDto,AccessLevel,AccountType,OrderType,OrderAction,OrderStatus,AssetClass</modelsToGenerate>
+                        <modelsToGenerate>CreateUserRequest,UpdateUserRequest,AuthenticateRequest,UserResponse,AuthResponse,CreateAccountRequest,UpdateAccountRequest,AccountResponse,PlaceOrderRequest,OrderResponse,OrderSummary,AssetResponse,ErrorResponse,MarketDataDto,AccessLevel,AccountType,OrderType,OrderAction,OrderStatus,AssetClass</modelsToGenerate>
                     </configOptions>
                 </configuration>
             </plugin>

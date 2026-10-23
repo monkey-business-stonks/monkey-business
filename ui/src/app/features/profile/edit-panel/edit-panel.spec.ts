@@ -1,6 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { EditPanel } from './edit-panel';
 import { AccessLevel } from '@/app/core/models/user';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 describe('EditPanel', () => {
   let component: EditPanel;
@@ -26,7 +27,7 @@ describe('EditPanel', () => {
       username: 'trader',
       name: 'Test Trader',
       email: 'trader@example.com',
-      phone: '555-0100',
+      phone: null,
       dob: '1990-04-12',
       accessLevel: AccessLevel.User,
       createdOn: '2020-01-01',

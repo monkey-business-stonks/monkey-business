@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { U } from '@/app/core/models/user';
+import { U, UserUpdateRequest } from '@/app/core/models/user';
 
 @Injectable({
   providedIn: 'root'
@@ -15,5 +15,9 @@ export class UserService {
 
   getUser(userId: string): Observable<U> {
     return this.http.get<U>(`${this.getBackendUrl()}/users/${userId}`);
+  }
+
+  updateUser(userId: string, changes: UserUpdateRequest): Observable<U> {
+    return this.http.patch<U>(`${this.getBackendUrl()}/users/${userId}`, changes);
   }
 }

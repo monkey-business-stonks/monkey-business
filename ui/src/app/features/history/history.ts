@@ -43,6 +43,26 @@ export class History implements OnInit {
   ];
 
   orderData = signal<OrderHistoryItem[]>([]);
+  searchQuery = '';
+  selectedTimeRange = 'all';
+  selectedInstrument = 'ALL';
+  selectedStatus = 'ALL';
+  timeRangeOptions = [
+    { label: 'All available', value: 'all' },
+    { label: 'Last 30 days', value: '30' },
+    { label: 'Last 90 days', value: '90' },
+    { label: 'Last 12 months', value: '365' }
+  ];
+  instrumentOptions = [{ label: 'All instruments', value: 'ALL' }];
+  statusOptions = [
+    { label: 'All statuses', value: 'ALL' },
+    { label: 'Submitted', value: 'SUBMITTED' },
+    { label: 'Accepted', value: 'ACCEPTED' },
+    { label: 'Filled', value: 'FILLED' },
+    { label: 'Settled', value: 'SETTLED' },
+    { label: 'Rejected', value: 'REJECTED' }
+  ];
+  private allOrders: Order[] = [];
   private orderUpdateSubscription?: Subscription;
 
   constructor(
@@ -80,19 +100,56 @@ export class History implements OnInit {
       finalize(() => this.loading.set(false))
     ).subscribe(orders => {
       try {
-        const sortedOrders = [...orders].sort((left, right) => {
+        this.allOrders = [...orders].sort((left, right) => {
           const dateDifference = new Date(right.submittedOn).getTime() - new Date(left.submittedOn).getTime();
           if (dateDifference !== 0) return dateDifference;
 
           return this.statusRank(left.status) - this.statusRank(right.status);
         });
-        const historyItems = sortedOrders.map(order => this.toHistoryItem(order));
-        this.orderData.set(historyItems);
+        const instruments = [...new Set(this.allOrders.map(order => order.ticker).filter(Boolean))].sort();
+        this.instrumentOptions = [
+          { label: 'All instruments', value: 'ALL' },
+          ...instruments.map(instrument => ({ label: instrument, value: instrument }))
+        ];
+        this.applyFilters();
       } catch (error) {
         console.error('Failed to format order history:', error);
         this.error.set('Failed to format order history.');
       }
     });
+  }
+
+  onSearch(): void {
+    this.applyFilters();
+  }
+
+  onFilterChange(): void {
+    this.applyFilters();
+  }
+
+  private applyFilters(): void {
+    const query = this.searchQuery.trim().toLocaleLowerCase();
+    const days = this.selectedTimeRange === 'all' ? null : Number(this.selectedTimeRange);
+    const cutoff = days === null ? null : Date.now() - days * 24 * 60 * 60 * 1000;
+
+    const filteredOrders = this.allOrders.filter(order => {
+      const matchesQuery = !query || [
+        order.orderId,
+        order.accountId,
+        order.orderType,
+        order.action,
+        order.ticker,
+        order.status
+      ].some(value => String(value ?? '').toLocaleLowerCase().includes(query));
+      const matchesInstrument = this.selectedInstrument === 'ALL' || order.ticker === this.selectedInstrument;
+      const matchesStatus = this.selectedStatus === 'ALL' || order.status === this.selectedStatus;
+      const submittedOn = new Date(order.submittedOn).getTime();
+      const matchesTimeRange = cutoff === null || (Number.isFinite(submittedOn) && submittedOn >= cutoff);
+
+      return matchesQuery && matchesInstrument && matchesStatus && matchesTimeRange;
+    });
+
+    this.orderData.set(filteredOrders.map(order => this.toHistoryItem(order)));
   }
 
   private toHistoryItem(order: Order): OrderHistoryItem {
