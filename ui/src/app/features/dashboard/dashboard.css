@@ -15,6 +15,23 @@
   box-sizing: border-box;
 }
 
+.account-button-label {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 36px;
+  gap: var(--space-xxs);
+  font-size: var(--font-size-sm);
+}
+
+.account-button-subtext {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-normal);
+  font-family: 'Roboto Mono', monospace;
+  opacity: 0.8;
+}
+
 .account-overview-container {
   background-color: var(--background-secondary);
   border: var(--width-sm) solid var(--background-tertiary);
@@ -61,6 +78,24 @@
   font-weight: var(--font-weight-bold);
   color: var(--text-primary);
   line-height: var(--space-lg);
+}
+
+.holdings-group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  min-width: 0;
+}
+
+.holdings-group-title {
+  margin: 0;
+  color: var(--accent-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+}
+
+.holdings-group-id {
+  opacity: 0.6;
 }
 
 .asset-name {

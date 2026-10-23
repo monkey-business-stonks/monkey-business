@@ -64,7 +64,7 @@ export class TradeInput {
       next: accounts => {
         this.accounts.set(accounts);
         this.accountOptions.set(accounts.map(account => ({
-          label: account.accountType,
+          label: `${account.accountType} · ${account.accountId.slice(-4).toUpperCase()}`,
           value: account.accountId
         })));
         this.selectedAccount.set(accounts[0]?.accountId ?? '');

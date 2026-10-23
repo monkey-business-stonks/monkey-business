@@ -6,7 +6,7 @@
       [active]="selectedAccountFilter() === 'ALL'"
       [attr.aria-pressed]="selectedAccountFilter() === 'ALL'"
       (click)="selectAccountFilter('ALL')">
-      ALL
+      <span class="account-button-label">ALL</span>
     </app-button>
 
     @for (acc of accounts(); track acc.accountId) {
@@ -15,14 +15,17 @@
         [active]="selectedAccountFilter() === acc.accountId"
         [attr.aria-pressed]="selectedAccountFilter() === acc.accountId"
         (click)="selectAccountFilter(acc.accountId)">
-        {{ acc.accountType }}
+        <span class="account-button-label">
+          <span>{{ getAccountTypeLabel(acc.accountType) }}</span>
+          <span class="account-button-subtext">{{ acc.accountId.slice(-4).toUpperCase() }}</span>
+        </span>
       </app-button>
     }
 
     <app-button 
       variant="primary"
       (click)="openAccountPage()">
-      +
+      <span class="account-button-label">+</span>
     </app-button>
   </div>
 
@@ -45,7 +48,14 @@
   }
 
   <!-- Dynamic Table -->
-  <app-table [columns]="columns" [data]="tableHoldings()">
+  @for (group of holdingsGroups(); track group.accountId) {
+    <section class="holdings-group">
+      @if (group.label) {
+        <h2 class="holdings-group-title">
+          {{ group.label }} <span class="holdings-group-id">· {{ group.accountId.slice(-4).toUpperCase() }}</span>
+        </h2>
+      }
+  <app-table [columns]="columns" [data]="group.rows">
     <ng-template #cellTemplate let-row let-column="column">
       <ng-container *ngIf="column.key === 'ticker'; else standardCell">
         <div class="ticker">{{ row.ticker }}</div>
@@ -57,4 +67,6 @@
       </ng-template>
     </ng-template>
   </app-table>
+    </section>
+  }
 </div>

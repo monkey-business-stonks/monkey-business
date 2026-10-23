@@ -84,6 +84,8 @@ export class Dashboard implements OnDestroy, OnInit {
         const pl = mktValue - (qty * avgCost);
 
         rows.push({
+          accountId: acc.accountId,
+          accountType: acc.accountType,
           ticker: asset.ticker,
           assetName: asset.name || asset.ticker,
           quantity: qty.toFixed(2),
@@ -97,6 +99,37 @@ export class Dashboard implements OnDestroy, OnInit {
 
     return rows;
   });
+
+  holdingsGroups = computed(() => {
+    const rows = this.tableHoldings();
+    if (this.selectedAccountFilter() !== 'ALL' || rows.length === 0) {
+      return [{ accountId: 'ALL', label: '', rows }];
+    }
+
+    const groups = new Map<string, { accountId: string; label: string; rows: typeof rows }>();
+    for (const row of rows) {
+      let group = groups.get(row.accountId);
+      if (!group) {
+        group = {
+          accountId: row.accountId,
+          label: this.getAccountTypeLabel(row.accountType),
+          rows: []
+        };
+        groups.set(row.accountId, group);
+      }
+      group.rows.push(row);
+    }
+    return Array.from(groups.values());
+  });
+
+  getAccountTypeLabel(accountType: string): string {
+    const labels: Record<string, string> = {
+      ROTH_IRA: 'ROTH IRA',
+      _401K: '401(K)',
+      '401K': '401(K)'
+    };
+    return labels[accountType] ?? accountType.toUpperCase();
+  }
 
   constructor(
     private router: Router,
