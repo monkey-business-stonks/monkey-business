@@ -100,10 +100,7 @@ paths:
     patch:
       tags: [Users]
       summary: Update user details
-      description: |
-        Available to the user themselves or OPERATIONS staff. Omitted fields and
-        null values are unchanged, except phone where null clears the number.
-        Roles, IDs, accounts and timestamps cannot be updated.
+      description: Can change user details
       operationId: updateUser
       requestBody:
         required: true
@@ -112,7 +109,7 @@ paths:
             schema: { $ref: '#/components/schemas/UpdateUserRequest' }
       responses:
         '200':
-          description: Updated user details (never includes password or tokens)
+          description: Updated user details
           content:
             application/json:
               schema: { $ref: '#/components/schemas/UserResponse' }
