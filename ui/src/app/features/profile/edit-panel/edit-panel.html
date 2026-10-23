@@ -39,6 +39,22 @@
           [value]="email"
           (valueChange)="email = $event"
         ></app-base-input>
+        <app-base-input
+          label="Phone Number"
+          name="phone"
+          type="tel"
+          variant="form"
+          [value]="phone"
+          [disabled]="true"
+        ></app-base-input>
+        <app-base-input
+          label="Date of Birth"
+          name="dob"
+          type="date"
+          variant="form"
+          [value]="dob"
+          (valueChange)="dob = $event"
+        ></app-base-input>
       </div>
     </section>
 
@@ -73,8 +89,10 @@
             (focusout)="newPasswordBlurred = true"
           ></app-base-input>
           <div class="password-validation-slot">
-            @if (newPasswordBlurred && passwordChangeStarted && newPassword.length <= 8) {
-              <p class="password-validation">Use more than 8 characters.</p>
+            @if (newPasswordBlurred && passwordChangeStarted && newPassword.length < 8) {
+              <p class="password-validation">Use at least 8 characters.</p>
+            } @else if (newPasswordBlurred && passwordChangeStarted && newPasswordTooLong) {
+              <p class="password-validation">Password must be no more than 72 UTF-8 bytes.</p>
             }
           </div>
         </div>
@@ -100,11 +118,14 @@
     </section>
 
     <div class="buttons">
-      <app-button variant="primary" (click)="onCancel()">Cancel</app-button>
+      <app-button variant="primary" [disabled]="saving" (click)="onCancel()">Cancel</app-button>
       <app-button variant="primary" [disabled]="!canSaveChanges" (click)="onSaveConfiguration()">
-        Save Changes
+        {{ saving ? 'Saving…' : 'Save Changes' }}
       </app-button>
     </div>
+    @if (saveError) {
+      <p class="password-validation" role="alert">{{ saveError }}</p>
+    }
   </div>
 
   @if (showDiscardConfirmation) {
