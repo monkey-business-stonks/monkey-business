@@ -35,6 +35,44 @@
     <p class="label">CASH BALANCE — <span class="cash-balance">${{ totalCashBalance() | number:'1.2-2' }}</span></p>
   </div>
 
+  <section class="balance-allocation" aria-labelledby="allocation-heading" [attr.aria-busy]="loading()">
+    <h2 id="allocation-heading" class="allocation-heading">
+      {{ selectedAccountFilter() === 'ALL' ? 'Balance by account' : 'Cash & asset allocation' }}
+    </h2>
+    @if (loading()) {
+      <p class="allocation-empty">Loading balance breakdown...</p>
+    } @else if (error()) {
+      <p class="allocation-empty">Balance breakdown unavailable.</p>
+    } @else if (balanceAllocation().length) {
+      <div class="allocation-bar" role="group" aria-label="Balance distribution">
+        @for (segment of balanceAllocation(); track segment.id) {
+          <div class="allocation-segment" tabindex="0" role="img"
+            [style.width.%]="segment.percentage"
+            [style.background-color]="segment.color"
+            (pointerenter)="positionAllocationTooltip($event, tooltip)"
+            (pointermove)="positionAllocationTooltip($event, tooltip)"
+            (focus)="positionAllocationTooltip($event, tooltip)"
+            [attr.aria-label]="segment.label + ': ' + (segment.value | currency:'USD') + ', ' + (segment.percentage | number:'1.1-1') + '%'">
+            <span #tooltip class="allocation-tooltip" aria-hidden="true">
+              <strong>{{ segment.label }}</strong>
+              {{ segment.value | currency:'USD' }} · {{ segment.percentage | number:'1.1-1' }}%
+            </span>
+          </div>
+        }
+      </div>
+      <ul class="allocation-legend">
+        @for (segment of balanceAllocation(); track segment.id) {
+          <li>
+            <span class="allocation-swatch" [style.background-color]="segment.color" aria-hidden="true"></span>
+            <span class="allocation-name">{{ segment.label }}</span>
+          </li>
+        }
+      </ul>
+    } @else {
+      <p class="allocation-empty">No balance to display.</p>
+    }
+  </section>
+
   <!-- Loading & Error States -->
   @if (loading()) {
     <p class="status-msg">Loading account data...</p>
