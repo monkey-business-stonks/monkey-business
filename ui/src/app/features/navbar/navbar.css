@@ -1,6 +1,7 @@
 .navbar {
   display: flex;
   flex-direction: row;
+  align-items: stretch;
   background-color: var(--background-secondary);
   padding: var(--space-lg) calc(var(--space-xl) - var(--space-md));
 }
@@ -9,12 +10,13 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-xl);
-  align-items: center;
+  align-items: stretch;
 }
 
 .logo {
   display: flex;
   flex-direction: row;
+  align-items: center;
   font-weight: var(--font-weight-bold);
   font-size: var(--font-size-xl);
   gap: var(--space-xs);
@@ -32,10 +34,28 @@
   display: flex;
   flex-direction: row;
   gap: var(--space-lg);
+  align-items: stretch;
+}
+
+.navbuttons app-button {
+  display: flex;
   align-items: center;
+  position: relative;
+}
+
+.navbuttons app-button.active::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: calc(-1 * var(--space-lg));
+  left: 0;
+  height: 3px;
+  background-color: var(--accent-primary);
 }
 
 .internal-workspace-text {
+  display: flex;
+  align-items: center;
   color: var(--text-secondary);
   font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-sm);
@@ -55,12 +75,13 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  interpolate-size: allow-keywords;
   transition: width 0.3s ease;
   width: 60px;
   overflow: hidden;
   
   &:hover {
-    width: 180px;
+    width: max-content;
   }
 }
 
@@ -68,8 +89,11 @@
   min-width: 48px;
   width: 48px;
   height: 48px;
+  box-sizing: border-box;
   border-radius: 50%;
   border: var(--width-sm) solid var(--accent-primary);
+  padding: 3px;
+  object-fit: contain;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,10 +101,28 @@
 }
 
 .profile-text {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-xs);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
   color: var(--text-secondary);
   white-space: nowrap;
+}
+
+.profile-name {
+  color: #fff;
+  line-height: 1.2;
+}
+
+.profile-role {
+  color: var(--text-muted, var(--text-secondary));
+  font-size: var(--font-size-xs);
+  font-weight: 400;
+  line-height: 1;
+  align-self: center;
+  text-transform: uppercase;
 }
 
 .profile-icon-button:hover .profile-text {

@@ -2,57 +2,127 @@
   <div class="top-panel">
     <div class="top-labels">
       <p class="label">Edit Profile Details</p>
-      <p class="sublabel">Update your personal information, methods of contact, and trading configurations.</p>
+      <p class="sublabel">Update your personal details or change your password.</p>
     </div>
   </div>
   <div class="edit-container">
-    <table>
-      <tr>
-        <td>
-          <app-base-input label="Display Username"></app-base-input>
-        </td>
-         <td>
-          <app-base-input label="Primary Email Address"></app-base-input>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <app-base-input label="Secure Password"></app-base-input>
-        </td>
-        <td>
-          <app-base-input label="Mobile Phone Number"></app-base-input>
-        </td>
-      </tr>
-      <tr>
-        <td>
-          <!-- TO BE REPLACED -->
-          <div class="selector-container">
-            <label class="selector-label">Base Valuation Currency</label>
-            <select name="cars" class="selector">
-              <option value="USD">USD ($) - United States Dollar</option>
-              <option value="EUR">EUR (€) - Euro</option>
-              <option value="GBP">GBP (£) - Great British Pound</option>
-              <option value="JPY">JPY (¥) - Japanese Yen</option>
-            </select>
+    <section class="profile-section" aria-labelledby="profile-section-title">
+      <h2 id="profile-section-title" class="section-title">PROFILE DETAILS</h2>
+      <hr class="section-divider">
+      <div class="profile-fields">
+        <app-base-input
+          label="First Name"
+          name="firstName"
+          variant="form"
+          [value]="firstName"
+          (valueChange)="firstName = $event"
+        ></app-base-input>
+        <app-base-input
+          label="Last Name"
+          name="lastName"
+          variant="form"
+          [value]="lastName"
+          (valueChange)="lastName = $event"
+        ></app-base-input>
+        <app-base-input
+          label="Username"
+          name="username"
+          variant="form"
+          [value]="username"
+          (valueChange)="username = $event"
+        ></app-base-input>
+        <app-base-input
+          label="Email Address"
+          name="email"
+          type="email"
+          variant="form"
+          [value]="email"
+          (valueChange)="email = $event"
+        ></app-base-input>
+      </div>
+    </section>
+
+    <section class="password-section" aria-labelledby="password-section-title">
+      <h2 id="password-section-title" class="section-title">Change Password</h2>
+      <hr class="section-divider">
+      <div class="password-fields">
+        <div class="password-field">
+          <app-base-input
+            label="Current Password"
+            name="currentPassword"
+            type="password"
+            variant="form"
+            [value]="currentPassword"
+            (valueChange)="currentPassword = $event; currentPasswordBlurred = false"
+            (focusout)="currentPasswordBlurred = true"
+          ></app-base-input>
+          <div class="password-validation-slot">
+            @if (currentPasswordBlurred && passwordChangeStarted && !currentPassword) {
+              <p class="password-validation">Current password is required.</p>
+            }
           </div>
-        </td>
-        <td>
-          <div class="selector-container">
-            <label class="selector-label">Favorite Index</label>
-            <select name="cars" class="selector">
-              <option value="S&P">S&P 500</option>
-              <option value="DJIA">Dow Jones Industrial Average</option>
-              <option value="N100">Nasdaq 100</option>
-              <option value="R2000">Russel 2000</option>
-            </select>
+        </div>
+        <div class="password-field">
+          <app-base-input
+            label="New Password"
+            name="newPassword"
+            type="password"
+            variant="form"
+            [value]="newPassword"
+            (valueChange)="newPassword = $event; newPasswordBlurred = false"
+            (focusout)="newPasswordBlurred = true"
+          ></app-base-input>
+          <div class="password-validation-slot">
+            @if (newPasswordBlurred && passwordChangeStarted && newPassword.length <= 8) {
+              <p class="password-validation">Use more than 8 characters.</p>
+            }
           </div>
-        </td>
-      </tr>
-    </table>
-    <hr>
+        </div>
+        <div class="password-field">
+          <app-base-input
+            label="Confirm New Password"
+            name="confirmNewPassword"
+            type="password"
+            variant="form"
+            [value]="confirmNewPassword"
+            (valueChange)="confirmNewPassword = $event; confirmNewPasswordBlurred = false"
+            (focusout)="confirmNewPasswordBlurred = true"
+          ></app-base-input>
+          <div class="password-validation-slot">
+            @if (confirmNewPasswordBlurred && passwordChangeStarted && newPassword.length > 0 && !confirmNewPassword) {
+              <p class="password-validation">Confirm your new password.</p>
+            } @else if (confirmNewPasswordBlurred && confirmNewPassword && newPassword !== confirmNewPassword) {
+              <p class="password-validation">Passwords do not match.</p>
+            }
+          </div>
+        </div>
+      </div>
+    </section>
+
     <div class="buttons">
-      <app-button id="discard">Discard Changes</app-button>
-      <app-button id="save" (click)="onSaveConfiguration()">Save Configuration</app-button>
+      <app-button variant="primary" (click)="onCancel()">Cancel</app-button>
+      <app-button variant="primary" [disabled]="!canSaveChanges" (click)="onSaveConfiguration()">
+        Save Changes
+      </app-button>
     </div>
   </div>
+
+  @if (showDiscardConfirmation) {
+    <div class="dialog-overlay" (click)="keepEditing()" (keydown.escape)="keepEditing()">
+      <section
+        class="discard-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="discard-dialog-title"
+        (click)="$event.stopPropagation()"
+      >
+        <h2 id="discard-dialog-title" class="dialog-title">Discard changes?</h2>
+        <p class="dialog-message">Your unsaved profile changes will be lost.</p>
+        <div class="dialog-actions">
+          <app-button variant="primary" (click)="keepEditing()">Keep Editing</app-button>
+          <app-button variant="primary" (click)="confirmDiscard()">Discard Changes</app-button>
+        </div>
+      </section>
+    </div>
+  }
 </div>
