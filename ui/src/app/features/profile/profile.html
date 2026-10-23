@@ -4,7 +4,11 @@
   </div>
   <div class="info-container">
     @if (isEditMode) {
-      <edit-panel (saveConfiguration)="saveAndReturnToAccounts()"></edit-panel>
+      <edit-panel
+        [user]="user()"
+        (saveConfiguration)="saveAndReturnToAccounts()"
+        (cancelEdit)="saveAndReturnToAccounts()"
+      ></edit-panel>
     } @else {
       <accounts-panel
         [showEditProfileButton]="true"

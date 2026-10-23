@@ -108,14 +108,74 @@
 }
 
 .open-account-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 48px;
+  padding: var(--space-sm) var(--space-md);
   cursor: pointer;
-  border-style: dashed;
+  border-style: solid;
   transition-duration: var(--transition-duration);
+}
+
+.open-account-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+}
+
+.open-account-icon {
+  position: relative;
+  width: 20px;
+  height: 20px;
+  box-sizing: border-box;
+  border: var(--width-sm) solid var(--text-primary);
+  border-radius: 50%;
+  flex: 0 0 20px;
+  transition: border-color var(--transition-duration);
+}
+
+.open-account-icon::before,
+.open-account-icon::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 10px;
+  height: 1.5px;
+  background-color: var(--text-primary);
+  transition: background-color var(--transition-duration);
+  transform: translate(-50%, -50%);
+}
+
+.open-account-icon::after {
+  transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.open-account-label {
+  color: var(--text-primary);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  transition: color var(--transition-duration);
 }
 
 .open-account-bar:hover {
   border-color: var(--accent-primary);
   background-color: var(--accent-primary-transparent);
+}
+
+.open-account-bar:hover .open-account-icon {
+  border-color: var(--accent-primary);
+}
+
+.open-account-bar:hover .open-account-icon::before,
+.open-account-bar:hover .open-account-icon::after {
+  background-color: var(--accent-primary);
+}
+
+.open-account-bar:hover .open-account-label {
+  color: var(--accent-primary);
 }
 
 .empty-state {

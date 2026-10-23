@@ -89,9 +89,17 @@ export class CreateUser {
 
     this.authService.register(payload).subscribe({
       next: () => {
-        this.loading.set(false);
-        // Alert user or navigate to login with query param
-        this.router.navigate(['/login'], { queryParams: { registered: 'true' } });
+        this.authService.authenticate(this.username().trim(), this.password()).subscribe({
+          next: () => {
+            this.loading.set(false);
+            this.password.set('');
+            this.router.navigate([this.authService.getDefaultRouteForRole()]);
+          },
+          error: () => {
+            this.loading.set(false);
+            this.error.set('Your account was created, but automatic sign-in failed. Please sign in.');
+          },
+        });
       },
       error: (err: any) => {
         this.loading.set(false);
