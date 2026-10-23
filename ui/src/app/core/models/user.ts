@@ -15,3 +15,14 @@ export interface U {
   createdOn: string;
   lastLogin: string | null;
 }
+
+/** Fields accepted by PATCH /users/{userId}. Omitted values are left unchanged. */
+export interface UserUpdateRequest {
+  username?: string;
+  name?: string;
+  email?: string;
+  /** Set to null to clear the phone number. */
+  phone?: string | null;
+  dob?: string;
+  password?: string;
+}

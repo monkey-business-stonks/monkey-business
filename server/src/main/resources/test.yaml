@@ -97,6 +97,31 @@ paths:
   /users/{userId}:
     parameters:
       - $ref: '#/components/parameters/UserId'
+    patch:
+      tags: [Users]
+      summary: Update user details
+      description: |
+        Available to the user themselves or OPERATIONS staff. Omitted fields and
+        null values are unchanged, except phone where null clears the number.
+        Roles, IDs, accounts and timestamps cannot be updated.
+      operationId: updateUser
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UpdateUserRequest' }
+      responses:
+        '200':
+          description: Updated user details (never includes password or tokens)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/UserResponse' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+        '401': { $ref: '#/components/responses/Unauthorized' }
+        '403': { $ref: '#/components/responses/Forbidden' }
+        '404': { $ref: '#/components/responses/NotFound' }
+        '409': { $ref: '#/components/responses/Conflict' }
+        '500': { description: Internal server error }
     get:
       tags: [Users]
       summary: Get user info
@@ -424,6 +449,23 @@ components:
         phone: { type: string, maxLength: 50, nullable: true, example: "+353851234567" }
         dob: { type: string, format: date, description: Must not be in the future., example: "1998-04-12" }
         password: { type: string, format: password, minLength: 8, maxLength: 72 }
+
+    UpdateUserRequest:
+      type: object
+      description: Partial update of editable user details. All fields are optional.
+      properties:
+        username: { type: string, minLength: 1, maxLength: 255, example: jdoe }
+        name: { type: string, minLength: 1, maxLength: 255, example: Jane Doe }
+        email: { type: string, format: email, minLength: 1, maxLength: 255, example: user@email.com }
+        phone: { type: string, maxLength: 50, nullable: true, example: "+353851234567" }
+        dob: { type: string, format: date, description: Must not be in the future., example: "1998-04-12" }
+        password:
+          type: string
+          format: password
+          writeOnly: true
+          minLength: 8
+          maxLength: 72
+          description: At least 8 characters and at most 72 UTF-8 bytes (BCrypt limit).
 
     AuthenticateRequest:
       type: object

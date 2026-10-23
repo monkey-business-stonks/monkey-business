@@ -2,6 +2,7 @@ package domain.service;
 
 import domain.dto.*;
 import domain.entities.User;
+import domain.error.BusinessConflictException;
 import domain.repository.UserRepository;
 import org.openapitools.jackson.nullable.JsonNullable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,8 +12,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCrypt;
 import org.springframework.stereotype.Service;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
 
+import java.nio.charset.StandardCharsets;
+import java.time.LocalDate;
 import java.time.ZonedDateTime;
 import java.util.*;
 
@@ -63,6 +68,104 @@ public class UserService {
         userRepository.save(user);
 
         return toUserResponse(user);
+    }
+
+    @Transactional
+    public UserResponse updateUser(UUID userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new NoSuchElementException("User not found with ID: " + userId));
+
+        // Validate all supplied details before changing the user.
+        validateUserUpdate(userId, request);
+        String passwordHash = request.getPassword() == null ? null
+            : BCrypt.hashpw(request.getPassword(), BCrypt.gensalt());
+
+        updateUsername(user, request.getUsername());
+        updateName(user, request.getName());
+        updateEmail(user, request.getEmail());
+        updatePhone(user, request.getPhone());
+        updateDob(user, request.getDob());
+        updatePassword(user, passwordHash);
+        user.setUpdatedAt(ZonedDateTime.now());
+
+        saveUserUpdate(user);
+        return toUserResponse(user);
+    }
+
+    private void validateUserUpdate(UUID userId, UpdateUserRequest request) {
+        validateNonBlank(request.getUsername(), "Username");
+        validateNonBlank(request.getName(), "Name");
+        validateNonBlank(request.getEmail(), "Email");
+        if (request.getDob() != null && request.getDob().isAfter(LocalDate.now())) {
+            throw new IllegalArgumentException("Date of birth must not be in the future");
+        }
+        if (request.getPassword() != null && (request.getPassword().isBlank()
+                || request.getPassword().length() < 8
+                || request.getPassword().getBytes(StandardCharsets.UTF_8).length > 72)) {
+            throw new IllegalArgumentException("Password must be at least 8 characters and at most 72 UTF-8 bytes");
+        }
+
+        if (request.getUsername() != null) {
+            userRepository.findByUsername(request.getUsername())
+                .filter(existing -> !userId.equals(existing.getUserId()))
+                .ifPresent(existing -> { throw new BusinessConflictException("Username already exists"); });
+        }
+        if (request.getEmail() != null) {
+            userRepository.findByEmail(request.getEmail())
+                .filter(existing -> !userId.equals(existing.getUserId()))
+                .ifPresent(existing -> { throw new BusinessConflictException("Email already exists"); });
+        }
+    }
+
+    private void updateUsername(User user, String username) {
+        if (username != null) {
+            user.setUsername(username);
+        }
+    }
+
+    private void updateName(User user, String name) {
+        if (name != null) {
+            user.setName(name);
+        }
+    }
+
+    private void updateEmail(User user, String email) {
+        if (email != null) {
+            user.setEmail(email);
+        }
+    }
+
+    private void updatePhone(User user, JsonNullable<String> phone) {
+        if (phone != null && phone.isPresent()) {
+            user.setPhone(phone.get());
+        }
+    }
+
+    private void updateDob(User user, LocalDate dob) {
+        if (dob != null) {
+            user.setDob(dob);
+        }
+    }
+
+    private void updatePassword(User user, String passwordHash) {
+        if (passwordHash != null) {
+            user.setPasswordHash(passwordHash);
+        }
+    }
+
+    private void saveUserUpdate(User user) {
+        try {
+            // Flush inside the transaction so concurrent uniqueness conflicts become HTTP 409.
+            userRepository.saveAndFlush(user);
+        } catch (DataIntegrityViolationException ex) {
+            throw new BusinessConflictException("User details conflict with an existing user");
+        }
+    }
+
+    private void validateNonBlank(String value, String field) {
+        if (value != null && value.isBlank()) {
+            throw new IllegalArgumentException(field + " must not be blank");
+        }
     }
 
     public AuthResponse authenticate(AuthenticateRequest request) {
