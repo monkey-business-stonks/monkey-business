@@ -101,6 +101,13 @@ export class TradeInput {
     return this.accounts().find(account => account.accountId === this.selectedAccount())?.cashBalance ?? null;
   }
 
+  get availableShares(): number {
+    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
+    const ticker = this.selectedTicker?.data?.symbol?.toUpperCase();
+    const holding = account?.heldAssets?.find(asset => asset.ticker?.toUpperCase() === ticker);
+    return Number(holding?.quantity ?? 0);
+  }
+
   get canReviewOrder(): boolean {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
     return !!account && this.isCompatibleAccount(account)
@@ -139,6 +146,11 @@ export class TradeInput {
   onConfirmTrade(data: OrderReviewData): void {
     if (!data.accountId) {
       this.orderError.set('Select a valid account before placing the order.');
+      return;
+    }
+
+    if (data.action === 'Sell' && data.quantity > this.availableShares) {
+      this.orderError.set('You do not have enough shares to sell.');
       return;
     }
 
