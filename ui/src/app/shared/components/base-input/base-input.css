@@ -87,6 +87,16 @@
   border-color: var(--background-tertiary);
 }
 
+:host(.variant-form) .custom-input[type='date'] {
+  color: var(--text-primary);
+  color-scheme: dark;
+}
+
+:host(.variant-form) .custom-input[type='date']::-webkit-calendar-picker-indicator {
+  opacity: 1;
+  cursor: pointer;
+}
+
 :host(.variant-form) .custom-input::placeholder {
   color: var(--text-secondary);
 }
