@@ -361,56 +361,6 @@
   font-family: 'Roboto Mono', sans-serif;
 }
 
-.account-processing {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  min-height: 0;
-  gap: var(--space-md);
-  padding: var(--space-md);
-  background-color: var(--background-primary);
-  border: 2px solid var(--background-tertiary);
-  border-radius: var(--radius-md);
-}
-
-.processing-label {
-  color: var(--text-secondary);
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-semibold);
-}
-
-.processing-shimmer {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-sm);
-}
-
-.processing-shimmer-line {
-  height: 22px;
-  border-radius: var(--radius-sm);
-  background: linear-gradient(
-    90deg,
-    var(--background-secondary) 25%,
-    rgba(255, 255, 255, 0.08) 50%,
-    var(--background-secondary) 75%
-  );
-  background-size: 200% 100%;
-  animation: account-opening-shimmer 1.5s infinite linear;
-}
-
-.processing-shimmer-line:nth-child(2n) {
-  width: 78%;
-}
-
-@keyframes account-opening-shimmer {
-  0% {
-    background-position: 200% 0;
-  }
-  100% {
-    background-position: -200% 0;
-  }
-}
-
 @media (max-width: 900px) {
   .header-row {
     flex-direction: column;

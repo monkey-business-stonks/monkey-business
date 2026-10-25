@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { SharedModule } from '@/app/shared/shared.module';
+import { Confirmation, ConfirmationDetail, ConfirmationStatus } from '@/app/shared/components/confirmation/confirmation';
 
 interface AccountTypeOption {
   value: string;
@@ -16,7 +17,7 @@ type AccountOpenStep = 'select-type' | 'deposit' | 'review' | 'confirmation';
 @Component({
   selector: 'account-opening',
   standalone: true,
-  imports: [CommonModule, FormsModule, SharedModule],
+  imports: [CommonModule, FormsModule, SharedModule, Confirmation],
   templateUrl: './account-opening.html',
   styleUrl: './account-opening.css'
 })
@@ -29,6 +30,7 @@ export class AccountOpening implements OnInit {
   selectedAccountType: string | null = null;
   isLoading = false;
   errorMessage = '';
+  confirmationStatus: ConfirmationStatus = null;
   depositAmount = '';
   primaryFundingMethod = '';
   tradingExperience = '';
@@ -239,12 +241,13 @@ export class AccountOpening implements OnInit {
   }
 
   submitAccount(): void {
-    if (this.isLoading || !this.selectedAccountType) {
+    if (this.isLoading || !this.selectedAccountType || this.currentStep !== 'review' || !this.canContinueToReview) {
       return;
     }
 
     this.errorMessage = '';
     this.isLoading = true;
+    this.confirmationStatus = 'SUBMITTED';
 
     this.accountService.createAccount(this.userId, {
       accountType: this.selectedAccountType,
@@ -258,11 +261,13 @@ export class AccountOpening implements OnInit {
         this.createdAccountId = response?.accountId || 'Pending';
         this.openedDate = response?.openedDate || response?.createdOn || new Date().toISOString();
         this.currentStep = 'confirmation';
+        this.confirmationStatus = 'FILLED';
         this.isLoading = false;
         this.cdr.detectChanges(); 
       },
       error: (error: any) => {
         this.errorMessage = error?.error?.message || 'Account creation failed. Please try again.';
+        this.confirmationStatus = 'REJECTED';
         this.isLoading = false;
         this.cdr.detectChanges(); 
       }
@@ -271,6 +276,31 @@ export class AccountOpening implements OnInit {
 
   finish(): void {
     this.accountOpened.emit();
+  }
+
+  get confirmationDetails(): ConfirmationDetail[] {
+    const details = [
+      { label: 'Account Type', value: this.getSelectedLabel() },
+      { label: 'Funding Choice', value: this.primaryFundingMethod },
+      { label: 'Deposit Amount', value: Number(this.depositAmount).toLocaleString('en-US', { style: 'currency', currency: 'USD' }) },
+      { label: 'Risk Tolerance', value: this.riskTolerance },
+      { label: 'Investment Intent', value: this.investmentObjective },
+    ];
+    if (this.currentStep === 'confirmation') {
+      details.push(
+        { label: 'Opened On', value: new Date(this.openedDate).toLocaleDateString() },
+      );
+    }
+    return details;
+  }
+
+  closeConfirmation(): void {
+    if (this.isLoading) return;
+    if (this.currentStep === 'confirmation') {
+      this.finish();
+      return;
+    }
+    this.confirmationStatus = null;
   }
 
   goBackToType(): void {

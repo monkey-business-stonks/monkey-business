@@ -1,6 +1,7 @@
 .confirmation-overlay {
   position: fixed;
   inset: 0;
+  padding: var(--space-md);
   background-color: rgba(0, 0, 0, 0.5);
   display: flex;
   align-items: center;
@@ -10,12 +11,8 @@
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .confirmation-content {
@@ -25,23 +22,18 @@
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
   width: 90%;
   max-width: 440px;
+  max-height: calc(100dvh - 2 * var(--space-md));
+  overflow-y: auto;
   animation: slideIn var(--transition-duration);
-  overflow: hidden;
 }
 
 @keyframes slideIn {
-  from {
-    transform: translateY(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
+  from { transform: translateY(-20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
 }
 
 .confirmation-header {
-  padding: var(--space-lg) var(--space-lg) var(--space-md) var(--space-lg);
+  padding: var(--space-lg) var(--space-lg) var(--space-md);
 }
 
 .title {
@@ -49,6 +41,14 @@
   font-size: var(--font-size-lg);
   font-weight: 700;
   color: var(--text-primary);
+}
+
+.confirmation-subtitle {
+  margin: var(--space-sm) 0 0;
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+  text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .confirmation-body {
@@ -72,27 +72,30 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: var(--space-sm);
 }
 
 .detail-label {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   font-weight: 500;
+  text-transform: uppercase;
 }
 
 .detail-value {
+  min-width: 0;
+  overflow-wrap: anywhere;
   color: var(--text-primary);
   font-size: var(--font-size-sm);
   text-align: right;
 }
 
-.total-detail {
-  padding-top: var(--space-md);
-}
+.total-detail { padding-top: var(--space-md); }
 
 .confirmation-footer {
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: var(--space-md);
   padding: var(--space-lg);
   background-color: var(--background-secondary);
@@ -144,17 +147,9 @@
   color: var(--accent-negative);
 }
 
-.confirmed-title {
-  color: var(--accent-primary);
-}
-
-.processing-title {
-  color: var(--accent-warning);
-}
-
-.rejected-title {
-  color: var(--accent-negative);
-}
+.confirmed-title { color: var(--accent-primary); }
+.processing-title { color: var(--accent-warning); }
+.rejected-title { color: var(--accent-negative); }
 
 .rejection-message {
   margin: 0;
@@ -163,6 +158,8 @@
   text-align: center;
 }
 
-.confirmation-footer app-button {
-  flex: 1;
+.confirmation-footer app-button { flex: 1; }
+
+.confirmation-footer.single-action {
+  align-items: center;
 }
