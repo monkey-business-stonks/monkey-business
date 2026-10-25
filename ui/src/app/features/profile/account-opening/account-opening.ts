@@ -149,6 +149,18 @@ export class AccountOpening implements OnInit {
     return this.maximumDeposit;
   }
 
+  get canContinueToReview(): boolean {
+    const amount = Number(this.depositAmount);
+    return Number.isFinite(amount)
+      && amount > 0
+      && amount <= this.maximumContribution
+      && Boolean(this.primaryFundingMethod)
+      && Boolean(this.tradingExperience)
+      && Boolean(this.investmentObjective)
+      && Boolean(this.riskTolerance)
+      && this.acceptsDisclosure;
+  }
+
   private getOwnerAge(): number {
     if (!this.ownerDateOfBirth) return 0;
 

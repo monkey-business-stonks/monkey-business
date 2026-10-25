@@ -1,5 +1,6 @@
 .account-flow-steps {
   display: flex;
+  flex: 0 0 auto;
   align-items: center;
   justify-content: center;
   gap: var(--space-sm);
@@ -56,12 +57,17 @@
 }
 
 .account-opening-panel {
-  min-height: calc(100vh - 150px);
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  max-height: 900px;
   box-sizing: border-box;
   background-color: var(--background-secondary);
   border: 2px solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
+  overflow: hidden;
 }
 
 .header-row {
@@ -96,7 +102,13 @@
 .account-options-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  flex: 1;
+  min-height: 0;
   gap: var(--space-sm);
+  align-content: start;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--background-tertiary) transparent;
 }
 
 .account-option-card {
@@ -152,24 +164,29 @@
 }
 
 .confirm-row {
-  margin-top: var(--space-lg);
+  flex: 0 0 auto;
+  margin-top: auto;
+  padding-top: var(--space-sm);
   display: flex;
   justify-content: flex-end;
 }
 
 .flow-actions {
   display: flex;
+  flex: 0 0 auto;
   justify-content: space-between;
   align-items: center;
   gap: var(--space-md);
   border-top: 1px solid var(--background-tertiary);
-  margin-top: var(--space-md);
-  padding-top: var(--space-md);
+  margin-top: auto;
+  padding-top: var(--space-sm);
 }
 
 .deposit-form {
   display: flex;
+  flex: 1;
   flex-direction: column;
+  min-height: 0;
   gap: var(--space-sm);
 }
 
@@ -236,6 +253,7 @@
   color: var(--text-primary);
   cursor: pointer;
   font: inherit;
+  font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
 }
 
@@ -274,7 +292,7 @@
 }
 
 .disclosure-check {
-  align-items: flex-start;
+  align-items: center;
   color: var(--text-primary);
   display: flex;
   gap: var(--space-sm);
@@ -284,8 +302,11 @@
 .disclosure-check input {
   accent-color: var(--accent-primary);
   flex: 0 0 auto;
-  margin-top: 2px;
-  width: auto;
+  margin-top: 0;
+  width: 20px;
+  min-width: 20px;
+  height: 20px;
+  cursor: pointer;
 }
 
 .confirmation-card {
@@ -295,10 +316,14 @@
   padding: var(--space-sm) var(--space-md);
 }
 
+.confirmation-section {
+  padding-top: var(--space-md);
+}
+
 .confirmation-section-title {
   color: var(--accent-primary);
   font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
+  font-weight: var(--font-weight-bold);
   margin: 0 0 var(--space-sm);
   text-transform: uppercase;
 }
@@ -306,7 +331,7 @@
 .confirmation-section-investment {
   border-top: 1px solid var(--background-tertiary);
   margin-top: var(--space-sm);
-  padding-top: var(--space-sm);
+  padding-top: var(--space-md);
 }
 
 .confirmation-row {
@@ -319,6 +344,7 @@
 .confirmation-key {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
 }
 
 .confirmation-value {
@@ -335,19 +361,57 @@
   font-family: 'Roboto Mono', sans-serif;
 }
 
+.account-processing {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-height: 0;
+  gap: var(--space-md);
+  padding: var(--space-md);
+  background-color: var(--background-primary);
+  border: 2px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+}
+
+.processing-label {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+}
+
+.processing-shimmer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.processing-shimmer-line {
+  height: 22px;
+  border-radius: var(--radius-sm);
+  background: linear-gradient(
+    90deg,
+    var(--background-secondary) 25%,
+    rgba(255, 255, 255, 0.08) 50%,
+    var(--background-secondary) 75%
+  );
+  background-size: 200% 100%;
+  animation: account-opening-shimmer 1.5s infinite linear;
+}
+
+.processing-shimmer-line:nth-child(2n) {
+  width: 78%;
+}
+
+@keyframes account-opening-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
 @media (max-width: 900px) {
-  .account-options-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .deposit-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .risk-options {
-    grid-template-columns: 1fr;
-  }
-
   .header-row {
     flex-direction: column;
   }
@@ -356,5 +420,24 @@
     justify-content: flex-start;
     overflow-x: auto;
     padding-bottom: var(--space-xs);
+  }
+}
+
+@media (max-height: 720px) {
+  .account-opening-panel {
+    padding: var(--space-sm);
+  }
+
+  .header-row {
+    margin-bottom: var(--space-sm);
+  }
+
+  .disclosure-section {
+    margin-top: var(--space-sm);
+    padding-top: var(--space-sm);
+  }
+
+  .disclosure-text {
+    margin-bottom: var(--space-sm);
   }
 }

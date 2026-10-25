@@ -47,6 +47,12 @@
   font-size: var(--font-size-base);
 }
 
+.btn-secondary.compact {
+  width: auto;
+  padding: var(--space-sm) var(--space-md);
+  font-size: var(--font-size-sm);
+}
+
 .btn-secondary:hover:not(:disabled) {
   opacity: 0.9;
 }
