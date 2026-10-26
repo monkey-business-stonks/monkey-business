@@ -417,7 +417,8 @@ components:
 
     AccountType:
       type: string
-      enum: ["BROKERAGE", "401K", "ROTH IRA", "CRYPTO", "FOREX"]
+      description: 401K is a legacy alias for TRADITIONAL 401K and is retained for existing clients.
+      enum: ["BROKERAGE", "401K", "TRADITIONAL 401K", "ROTH 401K", "TRADITIONAL IRA", "ROTH IRA", "CRYPTO", "FOREX"]
 
     OrderType:
       type: string

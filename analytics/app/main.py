@@ -152,9 +152,9 @@ def _fetch_market_as_of(symbol: str) -> datetime | None:
 def _normalize_account_type(value: str | None) -> str | None:
     if value is None:
         return None
-    normalized = value.strip().upper().replace("_", " ")
-    if normalized == "ROTH IRA":
-        return normalized
+    normalized = " ".join(value.strip().strip("_").upper().replace("_", " ").split())
+    if normalized == "401K":
+        return "TRADITIONAL 401K"
     if normalized in VALID_ACCOUNT_TYPES:
         return normalized
     raise HTTPException(

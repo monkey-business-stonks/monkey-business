@@ -167,8 +167,15 @@ export class Dashboard implements OnDestroy, OnInit {
   getAccountTypeLabel(accountType: string): string {
     const labels: Record<string, string> = {
       ROTH_IRA: 'ROTH IRA',
-      _401K: '401(K)',
-      '401K': '401(K)'
+      'ROTH IRA': 'ROTH IRA',
+      TRADITIONAL_401K: 'TRADITIONAL 401(K)',
+      'TRADITIONAL 401K': 'TRADITIONAL 401(K)',
+      ROTH_401K: 'ROTH 401(K)',
+      'ROTH 401K': 'ROTH 401(K)',
+      TRADITIONAL_IRA: 'TRADITIONAL IRA',
+      'TRADITIONAL IRA': 'TRADITIONAL IRA',
+      _401K: 'TRADITIONAL 401(K)',
+      '401K': 'TRADITIONAL 401(K)'
     };
     return labels[accountType] ?? accountType.toUpperCase();
   }

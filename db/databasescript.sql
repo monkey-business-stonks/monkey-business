@@ -49,6 +49,9 @@ CREATE TABLE Accounts (
             accountType IN (
                 'BROKERAGE',
                 '401K',
+                'TRADITIONAL 401K',
+                'ROTH 401K',
+                'TRADITIONAL IRA',
                 'ROTH IRA',
                 'CRYPTO',
                 'FOREX'

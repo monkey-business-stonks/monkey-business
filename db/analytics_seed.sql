@@ -56,11 +56,13 @@ WITH seed_accounts AS (
     SELECT
         account_no,
         ((account_no - 1) % 23) + 1 AS user_no,
-        CASE account_no % 5
+        CASE account_no % 7
             WHEN 0 THEN 'CRYPTO'
             WHEN 1 THEN 'BROKERAGE'
-            WHEN 2 THEN '401K'
-            WHEN 3 THEN 'ROTH IRA'
+            WHEN 2 THEN 'TRADITIONAL 401K'
+            WHEN 3 THEN 'ROTH 401K'
+            WHEN 4 THEN 'TRADITIONAL IRA'
+            WHEN 5 THEN 'ROTH IRA'
             ELSE 'FOREX'
         END AS account_type
     FROM generate_series(1, 30) AS account_no

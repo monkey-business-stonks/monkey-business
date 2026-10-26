@@ -2,8 +2,10 @@ import { Asset } from './asset';
 
 export enum AccountType {
   BROKERAGE = 'BROKERAGE',
-  _401K = '_401K',
-  ROTH_IRA = 'ROTH_IRA',
+  TRADITIONAL_401K = 'TRADITIONAL 401K',
+  ROTH_401K = 'ROTH 401K',
+  TRADITIONAL_IRA = 'TRADITIONAL IRA',
+  ROTH_IRA = 'ROTH IRA',
   CRYPTO = 'CRYPTO',
   FOREX = 'FOREX'
 }
