@@ -84,12 +84,17 @@ public class ConsumerConfiguration {
                 Account account = accountRepository.findById(UUID.fromString(submittedEvent.getAccountId()))
                     .orElseThrow(() -> new RuntimeException("Account not found: " + submittedEvent.getAccountId()));
                 
-                // Validate trade
-                boolean isValidTrade = orderValidator.isValidTrade(order, account);
+                // Validate trade and preserve the specific business rejection code
+                OrderValidator.ValidationResult validationResult = orderValidator.validateTrade(order, account);
                 
-                if (!isValidTrade) {
+                if (!validationResult.valid()) {
                     log.warn("Order validation failed: orderId={}, user={}", orderId, submittedEvent.getUsername());
-                    order.updateExecution(ZonedDateTime.now(), null, Order.OrderStatus.REJECTED, 422);
+                    order.updateExecution(
+                        ZonedDateTime.now(),
+                        null,
+                        Order.OrderStatus.REJECTED,
+                        validationResult.rejectionStatusCode()
+                    );
                     orderRepository.save(order);
                     orderEventPublisher.publishOrderRejected(
                         orderId, 
