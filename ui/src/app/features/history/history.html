@@ -33,6 +33,13 @@
     <app-table
       [columns]="orderColumns"
       [data]="orderData()">
+      <ng-template #cellTemplate let-row let-column="column">
+        @if (column.key === 'status') {
+          <span class="order-status" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
+        } @else {
+          {{ row[column.key] }}
+        }
+      </ng-template>
     </app-table>
   }
 </div>
