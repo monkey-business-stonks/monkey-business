@@ -1,5 +1,23 @@
 .account-opening-page {
-  max-width: 725px;
-  margin: 0 auto;
-  padding: var(--space-md);
+  display: flex;
+  width: 100%;
+  height: calc(100dvh - 96px);
+  padding: var(--space-sm) 25vw var(--space-lg);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.account-opening-page account-opening {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+}
+
+@media (max-width: 900px) {
+  .account-opening-page {
+    padding-right: var(--space-md);
+    padding-left: var(--space-md);
+  }
 }
