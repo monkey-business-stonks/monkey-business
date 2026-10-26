@@ -1,0 +1,90 @@
+<div class="confirmation-overlay" (click)="closeModal()" (keydown.escape)="closeModal()">
+  <div class="confirmation-content" role="dialog" aria-modal="true" aria-labelledby="confirmation-title" [attr.aria-busy]="isProcessing" (click)="$event.stopPropagation()">
+    <div class="confirmation-header" aria-live="polite">
+      @if (!status) {
+        <h2 id="confirmation-title" class="title">Review {{ subject }}</h2>
+      } @else if (status === 'REJECTED') {
+        <div class="success-header rejected-header">
+          <span class="rejected-mark" aria-hidden="true">!</span>
+          <h2 id="confirmation-title" class="title status-title rejected-title">{{ subject }} Rejected</h2>
+        </div>
+      } @else {
+        <div class="success-header">
+          @if (isProcessing) {
+            <span class="processing-mark" role="img" aria-label="Processing">🍌</span>
+            <h2 id="confirmation-title" class="title status-title processing-title">Processing {{ subject }}</h2>
+          } @else {
+            <span class="success-checkmark" aria-hidden="true">✓</span>
+            <h2 id="confirmation-title" class="title status-title confirmed-title">{{ subject }} Confirmed</h2>
+          }
+        </div>
+      }
+      @if (subtitle) {
+        <p class="confirmation-subtitle">{{ subtitle }}</p>
+      }
+    </div>
+
+    <div class="confirmation-body">
+      @if (orderData) {
+        <div class="order-detail">
+          <span class="detail-label">Asset</span>
+          <span class="detail-value">{{ orderData.ticker }}</span>
+        </div>
+        <hr class="inner-line">
+        <div class="order-detail">
+          <span class="detail-label">Action</span>
+          <span class="detail-value">{{ orderData.action }}</span>
+        </div>
+        <div class="order-detail">
+          <span class="detail-label">Account</span>
+          <span class="detail-value">{{ orderData.account | uppercase }}</span>
+        </div>
+        <div class="order-detail">
+          <span class="detail-label">Quantity</span>
+          <span class="detail-value">{{ orderData.quantity }} shares</span>
+        </div>
+        <div class="order-detail">
+          <span class="detail-label">Order Type</span>
+          <span class="detail-value">{{ orderData.orderType | titlecase }} Order</span>
+        </div>
+        <div class="order-detail">
+          <span class="detail-label">Share Price</span>
+          <span class="detail-value">{{ orderData.sharePrice | currency:'USD':'symbol':'1.2-2' }}</span>
+        </div>
+        <hr class="inner-line">
+        <div class="order-detail total-detail">
+          <span class="detail-label">Total</span>
+          <span class="detail-value">{{ orderData.estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+        </div>
+      } @else {
+        @for (detail of details; track detail.label) {
+          <div class="order-detail">
+            <span class="detail-label">{{ detail.label }}</span>
+            <span class="detail-value">{{ detail.value }}</span>
+          </div>
+        }
+      }
+      @if (status === 'REJECTED' && rejectionMessage) {
+        <p class="rejection-message" role="alert">{{ rejectionMessage }}</p>
+      }
+    </div>
+
+    <div class="confirmation-footer" [class.single-action]="!orderData">
+      @if (orderData) {
+        @if (!status) {
+          <app-button variant="secondary" (click)="confirm()">Confirm {{ orderData.action }}</app-button>
+          <app-button variant="secondary" (click)="closeModal()">Edit Order</app-button>
+        } @else {
+          <app-button variant="secondary" routerLink="/dashboard">View Portfolio</app-button>
+          <app-button variant="secondary" (click)="completeOrder()">Make Another Trade</app-button>
+        }
+      } @else if (isProcessing) {
+        <app-button variant="secondary" [compact]="true" [disabled]="true">Processing...</app-button>
+      } @else if (status === 'REJECTED') {
+        <app-button variant="secondary" [compact]="true" (click)="closeModal()">Return to Review</app-button>
+      } @else {
+        <app-button variant="secondary" [compact]="true" (click)="onComplete.emit()">{{ completionLabel }}</app-button>
+      }
+    </div>
+  </div>
+</div>

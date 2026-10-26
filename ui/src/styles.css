@@ -80,6 +80,37 @@ p {
   line-height: 1.5;
 }
 
+.order-status {
+  display: inline-flex;
+  align-items: center;
+  padding: var(--space-xxs) var(--space-sm);
+  border-radius: var(--space-xs);
+  font-size: 11px;
+  font-weight: var(--font-weight-semibold);
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.order-status.status-rejected {
+  color: var(--accent-negative);
+  background-color: var(--accent-negative-transparent-secondary);
+}
+
+.order-status.status-pending {
+  color: var(--accent-warning);
+  background-color: var(--accent-warning-transparent);
+}
+
+.order-status.status-settled {
+  color: var(--accent-primary);
+  background-color: var(--accent-primary-transparent);
+}
+
+.order-status.status-neutral {
+  color: var(--text-secondary);
+  background-color: var(--text-secondary-transparent);
+}
+
 /* Typography Utilities */
 .text-xs {
   font-size: var(--font-size-xs);

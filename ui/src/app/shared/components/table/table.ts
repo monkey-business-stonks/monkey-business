@@ -11,6 +11,8 @@ import { CommonModule } from '@angular/common';
 export class TableComponent<T> {
   @Input() data: T[] = [];
   @Input() columns: TableColumn<T>[] = [];
+  @Input() rowKey: keyof T | null = null;
+  @Input() selectedRowKey: unknown = null;
   @Output() rowSelected = new EventEmitter<T>();
   
   // Custom cell template passed from parent

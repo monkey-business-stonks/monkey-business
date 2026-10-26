@@ -14,6 +14,11 @@ export interface OrderReviewData {
   ticker?: string;
 }
 
+export interface ConfirmationDetail {
+  label: string;
+  value: string;
+}
+
 export type ConfirmationStatus = 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED' | 'REJECTED' | null;
 
 @Component({
@@ -25,11 +30,20 @@ export type ConfirmationStatus = 'SUBMITTED' | 'ACCEPTED' | 'FILLED' | 'SETTLED'
 })
 export class Confirmation {
   @Input() orderData: OrderReviewData | null = null;
+  @Input() subject = 'Order';
+  @Input() subtitle = '';
+  @Input() details: ConfirmationDetail[] = [];
+  @Input() completionLabel = 'Done';
   @Input() status: ConfirmationStatus = null;
   @Input() rejectionMessage: string | null = null;
   @Output() onConfirm = new EventEmitter<OrderReviewData>();
   @Output() onClose = new EventEmitter<void>();
   @Output() onMakeAnotherTrade = new EventEmitter<void>();
+  @Output() onComplete = new EventEmitter<void>();
+
+  get isProcessing(): boolean {
+    return this.status === 'SUBMITTED' || this.status === 'ACCEPTED';
+  }
 
   confirm(): void {
     if (this.orderData) {
@@ -42,6 +56,8 @@ export class Confirmation {
   }
 
   closeModal(): void {
-    this.onClose.emit();
+    if (!this.isProcessing) {
+      this.onClose.emit();
+    }
   }
 }

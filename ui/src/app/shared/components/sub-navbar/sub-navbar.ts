@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { AuthService } from '@/app/core/services/auth.service';
 
 export interface NavTab {
   id: string;
@@ -21,6 +22,8 @@ export interface WorkspaceConfig {
   styleUrl: './sub-navbar.css',
 })
 export class SubNavComponent {
+  protected role$ = inject(AuthService).role$;
+
   @Input() activeWorkspaceId: string = 'analyst';
   @Input() activeTabId: string = '';
 
@@ -43,8 +46,7 @@ export class SubNavComponent {
       id: 'operations',
       label: 'Operations workspace',
       tabs: [
-        { id: 'overview', label: 'Overview' },
-        { id: 'trade-details', label: 'Trade details' }
+        { id: 'overview', label: 'Overview' }
       ],
       rightNoticeTag: 'INVESTIGATION & RECORDS ONLY'
     }
