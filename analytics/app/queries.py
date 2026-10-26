@@ -201,17 +201,34 @@ def fetch_operations_overview(conn: Connection, filters: OrderFilters, limit: in
         JOIN accounts a ON a.accountid = o.accountid
         JOIN users u ON u.userid = a.userid
         {table_where_sql}
-        ORDER BY {_event_ts_expr('o')} DESC
+        ORDER BY {_event_ts_expr('o')} DESC, o.orderid DESC
         LIMIT %s OFFSET %s
+    """
+
+    count_sql = f"""
+        SELECT COUNT(*) AS total_matching_orders
+        FROM orders o
+        JOIN accounts a ON a.accountid = o.accountid
+        JOIN users u ON u.userid = a.userid
+        {table_where_sql}
     """
 
     with conn.cursor() as cur:
         cur.execute(summary_sql, params)
         summary = cur.fetchone()
+        cur.execute(count_sql, table_params)
+        count = cur.fetchone()
         cur.execute(rows_sql, [*table_params, limit, offset])
         rows = cur.fetchall()
+        cur.execute("SELECT DISTINCT ticker FROM orders ORDER BY ticker")
+        instruments = cur.fetchall()
 
-    return {"summary": summary or {}, "rows": rows}
+    return {
+        "summary": summary or {},
+        "rows": rows,
+        "total_matching_orders": int(count["total_matching_orders"] if count else 0),
+        "available_instruments": [row["ticker"] for row in instruments],
+    }
 
 
 def fetch_operations_order_detail(conn: Connection, order_id: str) -> dict[str, Any] | None:
