@@ -31,8 +31,8 @@ export class Profile implements OnInit {
   
   // Edit mode and notification preferences
   isEditMode: boolean = false;
-  isSavingProfile = false;
-  profileSaveError = '';
+  isSavingProfile = signal(false);
+  profileSaveError = signal('');
   notifyByPhone: boolean = true;
   notifyByEmail: boolean = true;
 
@@ -55,35 +55,36 @@ export class Profile implements OnInit {
 
   // Toggle between view and edit mode
   toggleEditMode() {
-    this.profileSaveError = '';
+    this.profileSaveError.set('');
     this.isEditMode = !this.isEditMode;
   }
 
   saveAndReturnToAccounts(): void {
     this.isEditMode = false;
-    this.profileSaveError = '';
+    this.profileSaveError.set('');
   }
 
   saveProfileChanges(changes: UserUpdateRequest): void {
+    if (this.isSavingProfile()) return;
     const userId = this.user()?.userId ?? this.authService.getUserId();
     if (!userId) {
-      this.profileSaveError = 'Unable to identify your profile. Please sign in again.';
+      this.profileSaveError.set('Unable to identify your profile. Please sign in again.');
       return;
     }
 
-    this.isSavingProfile = true;
-    this.profileSaveError = '';
+    this.isSavingProfile.set(true);
+    this.profileSaveError.set('');
     this.userService.updateUser(userId, changes).subscribe({
       next: (updatedUser) => {
         this.user.set(updatedUser);
-        this.isSavingProfile = false;
+        this.isSavingProfile.set(false);
         this.saveAndReturnToAccounts();
       },
       error: (error) => {
-        this.isSavingProfile = false;
-        this.profileSaveError = error?.error?.message
+        this.isSavingProfile.set(false);
+        this.profileSaveError.set(error?.error?.message
           || error?.message
-          || 'Unable to save your profile. Please try again.';
+          || 'Unable to save your profile. Please try again.');
       },
     });
   }
