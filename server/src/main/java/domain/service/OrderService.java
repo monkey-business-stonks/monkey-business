@@ -178,6 +178,7 @@ public class OrderService {
             .prevCashBalance(order.getPrevCashBalance())
             .executedValue(order.getExecutedValue())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
+            .statusCode(order.getStatusCode())
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
             .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
             .settledOn(order.getSettledOn() != null ? order.getSettledOn().toOffsetDateTime() : null)
@@ -198,6 +199,7 @@ public class OrderService {
             .quantity(new BigDecimal(order.getQuantity()))
             .prevCashBalance(order.getPrevCashBalance())
             .status(mapOrderStatus(order.getStatus()))  // Map entity status to DTO status
+            .statusCode(order.getStatusCode())
             .submittedOn(order.getSubmittedOn().toOffsetDateTime())
             .verifiedOn(order.getVerifiedOn() != null ? order.getVerifiedOn().toOffsetDateTime() : null)
             .settledOn(order.getSettledOn() != null ? order.getSettledOn().toOffsetDateTime() : null)

@@ -35,7 +35,25 @@
       [data]="orderData()">
       <ng-template #cellTemplate let-row let-column="column">
         @if (column.key === 'status') {
-          <span class="order-status" [ngClass]="statusClass(row.status)">{{ row.status }}</span>
+          <span class="order-status-wrap">
+            <span
+              class="order-status"
+              [ngClass]="statusClass(row.status)"
+              tabindex="0"
+              (pointerenter)="positionStatusTooltip($event, tooltip)"
+              (pointermove)="positionStatusTooltip($event, tooltip)"
+              (focus)="positionStatusTooltip($event, tooltip)"
+              [attr.aria-label]="row.status + ': ' + statusTooltip(row)">
+              {{ row.status }}
+            </span>
+            <span #tooltip class="status-tooltip" role="tooltip">
+              <span class="status-tooltip-heading">
+                <span class="tooltip-indicator" [ngClass]="statusClass(row.status)" aria-hidden="true"></span>
+                {{ row.status }}
+              </span>
+              <span class="status-tooltip-message">{{ statusTooltip(row) }}</span>
+            </span>
+          </span>
         } @else {
           {{ row[column.key] }}
         }

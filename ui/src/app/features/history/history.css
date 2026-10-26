@@ -75,6 +75,81 @@
   gap: var(--space-sm);
 }
 
+.order-status-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.order-status {
+  cursor: help;
+}
+
+.order-status:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
+.status-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(320px, calc(100vw - 16px));
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  text-align: left;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  box-shadow: 0 8px 24px #0005;
+  pointer-events: none;
+}
+
+.order-status:hover + .status-tooltip,
+.order-status:focus-visible + .status-tooltip {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.status-tooltip-heading {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+}
+
+.tooltip-indicator {
+  width: 8px;
+  height: 8px;
+  flex: 0 0 8px;
+  border-radius: 50%;
+  background: var(--text-secondary);
+}
+
+.tooltip-indicator.status-rejected {
+  background: #ef5350;
+}
+
+.tooltip-indicator.status-settled {
+  background: var(--accent-primary);
+}
+
+.tooltip-indicator.status-pending {
+  background: #f5c542;
+}
+
+.status-tooltip-message {
+  color: var(--text-secondary);
+  font-size: var(--font-size-sm);
+  line-height: 1.45;
+}
+
 .empty-state {
   margin: 0;
   padding: var(--space-lg);

@@ -570,6 +570,7 @@ components:
         prevCashBalance: { type: number, nullable: true, example: 10000.00 }
         executedValue: { type: number, nullable: true, example: 2512.50 }
         status: { $ref: '#/components/schemas/OrderStatus' }
+        statusCode: { type: integer, nullable: true, description: HTTP-style code explaining the order status, example: 422 }
         submittedOn: { type: string, format: date-time }
         verifiedOn: { type: string, format: date-time, nullable: true }
         settledOn: { type: string, format: date-time, nullable: true }
@@ -586,6 +587,7 @@ components:
         quantity: { type: number }
         prevCashBalance: { type: number, nullable: true, example: 10000.00 }
         status: { $ref: '#/components/schemas/OrderStatus' }
+        statusCode: { type: integer, nullable: true, description: HTTP-style code explaining the order status, example: 422 }
         submittedOn: { type: string, format: date-time }
         verifiedOn: { type: string, format: date-time, nullable: true }
         settledOn: { type: string, format: date-time, nullable: true }
