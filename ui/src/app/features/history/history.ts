@@ -1,16 +1,21 @@
 import { SharedModule } from '@/app/shared/shared.module';
 import { TableColumn } from '@/app/shared/models/table-column'
 import { Order } from '@/app/core/models';
+import { AccountService } from '@/app/core/services/account.service';
 import { AuthService } from '@/app/core/services/auth.service';
 import { OrderService } from '@/app/core/services/order.service';
 import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { Component, OnInit, signal } from '@angular/core';
-import { catchError, finalize, of, Subscription } from 'rxjs';
+import { catchError, finalize, forkJoin, of, Subscription } from 'rxjs';
 
 export interface OrderHistoryItem {
   date: string;
+  time: string;
+  accountType: string;
   account: string;
   description: string;
+  quantity: string;
+  price: string;
   amount: string;
   status: string;
 }
@@ -36,8 +41,12 @@ export class History implements OnInit {
 
   orderColumns: TableColumn<OrderHistoryItem>[] = [
     { key: 'date', header: 'Date', align: 'left' },
-    { key: 'account', header: 'Account', align: 'left' },
+    { key: 'time', header: 'Time', align: 'left' },
+    { key: 'accountType', header: 'Account type', align: 'left' },
+    { key: 'account', header: 'Account', align: 'left', isMonospace: true },
     { key: 'description', header: 'Description', align: 'left', className: 'col-expand' },
+    { key: 'quantity', header: 'Quantity', align: 'center', isMonospace: true },
+    { key: 'price', header: 'Price', align: 'right', isMonospace: true },
     { key: 'amount', header: 'Amount', align: 'right', isMonospace: true },
     { key: 'status', header: 'Status', align: 'center' }
   ];
@@ -63,10 +72,12 @@ export class History implements OnInit {
     { label: 'Rejected', value: 'REJECTED' }
   ];
   private allOrders: Order[] = [];
+  private accountTypes = new Map<string, string>();
   private orderUpdateSubscription?: Subscription;
 
   constructor(
     private authService: AuthService,
+    private accountService: AccountService,
     private orderService: OrderService,
     private orderUpdateService: OrderUpdateService
   ) {}
@@ -91,15 +102,20 @@ export class History implements OnInit {
     }
 
     this.loading.set(true);
-    this.orderService.getUserOrders(userId).pipe(
+    this.error.set(null);
+    forkJoin({
+      orders: this.orderService.getUserOrders(userId),
+      accounts: this.accountService.getUserAccounts(userId).pipe(catchError(() => of([])))
+    }).pipe(
       catchError(error => {
         console.error('Failed to load order history:', error);
         this.error.set('Failed to retrieve order history.');
-        return of([] as Order[]);
+        return of({ orders: [] as Order[], accounts: [] });
       }),
       finalize(() => this.loading.set(false))
-    ).subscribe(orders => {
+    ).subscribe(({ orders, accounts }) => {
       try {
+      this.accountTypes = new Map(accounts.map(account => [account.accountId, account.accountType]));
         this.allOrders = [...orders].sort((left, right) => {
           const dateDifference = new Date(right.submittedOn).getTime() - new Date(left.submittedOn).getTime();
           if (dateDifference !== 0) return dateDifference;
@@ -109,7 +125,7 @@ export class History implements OnInit {
         const instruments = [...new Set(this.allOrders.map(order => order.ticker).filter(Boolean))].sort();
         this.instrumentOptions = [
           { label: 'All instruments', value: 'ALL' },
-          ...instruments.map(instrument => ({ label: instrument, value: instrument }))
+          ...instruments.map(instrument => ({ label: this.tickerLabel(instrument), value: instrument }))
         ];
         this.applyFilters();
       } catch (error) {
@@ -136,6 +152,8 @@ export class History implements OnInit {
       const matchesQuery = !query || [
         order.orderId,
         order.accountId,
+        this.accountTypeLabel(order.accountId),
+        `XXXX${order.accountId.slice(-4)}`,
         order.orderType,
         order.action,
         order.ticker,
@@ -158,8 +176,16 @@ export class History implements OnInit {
 
     return {
       date: this.formatDate(order.submittedOn),
-      account: order.accountId,
-      description: `${order.action} ${order.orderType} Order - ${order.ticker}`,
+      time: new Date(order.submittedOn).toLocaleTimeString('en-US', {
+        hour: '2-digit', minute: '2-digit', second: '2-digit', timeZoneName: 'short'
+      }),
+      accountType: this.accountTypeLabel(order.accountId).toUpperCase(),
+      account: `XXXX${order.accountId.slice(-4).toUpperCase()}`,
+      description: `${this.titleCase(order.action)} ${this.titleCase(order.orderType)} Order - ${this.tickerLabel(order.ticker)}`,
+      quantity: order.quantity.toLocaleString('en-US', { maximumFractionDigits: 8 }),
+      price: order.quantity > 0 ? (value / order.quantity).toLocaleString('en-US', {
+        style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 8
+      }) : 'N/A',
       amount: `${signedValue >= 0 ? '+' : '-'}$${Math.abs(signedValue).toLocaleString('en-US', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
@@ -169,7 +195,40 @@ export class History implements OnInit {
   }
 
   private formatDate(date: Date | string): string {
-    return new Date(date).toISOString().slice(0, 10);
+    return new Date(date).toLocaleDateString('en-CA');
+  }
+
+  private titleCase(value: string): string {
+    return value.toLowerCase().replace(/\b\w/g, character => character.toUpperCase());
+  }
+
+  private tickerLabel(ticker: string): string {
+    return ticker.replace(/^(?:X:|FX:)/i, '');
+  }
+
+  statusClass(status: string): string {
+    switch (status) {
+      case 'REJECTED': return 'status-rejected';
+      case 'SETTLED': return 'status-settled';
+      case 'SUBMITTED':
+      case 'ACCEPTED':
+      case 'FILLED': return 'status-pending';
+      default: return '';
+    }
+  }
+
+  private accountTypeLabel(accountId: string): string {
+    const accountType = this.accountTypes.get(accountId);
+    const labels: Record<string, string> = {
+      BROKERAGE: 'Individual Brokerage',
+      _401K: '401(k)',
+      '401K': '401(k)',
+      ROTH_IRA: 'Roth IRA',
+      'ROTH IRA': 'Roth IRA',
+      CRYPTO: 'Crypto',
+      FOREX: 'FOREX'
+    };
+    return accountType ? labels[accountType] ?? accountType : 'Unknown';
   }
 
   private statusRank(status: string): number {
