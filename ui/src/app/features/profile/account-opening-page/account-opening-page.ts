@@ -23,4 +23,8 @@ export class AccountOpeningPage {
   returnToProfile(): void {
     this.router.navigate(['/profile']);
   }
+
+  returnToDashboard(): void {
+    this.router.navigate(['/dashboard']);
+  }
 }

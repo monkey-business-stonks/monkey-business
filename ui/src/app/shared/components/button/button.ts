@@ -12,4 +12,5 @@ export class ButtonComponent {
   @Input() variant: 'primary' | 'secondary' | 'nav' = 'primary';
   @Input() disabled = false;
   @Input() active = false;
+  @Input() compact = false;
 }

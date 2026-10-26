@@ -50,14 +50,17 @@
       }
     </div>
 
-    @if (selectedAccountType) {
-      <div class="flow-actions">
-        <app-button variant="primary" (click)="close()">Back</app-button>
-        <app-button variant="secondary" [disabled]="isLoading" (click)="confirmType()">
-          @if (!isLoading) { Confirm Account Type } @else { Verifying... }
-        </app-button>
-      </div>
-    }
+    <div class="flow-actions">
+      <app-button variant="primary" (click)="close()">Back</app-button>
+      <app-button
+        variant="secondary"
+        [compact]="true"
+        [disabled]="isLoading || !selectedAccountType"
+        (click)="confirmType()"
+      >
+        @if (!isLoading) { Confirm Account Type } @else { Verifying... }
+      </app-button>
+    </div>
   }
 
   @if (currentStep === 'deposit') {
@@ -144,7 +147,12 @@
 
     <div class="flow-actions">
       <app-button variant="primary" (click)="goBackToType()" [disabled]="isLoading">Back</app-button>
-      <app-button variant="secondary" [disabled]="isLoading" (click)="confirmDeposit()">
+      <app-button
+        variant="secondary"
+        [compact]="true"
+        [disabled]="isLoading || !canContinueToReview"
+        (click)="confirmDeposit()"
+      >
         @if (!isLoading) { Continue } @else { Preparing Review... }
       </app-button>
     </div>
@@ -158,112 +166,67 @@
       </div>
     </div>
 
-    <div class="confirmation-card">
-      <div class="confirmation-section">
-        <h2 class="confirmation-section-title">Account Baseline</h2>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Account Owner</span>
-          <span class="confirmation-value">{{ ownerName || 'Name not available' }}</span>
+      <div class="confirmation-card">
+        <div class="confirmation-section">
+          <h2 class="confirmation-section-title">Account Baseline</h2>
+          <div class="confirmation-row">
+            <span class="confirmation-key">ACCOUNT OWNER</span>
+            <span class="confirmation-value">{{ ownerName || 'Name not available' }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">EMAIL</span>
+            <span class="confirmation-value">{{ ownerEmail || 'Email not available' }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">ACCOUNT TYPE</span>
+            <span class="confirmation-value">{{ getSelectedLabel() | uppercase }}</span>
+          </div>
         </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Email Address</span>
-          <span class="confirmation-value">{{ ownerEmail || 'Email not available' }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Account Type</span>
-          <span class="confirmation-value">{{ getSelectedLabel() }}</span>
-        </div>
-      </div>
 
-      <div class="confirmation-section confirmation-section-investment">
-        <h2 class="confirmation-section-title">Investment Profile</h2>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Funding Choice</span>
-          <span class="confirmation-value">{{ primaryFundingMethod }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Deposit Amount</span>
-          <span class="confirmation-value deposit-value">${{ depositAmount }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Risk Tolerance</span>
-          <span class="confirmation-value">{{ riskTolerance }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Investment Intent</span>
-          <span class="confirmation-value">{{ investmentObjective }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Opened On</span>
-          <span class="confirmation-value">Pending submission</span>
+        <div class="confirmation-section confirmation-section-investment">
+          <h2 class="confirmation-section-title">Investment Profile</h2>
+          <div class="confirmation-row">
+            <span class="confirmation-key">FUNDING CHOICE</span>
+            <span class="confirmation-value">{{ primaryFundingMethod }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">DEPOSIT AMOUNT</span>
+            <span class="confirmation-value deposit-value">${{ depositAmount }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">RISK TOLERANCE</span>
+            <span class="confirmation-value">{{ riskTolerance }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">INVESTMENT INTENT</span>
+            <span class="confirmation-value">{{ investmentObjective }}</span>
+          </div>
+          <div class="confirmation-row">
+            <span class="confirmation-key">OPENED ON</span>
+            <span class="confirmation-value">Pending submission</span>
+          </div>
         </div>
       </div>
-    </div>
 
     <div class="flow-actions">
       <app-button variant="primary" (click)="goBackToDeposit()" [disabled]="isLoading">Back</app-button>
-      <app-button variant="secondary" [disabled]="isLoading" (click)="submitAccount()">
+      <app-button variant="secondary" [compact]="true" [disabled]="isLoading" (click)="submitAccount()">
         @if (!isLoading) { Submit Account } @else { Submitting... }
       </app-button>
     </div>
   }
 
-  @if (currentStep === 'confirmation') {
-    <div class="header-row">
-      <div>
-        <p class="label">Account Opened</p>
-        <p class="sublabel">Your account has been created and linked to your profile.</p>
-      </div>
-    </div>
-
-    <div class="confirmation-card">
-      <div class="confirmation-section">
-        <h2 class="confirmation-section-title">Account Baseline</h2>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Account Owner</span>
-          <span class="confirmation-value">{{ ownerName || 'Name not available' }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Email Address</span>
-          <span class="confirmation-value">{{ ownerEmail || 'Email not available' }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Account Type</span>
-          <span class="confirmation-value">{{ getSelectedLabel() }}</span>
-        </div>
-      </div>
-
-      <div class="confirmation-section confirmation-section-investment">
-        <h2 class="confirmation-section-title">Investment Profile</h2>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Funding Choice</span>
-          <span class="confirmation-value">{{ primaryFundingMethod }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Deposit Amount</span>
-          <span class="confirmation-value deposit-value">${{ depositAmount }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Risk Tolerance</span>
-          <span class="confirmation-value">{{ riskTolerance }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Investment Intent</span>
-          <span class="confirmation-value">{{ investmentObjective }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Account ID</span>
-          <span class="confirmation-value mono">{{ createdAccountId }}</span>
-        </div>
-        <div class="confirmation-row">
-          <span class="confirmation-key">Opened On</span>
-          <span class="confirmation-value">{{ openedDate | date:'medium' }}</span>
-        </div>
-      </div>
-    </div>
-
-    <div class="confirm-row">
-      <app-button variant="secondary" (click)="finish()">Back To Trading Accounts</app-button>
-    </div>
-  }
 </div>
+
+@if (confirmationStatus) {
+  <app-confirmation
+    subject="Account"
+    [subtitle]="currentStep === 'confirmation' ? 'Account ID: ' + createdAccountId : ''"
+    [status]="confirmationStatus"
+    [details]="confirmationDetails"
+    [rejectionMessage]="errorMessage"
+    completionLabel="Back to Dashboard"
+    (onClose)="closeConfirmation()"
+    (onComplete)="finish()"
+  ></app-confirmation>
+}
