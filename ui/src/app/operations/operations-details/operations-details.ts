@@ -1,7 +1,8 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { BannerMessageComponent } from '@/app/shared/components/banner-message/banner-message';
+import { ButtonComponent } from '@/app/shared/components/button/button';
 import { AnalyticsService } from '@/app/core/services/analytics.service';
 import { OperationsOrderDetailResponse } from '@/app/core/models';
 import { finalize } from 'rxjs';
@@ -11,7 +12,9 @@ import { finalize } from 'rxjs';
   standalone: true,
   imports: [
     CommonModule, 
-    BannerMessageComponent
+    BannerMessageComponent,
+    ButtonComponent,
+    RouterLink
   ],
   templateUrl: './operations-details.html',
   styleUrls: [

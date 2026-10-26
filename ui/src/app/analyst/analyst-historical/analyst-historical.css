@@ -35,6 +35,7 @@
 }
 
 .metric-val {
+  font-family: 'Roboto Mono', monospace;
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-bold);
   line-height: 1.2;
