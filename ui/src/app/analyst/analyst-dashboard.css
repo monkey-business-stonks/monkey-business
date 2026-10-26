@@ -130,6 +130,14 @@ h1 {
   border-bottom: 1px solid var(--background-tertiary);
 }
 
+.dashboard-table td.text-success {
+  color: var(--accent-primary);
+}
+
+.dashboard-table td.text-negative {
+  color: var(--accent-negative);
+}
+
 .dashboard-table tr:last-child td {
   border-bottom: none;
 }
