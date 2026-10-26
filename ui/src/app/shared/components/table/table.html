@@ -13,8 +13,14 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let row of data" class="table-row">
-          <tr *ngFor="let row of data" class="table-row" (click)="rowSelected.emit(row)">
+        <tr *ngFor="let row of data" class="table-row"
+          [class.selectable]="rowKey !== null"
+          [class.selected]="rowKey !== null && selectedRowKey != null && row[rowKey] === selectedRowKey"
+          [attr.aria-selected]="rowKey !== null ? row[rowKey] === selectedRowKey : null"
+          [attr.tabindex]="rowKey !== null ? 0 : null"
+          (click)="rowSelected.emit(row)"
+          (keydown.enter)="rowKey !== null && rowSelected.emit(row)"
+          (keydown.space)="rowKey !== null && $event.preventDefault(); rowKey !== null && rowSelected.emit(row)">
         <td 
           *ngFor="let col of columns"
           [ngClass]="col.className || ''"

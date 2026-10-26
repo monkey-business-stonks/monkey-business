@@ -1,17 +1,20 @@
 <div class="page-container">
+  <header class="header-section details-header">
+    <app-button variant="primary" routerLink="/operations-dashboard/overview" title="Back to overview"><span aria-hidden="true">&larr;</span><span class="back-button-label">Back to overview</span></app-button>
+    <div class="header-title-area">
+      <span class="breadcrumb">OPERATIONS / OVERVIEW / TRADE DETAILS</span>
+      <h1>{{ detail?.order_id ?? 'Trade details' }}</h1>
+      @if (detail) {
+        <p class="subtitle">{{ detail.ticker }} · {{ detail.order_type }} · {{ detail.action }} · {{ formatNumber(detail.quantity) }} shares · {{ detail.account_type }}</p>
+      }
+    </div>
+  </header>
+
   @if (loading) {
     <app-banner-message title="Loading order details" detail="Fetching the selected order from analytics." tag="LOADING"></app-banner-message>
   } @else if (error) {
     <app-banner-message title="Unable to load order details" [detail]="error" tag="ERROR"></app-banner-message>
   } @else if (detail) {
-    <header class="header-section">
-      <div class="header-title-area">
-        <span class="breadcrumb">OPERATIONS / OVERVIEW / TRADE DETAILS</span>
-        <h1>{{ detail.order_id }}</h1>
-        <p class="subtitle">{{ detail.ticker }} · {{ detail.order_type }} · {{ detail.action }} · {{ formatNumber(detail.quantity) }} shares · {{ detail.account_type }}</p>
-      </div>
-    </header>
-
     <app-banner-message
       title="Order event archive · read-only"
       [detail]="'As of ' + formatUtc(detail.meta.market_as_of)"
@@ -21,7 +24,20 @@
       <div class="metadata-grid-5">
         <div class="meta-block"><span class="card-subtitle">Client / Account</span><p class="text-xs mono font-bold">{{ detail.client_ref }} / {{ detail.account_id }}</p></div>
         <div class="meta-block"><span class="card-subtitle">Order ID</span><p class="text-xs mono font-bold">{{ detail.order_id }}</p></div>
-        <div class="meta-block"><span class="card-subtitle">Status</span><p class="text-xs font-bold">{{ detail.status }}</p></div>
+        <div class="meta-block">
+          <span class="card-subtitle">Status</span>
+          <p class="text-xs font-bold">
+            @if (detail.status !== 'N/A') {
+              <span class="order-status" [ngClass]="{
+                'status-rejected': detail.status === 'REJECTED',
+                'status-settled': detail.status === 'SETTLED',
+                'status-pending': ['SUBMITTED', 'ACCEPTED', 'FILLED'].includes(detail.status)
+              }">{{ detail.status }}</span>
+            } @else {
+              {{ detail.status }}
+            }
+          </p>
+        </div>
         <div class="meta-block" style="grid-column: span 2;"><span class="card-subtitle">Lifecycle source</span><p class="text-xs font-bold">Derived from order timestamps</p></div>
       </div>
       <hr style="border: none; border-top: 1px solid var(--background-tertiary); margin: var(--space-md) 0;" />

@@ -36,6 +36,28 @@
   white-space: nowrap;
 }
 
+.table-row.selectable {
+  cursor: pointer;
+}
+
+.table-row.selectable:hover td {
+  background-color: var(--background-tertiary);
+}
+
+.table-row.selected td,
+.table-row.selected:hover td {
+  background-color: var(--accent-primary-transparent);
+}
+
+.table-row.selected td:first-child {
+  box-shadow: inset 3px 0 0 var(--accent-primary);
+}
+
+.table-row.selectable:focus-visible {
+  outline: var(--width-sm) solid var(--accent-primary);
+  outline-offset: -2px;
+}
+
 /* Replaced static nth-child with dynamic utility class */
 .mono-cell {
   font-family: 'Roboto Mono', monospace; 

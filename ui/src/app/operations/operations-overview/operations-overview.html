@@ -62,7 +62,22 @@
   </div>
 
   <div class="table-card">
-    <app-table [columns]="tableColumns" [data]="ordersData" (rowSelected)="selectOrder($event)"></app-table>
+    <app-table [columns]="tableColumns" [data]="ordersData" rowKey="orderId"
+      [selectedRowKey]="selectedOrder?.id ?? null" (rowSelected)="selectOrder($event)">
+      <ng-template #cellTemplate let-row let-column="column">
+        @if ((column.key === 'execution' || column.key === 'settlement') && row[column.key] !== 'N/A') {
+          <span class="order-status" [ngClass]="{
+            'status-rejected': row[column.key] === 'Rejected',
+            'status-settled': row[column.key] === 'Settled',
+            'status-pending': ['Submitted', 'Accepted', 'Filled', 'Awaiting'].includes(row[column.key])
+          }">{{ row[column.key] }}</span>
+        } @else if (column.key === 'exception' && row.exception !== 'None' && row.exception !== 'N/A') {
+          <span class="order-status status-rejected">{{ row.exception }}</span>
+        } @else {
+          {{ row[column.key] }}
+        }
+      </ng-template>
+    </app-table>
   </div>
 
   @if (selectedOrder) {

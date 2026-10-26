@@ -1,3 +1,28 @@
+.details-header {
+  justify-content: flex-start;
+  align-items: flex-start;
+  gap: var(--space-md);
+}
+
+.details-header app-button {
+  flex-shrink: 0;
+}
+
+.back-button-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+.details-header .header-title-area {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
 .metadata-grid-5 {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
