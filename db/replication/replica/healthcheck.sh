@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-PGUSER="${POSTGRES_USER:-postgres}"
+PGUSER="${POSTGRES_USER:?POSTGRES_USER is required}"
 PGDATABASE="${POSTGRES_DB:-monkey_business}"
 
 IS_RECOVERY="$(psql -U "${PGUSER}" -d "${PGDATABASE}" -tAc "SELECT pg_is_in_recovery();" | tr -d '[:space:]')"

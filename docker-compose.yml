@@ -167,8 +167,20 @@ services:
       - -c
       - hot_standby=on
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: n3u3d4!
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
+      REPLICATION_USER: ${REPLICATION_USER:?REPLICATION_USER is required}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?REPLICATION_PASSWORD is required}
+      ANALYTICS_DB_USER: ${ANALYTICS_DB_USER:?ANALYTICS_DB_USER is required}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?ANALYTICS_DB_PASSWORD is required}
+      OPERATIONS_DB_USER: ${OPERATIONS_DB_USER:?OPERATIONS_DB_USER is required}
+      OPERATIONS_DB_PASSWORD: ${OPERATIONS_DB_PASSWORD:?OPERATIONS_DB_PASSWORD is required}
+      SEED_USER_PREFIX: ${SEED_USER_PREFIX:?SEED_USER_PREFIX is required}
+      SEED_USER_PASSWORD: ${SEED_USER_PASSWORD:?SEED_USER_PASSWORD is required}
+      SEED_ANALYST_PREFIX: ${SEED_ANALYST_PREFIX:?SEED_ANALYST_PREFIX is required}
+      SEED_ANALYST_PASSWORD: ${SEED_ANALYST_PASSWORD:?SEED_ANALYST_PASSWORD is required}
+      SEED_OPERATIONS_USERNAME: ${SEED_OPERATIONS_USERNAME:?SEED_OPERATIONS_USERNAME is required}
+      SEED_OPERATIONS_PASSWORD: ${SEED_OPERATIONS_PASSWORD:?SEED_OPERATIONS_PASSWORD is required}
       POSTGRES_DB: monkey_business
     ports:
       - "5432:5432"
@@ -179,7 +191,7 @@ services:
       - ./db/replication/primary-init/02-replication-setup.sql:/docker-entrypoint-initdb.d/02-replication-setup.sql
       - ./db/analytics_seed.sql:/docker-entrypoint-initdb.d/03-analytics-seed.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U \"$$POSTGRES_USER\" -d \"$$POSTGRES_DB\""]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -192,13 +204,13 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: n3u3d4!
+      POSTGRES_USER: ${POSTGRES_USER:?POSTGRES_USER is required}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       POSTGRES_DB: monkey_business
       PRIMARY_HOST: postgres
       PRIMARY_PORT: 5432
-      REPLICATION_USER: replicator
-      REPLICATION_PASSWORD: replicator_change_me
+      REPLICATION_USER: ${REPLICATION_USER:?REPLICATION_USER is required}
+      REPLICATION_PASSWORD: ${REPLICATION_PASSWORD:?REPLICATION_PASSWORD is required}
       REPLICATION_SLOT: monkey_business_replica_slot
       REPLICA_MAX_LAG_SECONDS: 300
     command: ["/bin/bash", "/replica/init-replica.sh"]
@@ -219,8 +231,8 @@ services:
     image: dpage/pgadmin4:latest
     container_name: monkey_business_pgadmin
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:?PGADMIN_DEFAULT_EMAIL is required}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD:?PGADMIN_DEFAULT_PASSWORD is required}
     ports:
       - "5050:80"
     depends_on:
@@ -236,7 +248,7 @@ services:
     environment:
       PORT: 3000
       NODE_ENV: production
-      JWT_SIGNING_KEY: my-secret-key-change-me-in-production
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY is required}
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:3000/health"]
       interval: 30s
@@ -266,15 +278,16 @@ services:
         condition: service_healthy
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/monkey_business
-      SPRING_DATASOURCE_USERNAME: postgres
-      SPRING_DATASOURCE_PASSWORD: n3u3d4!
+      SPRING_DATASOURCE_USERNAME: ${POSTGRES_USER:?POSTGRES_USER is required}
+      SPRING_DATASOURCE_PASSWORD: ${POSTGRES_PASSWORD:?POSTGRES_PASSWORD is required}
       ANALYTICS_DATASOURCE_URL: jdbc:postgresql://postgres_replica:5432/monkey_business
-      ANALYTICS_DATASOURCE_USERNAME: analytics_reader
-      ANALYTICS_DATASOURCE_PASSWORD: analytics_reader_change_me
+      ANALYTICS_DATASOURCE_USERNAME: ${ANALYTICS_DB_USER:?ANALYTICS_DB_USER is required}
+      ANALYTICS_DATASOURCE_PASSWORD: ${ANALYTICS_DB_PASSWORD:?ANALYTICS_DB_PASSWORD is required}
       ANALYTICS_PRIMARY_FALLBACK_ENABLED: "false"
       ANALYTICS_MAX_REPLICA_LAG_SECONDS: "300"
-      JWT_SIGNING_KEY: my-secret-key-change-me-in-production
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY is required}
       AUTH_SERVICE_URL: http://auth:3000
+      MARKET_DATA_API_KEY: ${MARKET_DATA_API_KEY:?MARKET_DATA_API_KEY is required}
       KAFKA_BROKERS: kafka-1:9092,kafka-2:9092,kafka-3:9092
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:8080/users/health"]
@@ -295,9 +308,9 @@ services:
       ANALYTICS_DB_HOST: postgres_replica
       ANALYTICS_DB_PORT: 5432
       ANALYTICS_DB_NAME: monkey_business
-      ANALYTICS_DB_USER: analytics_reader
-      ANALYTICS_DB_PASSWORD: analytics_reader_change_me
-      JWT_SIGNING_KEY: my-secret-key-change-me-in-production
+      ANALYTICS_DB_USER: ${ANALYTICS_DB_USER:?ANALYTICS_DB_USER is required}
+      ANALYTICS_DB_PASSWORD: ${ANALYTICS_DB_PASSWORD:?ANALYTICS_DB_PASSWORD is required}
+      JWT_SIGNING_KEY: ${JWT_SIGNING_KEY:?JWT_SIGNING_KEY is required}
       JWT_ALGORITHM: HS256
     ports:
       - "8001:8000"

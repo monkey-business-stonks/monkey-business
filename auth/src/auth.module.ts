@@ -5,11 +5,19 @@ import { AuthService } from './auth.service';
 
 @Module({
   imports: [
-    JwtModule.register({
-      secret: process.env.JWT_SIGNING_KEY || 'your-secret-key-change-me',
-      signOptions: { 
-        algorithm: 'HS256', 
-        expiresIn: '15m'
+    JwtModule.registerAsync({
+      useFactory: () => {
+        const signingKey = process.env.JWT_SIGNING_KEY;
+        if (!signingKey) {
+          throw new Error('JWT_SIGNING_KEY is required');
+        }
+        return {
+          secret: signingKey,
+          signOptions: {
+            algorithm: 'HS256',
+            expiresIn: '15m'
+          },
+        };
       },
     }),
   ],

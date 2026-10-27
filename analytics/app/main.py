@@ -53,7 +53,7 @@ def _require_role(*allowed_roles: str):
         try:
             payload = jwt.decode(
                 credentials.credentials,
-                os.getenv("JWT_SIGNING_KEY", "your-secret-key-change-me"),
+                os.environ["JWT_SIGNING_KEY"],
                 algorithms=[os.getenv("JWT_ALGORITHM", "HS256")],
                 options={"require": ["sub", "role", "exp"]},
             )

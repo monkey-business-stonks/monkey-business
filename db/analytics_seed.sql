@@ -1,10 +1,13 @@
 -- Analytics stress-test seed data.
 -- Mounted as 03-analytics-seed.sql by Docker Compose and runs after the schema and roles.
 -- PostgreSQL only runs initdb files for a fresh data volume.
--- Credentials:
---   user 1 .. user 20: user12345
---   analyst 1 .. analyst 2: analyst12345
---   admin: admin12345
+\set ON_ERROR_STOP on
+\getenv seed_user_prefix SEED_USER_PREFIX
+\getenv seed_user_password SEED_USER_PASSWORD
+\getenv seed_analyst_prefix SEED_ANALYST_PREFIX
+\getenv seed_analyst_password SEED_ANALYST_PASSWORD
+\getenv seed_operations_username SEED_OPERATIONS_USERNAME
+\getenv seed_operations_password SEED_OPERATIONS_PASSWORD
 
 BEGIN;
 
@@ -13,29 +16,29 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 -- 20 normal users, two analysts, and one operations administrator.
 WITH seed_users (user_no, username, password, name, email, phone, dob, access_level) AS (
     VALUES
-        (1, 'user 1', 'user12345', 'Alex Morgan', 'alex.morgan@example.com', '555-0101', DATE '1989-02-14', 'USER'),
-        (2, 'user 2', 'user12345', 'Jordan Blake', 'jordan.blake@example.com', '555-0102', DATE '1991-06-22', 'USER'),
-        (3, 'user 3', 'user12345', 'Taylor Brooks', 'taylor.brooks@example.com', '555-0103', DATE '1987-09-03', 'USER'),
-        (4, 'user 4', 'user12345', 'Morgan Ellis', 'morgan.ellis@example.com', '555-0104', DATE '1994-01-18', 'USER'),
-        (5, 'user 5', 'user12345', 'Casey Bennett', 'casey.bennett@example.com', '555-0105', DATE '1990-11-29', 'USER'),
-        (6, 'user 6', 'user12345', 'Riley Carter', 'riley.carter@example.com', '555-0106', DATE '1985-04-11', 'USER'),
-        (7, 'user 7', 'user12345', 'Cameron Hayes', 'cameron.hayes@example.com', '555-0107', DATE '1996-08-07', 'USER'),
-        (8, 'user 8', 'user12345', 'Jamie Foster', 'jamie.foster@example.com', '555-0108', DATE '1988-12-15', 'USER'),
-        (9, 'user 9', 'user12345', 'Drew Wallace', 'drew.wallace@example.com', '555-0109', DATE '1993-03-26', 'USER'),
-        (10, 'user 10', 'user12345', 'Avery Mitchell', 'avery.mitchell@example.com', '555-0110', DATE '1986-07-30', 'USER'),
-        (11, 'user 11', 'user12345', 'Quinn Harper', 'quinn.harper@example.com', '555-0111', DATE '1992-10-09', 'USER'),
-        (12, 'user 12', 'user12345', 'Parker Lawson', 'parker.lawson@example.com', '555-0112', DATE '1984-05-17', 'USER'),
-        (13, 'user 13', 'user12345', 'Reese Dalton', 'reese.dalton@example.com', '555-0113', DATE '1997-02-02', 'USER'),
-        (14, 'user 14', 'user12345', 'Skyler Vaughn', 'skyler.vaughn@example.com', '555-0114', DATE '1989-11-06', 'USER'),
-        (15, 'user 15', 'user12345', 'Finley Rhodes', 'finley.rhodes@example.com', '555-0115', DATE '1995-06-28', 'USER'),
-        (16, 'user 16', 'user12345', 'Emerson Reed', 'emerson.reed@example.com', '555-0116', DATE '1983-09-19', 'USER'),
-        (17, 'user 17', 'user12345', 'Rowan Pierce', 'rowan.pierce@example.com', '555-0117', DATE '1998-01-24', 'USER'),
-        (18, 'user 18', 'user12345', 'Kendall Grant', 'kendall.grant@example.com', '555-0118', DATE '1991-12-03', 'USER'),
-        (19, 'user 19', 'user12345', 'Sage Palmer', 'sage.palmer@example.com', '555-0119', DATE '1987-08-21', 'USER'),
-        (20, 'user 20', 'user12345', 'Harper Nolan', 'harper.nolan@example.com', '555-0120', DATE '1994-04-05', 'USER'),
-        (21, 'analyst 1', 'analyst12345', 'Dana Whitaker', 'dana.whitaker@example.com', '555-0121', DATE '1982-10-12', 'ANALYST'),
-        (22, 'analyst 2', 'analyst12345', 'Elliot Warren', 'elliot.warren@example.com', '555-0122', DATE '1980-03-08', 'ANALYST'),
-        (23, 'admin', 'admin12345', 'Adrian Cole', 'admin@example.com', '555-0123', DATE '1978-07-16', 'OPERATIONS')
+        (1, :'seed_user_prefix' || '1', :'seed_user_password', 'Alex Morgan', 'alex.morgan@example.com', '555-0101', DATE '1989-02-14', 'USER'),
+        (2, :'seed_user_prefix' || '2', :'seed_user_password', 'Jordan Blake', 'jordan.blake@example.com', '555-0102', DATE '1991-06-22', 'USER'),
+        (3, :'seed_user_prefix' || '3', :'seed_user_password', 'Taylor Brooks', 'taylor.brooks@example.com', '555-0103', DATE '1987-09-03', 'USER'),
+        (4, :'seed_user_prefix' || '4', :'seed_user_password', 'Morgan Ellis', 'morgan.ellis@example.com', '555-0104', DATE '1994-01-18', 'USER'),
+        (5, :'seed_user_prefix' || '5', :'seed_user_password', 'Casey Bennett', 'casey.bennett@example.com', '555-0105', DATE '1990-11-29', 'USER'),
+        (6, :'seed_user_prefix' || '6', :'seed_user_password', 'Riley Carter', 'riley.carter@example.com', '555-0106', DATE '1985-04-11', 'USER'),
+        (7, :'seed_user_prefix' || '7', :'seed_user_password', 'Cameron Hayes', 'cameron.hayes@example.com', '555-0107', DATE '1996-08-07', 'USER'),
+        (8, :'seed_user_prefix' || '8', :'seed_user_password', 'Jamie Foster', 'jamie.foster@example.com', '555-0108', DATE '1988-12-15', 'USER'),
+        (9, :'seed_user_prefix' || '9', :'seed_user_password', 'Drew Wallace', 'drew.wallace@example.com', '555-0109', DATE '1993-03-26', 'USER'),
+        (10, :'seed_user_prefix' || '10', :'seed_user_password', 'Avery Mitchell', 'avery.mitchell@example.com', '555-0110', DATE '1986-07-30', 'USER'),
+        (11, :'seed_user_prefix' || '11', :'seed_user_password', 'Quinn Harper', 'quinn.harper@example.com', '555-0111', DATE '1992-10-09', 'USER'),
+        (12, :'seed_user_prefix' || '12', :'seed_user_password', 'Parker Lawson', 'parker.lawson@example.com', '555-0112', DATE '1984-05-17', 'USER'),
+        (13, :'seed_user_prefix' || '13', :'seed_user_password', 'Reese Dalton', 'reese.dalton@example.com', '555-0113', DATE '1997-02-02', 'USER'),
+        (14, :'seed_user_prefix' || '14', :'seed_user_password', 'Skyler Vaughn', 'skyler.vaughn@example.com', '555-0114', DATE '1989-11-06', 'USER'),
+        (15, :'seed_user_prefix' || '15', :'seed_user_password', 'Finley Rhodes', 'finley.rhodes@example.com', '555-0115', DATE '1995-06-28', 'USER'),
+        (16, :'seed_user_prefix' || '16', :'seed_user_password', 'Emerson Reed', 'emerson.reed@example.com', '555-0116', DATE '1983-09-19', 'USER'),
+        (17, :'seed_user_prefix' || '17', :'seed_user_password', 'Rowan Pierce', 'rowan.pierce@example.com', '555-0117', DATE '1998-01-24', 'USER'),
+        (18, :'seed_user_prefix' || '18', :'seed_user_password', 'Kendall Grant', 'kendall.grant@example.com', '555-0118', DATE '1991-12-03', 'USER'),
+        (19, :'seed_user_prefix' || '19', :'seed_user_password', 'Sage Palmer', 'sage.palmer@example.com', '555-0119', DATE '1987-08-21', 'USER'),
+        (20, :'seed_user_prefix' || '20', :'seed_user_password', 'Harper Nolan', 'harper.nolan@example.com', '555-0120', DATE '1994-04-05', 'USER'),
+        (21, :'seed_analyst_prefix' || '1', :'seed_analyst_password', 'Dana Whitaker', 'dana.whitaker@example.com', '555-0121', DATE '1982-10-12', 'ANALYST'),
+        (22, :'seed_analyst_prefix' || '2', :'seed_analyst_password', 'Elliot Warren', 'elliot.warren@example.com', '555-0122', DATE '1980-03-08', 'ANALYST'),
+        (23, :'seed_operations_username', :'seed_operations_password', 'Adrian Cole', 'admin@example.com', '555-0123', DATE '1978-07-16', 'OPERATIONS')
 )
 INSERT INTO Users (userId, username, passwordHash, name, email, phone, dob, accessLevel, createdAt, updatedAt)
 SELECT

@@ -1,58 +1,51 @@
-DO
-$$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'replicator') THEN
-        CREATE ROLE replicator WITH LOGIN REPLICATION PASSWORD 'replicator_change_me';
-    ELSE
-        ALTER ROLE replicator WITH LOGIN REPLICATION PASSWORD 'replicator_change_me';
-    END IF;
-END
-$$;
+\set ON_ERROR_STOP on
+\getenv replication_user REPLICATION_USER
+\getenv replication_password REPLICATION_PASSWORD
+\getenv analytics_user ANALYTICS_DB_USER
+\getenv analytics_password ANALYTICS_DB_PASSWORD
+\getenv operations_user OPERATIONS_DB_USER
+\getenv operations_password OPERATIONS_DB_PASSWORD
 
-DO
-$$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'analytics_reader') THEN
-        CREATE ROLE analytics_reader WITH LOGIN PASSWORD 'analytics_reader_change_me';
-    ELSE
-        ALTER ROLE analytics_reader WITH LOGIN PASSWORD 'analytics_reader_change_me';
-    END IF;
-END
-$$;
+SELECT format('CREATE ROLE %I', :'replication_user')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'replication_user')
+\gexec
+SELECT format('ALTER ROLE %I WITH LOGIN REPLICATION PASSWORD %L', :'replication_user', :'replication_password')
+\gexec
 
-DO
-$$
-BEGIN
-    IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'operations_reader') THEN
-        CREATE ROLE operations_reader WITH LOGIN PASSWORD 'operations_reader_change_me';
-    ELSE
-        ALTER ROLE operations_reader WITH LOGIN PASSWORD 'operations_reader_change_me';
-    END IF;
-END
-$$;
+SELECT format('CREATE ROLE %I', :'analytics_user')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'analytics_user')
+\gexec
+SELECT format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'analytics_user', :'analytics_password')
+\gexec
 
-GRANT CONNECT ON DATABASE monkey_business TO analytics_reader;
-GRANT CONNECT ON DATABASE monkey_business TO operations_reader;
+SELECT format('CREATE ROLE %I', :'operations_user')
+WHERE NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = :'operations_user')
+\gexec
+SELECT format('ALTER ROLE %I WITH LOGIN PASSWORD %L', :'operations_user', :'operations_password')
+\gexec
+
+GRANT CONNECT ON DATABASE monkey_business TO :"analytics_user";
+GRANT CONNECT ON DATABASE monkey_business TO :"operations_user";
 
 \connect monkey_business
 
-GRANT USAGE ON SCHEMA public TO analytics_reader;
-GRANT USAGE ON SCHEMA public TO operations_reader;
+GRANT USAGE ON SCHEMA public TO :"analytics_user";
+GRANT USAGE ON SCHEMA public TO :"operations_user";
 
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO analytics_reader;
-GRANT SELECT ON ALL TABLES IN SCHEMA public TO operations_reader;
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO :"analytics_user";
+GRANT SELECT ON ALL TABLES IN SCHEMA public TO :"operations_user";
 
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO analytics_reader;
-GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO operations_reader;
-
-ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT ON TABLES TO analytics_reader;
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO :"analytics_user";
+GRANT SELECT ON ALL SEQUENCES IN SCHEMA public TO :"operations_user";
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT ON TABLES TO operations_reader;
+GRANT SELECT ON TABLES TO :"analytics_user";
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT ON SEQUENCES TO analytics_reader;
+GRANT SELECT ON TABLES TO :"operations_user";
 
 ALTER DEFAULT PRIVILEGES IN SCHEMA public
-GRANT SELECT ON SEQUENCES TO operations_reader;
+GRANT SELECT ON SEQUENCES TO :"analytics_user";
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA public
+GRANT SELECT ON SEQUENCES TO :"operations_user";
