@@ -32,9 +32,11 @@
     <app-base-input
       label="Quantity (Shares)"
       type="number"
-      [suffix]="maxPurchasableShares !== null ? 'Max: ' + (maxPurchasableShares | number:'1.0-8') + ' shares' : 'Max: -- shares'"
+      [suffix]="selectedAction === 'Sell'
+        ? 'Max: ' + (availableShares | number:'1.0-8') + ' shares'
+        : maxPurchasableShares !== null ? 'Max: ' + (maxPurchasableShares | number:'1.0-8') + ' shares' : 'Max: -- shares'"
       [value]="quantity"
-      [errorMessage]="exceedsCashBalance ? 'Insufficient cash balance. Reduce the quantity to continue.' : ''"
+      [errorMessage]="quantityError"
       (valueChange)="onQuantityChange($event)"
     ></app-base-input>
   </div>
@@ -59,7 +61,7 @@
 
     <div class="summary-row total-row">
       <span class="font-bold">Estimated Total</span>
-      <span class="total-amount font-mono" [class.over-balance]="exceedsCashBalance">{{ estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+      <span class="total-amount font-mono" [class.over-balance]="!!quantityError">{{ estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
     </div>
   </div>
 

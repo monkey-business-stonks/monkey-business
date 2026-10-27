@@ -155,6 +155,25 @@ export class TradeInput implements OnDestroy {
     return Number(holding?.quantity ?? 0);
   }
 
+  get exceedsAvailableShares(): boolean {
+    return this.selectedAction === 'Sell'
+      && this.accounts().some(account => account.accountId === this.selectedAccount())
+      && Number.isFinite(this.normalizedQuantity) && this.normalizedQuantity > 0
+      && (!Number.isFinite(this.availableShares) || this.normalizedQuantity > this.availableShares);
+  }
+
+  get quantityError(): string {
+    if (this.exceedsCashBalance) {
+      return 'Insufficient cash balance. Reduce the quantity to continue.';
+    }
+    if (this.exceedsAvailableShares) {
+      return this.availableShares > 0
+        ? `Insufficient holdings. You can sell up to ${this.availableShares} shares from this account.`
+        : 'You do not own this asset in the selected account.';
+    }
+    return '';
+  }
+
   get reviewDisabledReasons(): string[] {
     const reasons: string[] = [];
     if (!this.selectedTicker?.data?.symbol) {
@@ -182,8 +201,8 @@ export class TradeInput implements OnDestroy {
       && (!Number.isFinite(account.cashBalance) || !Number.isFinite(this.estimatedTotal))) {
       reasons.push('Unable to calculate available funds for this order.');
     }
-    if (this.exceedsCashBalance) {
-      reasons.push('Insufficient cash balance. Reduce the quantity to continue.');
+    if (this.quantityError) {
+      reasons.push(this.quantityError);
     }
     return reasons;
   }

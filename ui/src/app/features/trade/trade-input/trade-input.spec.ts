@@ -6,6 +6,7 @@ import { AuthService } from '@/app/core/services/auth.service';
 import { PricingService } from '@/app/core/services/pricing.service';
 import { OrderService } from '@/app/core/services/order.service';
 import { Account } from '@/app/core/models/account';
+import { Asset } from '@/app/core/models/asset';
 import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 
@@ -52,7 +53,8 @@ describe('TradeInput crypto trading', () => {
   });
 
   it('does not require available cash for a sell', () => {
-    const component = createComponent([{ ...crypto, cashBalance: 0 }]);
+    const component = createComponent([{ ...crypto, cashBalance: 0,
+      heldAssets: [{ ticker: 'X:BTC-USD', quantity: 0.1 } as Asset] }]);
     expect(component.canReviewOrder).toBe(false);
     component.selectedAction = 'Sell';
     expect(component.canReviewOrder).toBe(true);
@@ -128,6 +130,33 @@ describe('TradeInput', () => {
     expect(component.orderTypeOptions).toEqual([{ label: 'Market Order', value: 'market' }]);
   });
 
+  it('blocks selling an unowned asset or more than the selected account holds', () => {
+    component['accounts'].set([
+      { accountId: 'owner', accountType: 'BROKERAGE', cashBalance: 0,
+        heldAssets: [{ ticker: 'aapl', quantity: 5 } as Asset] } as Account,
+      { accountId: 'other', accountType: 'BROKERAGE', cashBalance: 0,
+        heldAssets: [{ ticker: 'MSFT', quantity: 100 } as Asset] } as Account
+    ]);
+    component.selectedAccount.set('owner');
+    component.selectedAction = 'Sell';
+    component.sharePrice = 100;
+    component.onQuantityChange('6');
+    expect(component.exceedsAvailableShares).toBe(true);
+    expect(component.quantityError).toContain('up to 5 shares');
+    expect(component.canReviewOrder).toBe(false);
+    component.reviewOrder();
+    expect(component.showConfirmation).toBe(false);
+
+    component.onQuantityChange('5');
+    expect(component.quantityError).toBe('');
+    expect(component.canReviewOrder).toBe(true);
+    component.selectedAccount.set('other');
+    expect(component.quantityError).toContain('do not own this asset');
+    expect(component.canReviewOrder).toBe(false);
+    component.selectedAccount.set('owner');
+    expect(component.canReviewOrder).toBe(true);
+  });
+
   it('explains all missing fields and clears reasons when the form becomes valid', () => {
     component.selectedTicker = null;
     component.selectedOrderType = '';
@@ -163,7 +192,7 @@ describe('TradeInput', () => {
     component.quantity = 2;
     expect(component.reviewDisabledReasons).toContain('Insufficient cash balance. Reduce the quantity to continue.');
     component.selectedAction = 'Sell';
-    expect(component.reviewDisabledReasons).toEqual([]);
+    expect(component.reviewDisabledReasons).not.toContain('Insufficient cash balance. Reduce the quantity to continue.');
     component.selectedAccount.set('retirement');
     expect(component.reviewDisabledReasons).toContain('Select an account compatible with this instrument.');
     component.quantity = NaN;
@@ -395,6 +424,29 @@ describe('TradeInput disabled button tooltip', () => {
     fixture.detectChanges();
     expect(element.querySelector('[role="tooltip"]')).toBeNull();
     expect(wrapper.hasAttribute('tabindex')).toBe(false);
+    expect(element.querySelector<HTMLButtonElement>('.review-button-wrapper button')?.disabled).toBe(false);
+    expect(element.querySelector('.input-suffix')?.textContent).toContain('Max: 1 shares');
+    fixture.componentInstance.selectedAction = 'Sell';
+    quantityInput.value = '2';
+    quantityInput.dispatchEvent(new Event('input', { bubbles: true }));
+    await vi.advanceTimersByTimeAsync(1);
+    fixture.detectChanges();
+    expect(element.querySelector('.input-error')?.textContent).toContain('do not own this asset');
+    expect(element.querySelector('.input-suffix')?.textContent).toContain('Max: 0 shares');
+    expect(quantityInput.classList.contains('input-invalid')).toBe(true);
+    expect(element.querySelector('.total-amount')?.classList.contains('over-balance')).toBe(true);
+    expect(element.querySelector<HTMLButtonElement>('.review-button-wrapper button')?.disabled).toBe(true);
+    expect(element.querySelector('[role="tooltip"]')).toBeNull();
+
+    fixture.componentInstance['accounts'].set([
+      { accountId: 'brokerage', accountType: 'BROKERAGE', cashBalance: 0,
+        heldAssets: [{ ticker: 'AAPL', quantity: 2 } as Asset] } as Account
+    ]);
+    fixture.detectChanges();
+    expect(element.querySelector('.input-error')).toBeNull();
+    expect(element.querySelector('.input-suffix')?.textContent).toContain('Max: 2 shares');
+    expect(quantityInput.classList.contains('input-invalid')).toBe(false);
+    expect(element.querySelector('.total-amount')?.classList.contains('over-balance')).toBe(false);
     expect(element.querySelector<HTMLButtonElement>('.review-button-wrapper button')?.disabled).toBe(false);
     fixture.destroy();
   });
