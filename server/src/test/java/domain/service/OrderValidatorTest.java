@@ -77,7 +77,7 @@ class OrderValidatorTest {
         retirementAccount = new Account(
             UUID.randomUUID(),
             ZonedDateTime.now(),
-            Account.AccountType._401K,
+            Account.AccountType.TRADITIONAL_401K,
             BigDecimal.valueOf(30000),
             BigDecimal.valueOf(30000),
             new java.util.HashSet<>(),
@@ -397,6 +397,23 @@ class OrderValidatorTest {
 
         // Assert
         assertTrue(isValid);
+    }
+
+    @ParameterizedTest
+    @CsvSource({"TRADITIONAL_401K", "ROTH_401K", "TRADITIONAL_IRA", "ROTH_IRA"})
+    void testRetirementAccountTypesSupportEquities(String accountType) {
+        Account account = new Account(
+            UUID.randomUUID(),
+            ZonedDateTime.now(),
+            Account.AccountType.valueOf(accountType),
+            BigDecimal.valueOf(30000),
+            BigDecimal.valueOf(30000),
+            new java.util.HashSet<>(),
+            new java.util.HashSet<>()
+        );
+        when(pricingEngine.getPrice("AAPL")).thenReturn(BigDecimal.valueOf(150));
+
+        assertTrue(orderValidator.isValidTrade(validBuyOrder, account));
     }
 
     @ParameterizedTest

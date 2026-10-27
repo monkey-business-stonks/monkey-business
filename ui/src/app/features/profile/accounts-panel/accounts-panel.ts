@@ -93,9 +93,11 @@ export class AccountsPanel implements OnDestroy, OnInit {
   getAccountTypeLabel(accountType: string): string {
     const typeMap: { [key: string]: string } = {
       BROKERAGE: 'Individual Brokerage',
-      _401K: '401(k)',
-      '401K': '401(k)',
-      ROTH_IRA: 'Roth IRA',
+      '401K': 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      'TRADITIONAL IRA': 'Traditional IRA',
+      'ROTH IRA': 'Roth IRA',
       CRYPTO: 'Crypto',
       FOREX: 'FOREX'
     };

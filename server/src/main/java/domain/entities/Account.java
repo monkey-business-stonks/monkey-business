@@ -11,7 +11,15 @@ import jakarta.persistence.*;
 @Entity
 @Table(name = "accounts")
 public class Account {
-	public enum AccountType { BROKERAGE, _401K, ROTH_IRA, CRYPTO, FOREX }
+	public enum AccountType {
+		BROKERAGE,
+		TRADITIONAL_401K,
+		ROTH_401K,
+		TRADITIONAL_IRA,
+		ROTH_IRA,
+		CRYPTO,
+		FOREX
+	}
 
 	@Id
 	@Column(name = "accountid")

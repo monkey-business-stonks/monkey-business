@@ -12,7 +12,7 @@ interface AccountTypeOption {
   description: string;
 }
 
-type AccountOpenStep = 'select-type' | 'deposit' | 'review' | 'confirmation';
+type AccountOpenStep = 'select-type' | 'select-retirement-type' | 'deposit' | 'review' | 'confirmation';
 
 @Component({
   selector: 'account-opening',
@@ -27,6 +27,7 @@ export class AccountOpening implements OnInit {
   @Output() accountOpened = new EventEmitter<void>();
 
   currentStep: AccountOpenStep = 'select-type';
+  selectedAccountCategory: string | null = null;
   selectedAccountType: string | null = null;
   isLoading = false;
   errorMessage = '';
@@ -67,7 +68,14 @@ export class AccountOpening implements OnInit {
       'Direct Deposit (Payroll Contribution)',
       'Rollover / IRA Transfer'
     ],
-    '401K': ['Payroll Contribution', 'Rollover / 401(k) Transfer']
+    'TRADITIONAL IRA': [
+      'Bank Transfer',
+      'Wire Transfer',
+      'Direct Deposit (Payroll Contribution)',
+      'Rollover / IRA Transfer'
+    ],
+    'TRADITIONAL 401K': ['Payroll Contribution', 'Rollover / 401(k) Transfer'],
+    'ROTH 401K': ['Payroll Contribution', 'Rollover / 401(k) Transfer']
   };
   readonly tradingExperienceOptions = ['Beginner', 'Some experience', 'Experienced'];
   readonly investmentObjectives = ['Capital preservation', 'Income', 'Growth', 'Speculation'];
@@ -81,14 +89,14 @@ export class AccountOpening implements OnInit {
       description: 'General investing account for stocks, ETFs, and funds.'
     },
     {
-      value: '401K',
+      value: 'RETIREMENT_401K',
       label: '401(k)',
       description: 'Retirement-focused account built for long-term contributions.'
     },
     {
-      value: 'ROTH IRA',
-      label: 'Roth IRA',
-      description: 'Tax-advantaged retirement account with qualified withdrawals.'
+      value: 'RETIREMENT_IRA',
+      label: 'IRA',
+      description: 'Individual retirement account with traditional or Roth tax treatment.'
     },
     {
       value: 'CRYPTO',
@@ -101,6 +109,43 @@ export class AccountOpening implements OnInit {
       description: 'Currency trading account for foreign exchange markets.'
     }
   ];
+
+  readonly retirementTypesByCategory: Record<string, AccountTypeOption[]> = {
+    RETIREMENT_401K: [
+      {
+        value: 'TRADITIONAL 401K',
+        label: 'Traditional 401(k)',
+        description: 'Contributions are generally made before tax, with taxes due on qualified withdrawals.'
+      },
+      {
+        value: 'ROTH 401K',
+        label: 'Roth 401(k)',
+        description: 'Contributions are made after tax, with qualified withdrawals generally tax-free.'
+      }
+    ],
+    RETIREMENT_IRA: [
+      {
+        value: 'TRADITIONAL IRA',
+        label: 'Traditional IRA',
+        description: 'A tax-advantaged individual retirement account with traditional tax treatment.'
+      },
+      {
+        value: 'ROTH IRA',
+        label: 'Roth IRA',
+        description: 'A tax-advantaged individual retirement account with Roth tax treatment.'
+      }
+    ]
+  };
+
+  private readonly accountTypeLabels: Record<string, string> = {
+    BROKERAGE: 'Brokerage',
+    'TRADITIONAL 401K': 'Traditional 401(k)',
+    'ROTH 401K': 'Roth 401(k)',
+    'TRADITIONAL IRA': 'Traditional IRA',
+    'ROTH IRA': 'Roth IRA',
+    CRYPTO: 'Crypto',
+    FOREX: 'FOREX'
+  };
 
   constructor(
     private authService: AuthService,
@@ -127,6 +172,43 @@ export class AccountOpening implements OnInit {
       return;
     }
 
+    this.selectedAccountCategory = type;
+    this.selectedAccountType = type.startsWith('RETIREMENT_') ? null : type;
+    this.primaryFundingMethod = '';
+    this.errorMessage = '';
+  }
+
+  get isRetirementCategorySelected(): boolean {
+    return this.selectedAccountCategory?.startsWith('RETIREMENT_') ?? false;
+  }
+
+  get retirementTypeOptions(): AccountTypeOption[] {
+    return this.selectedAccountCategory
+      ? this.retirementTypesByCategory[this.selectedAccountCategory] ?? []
+      : [];
+  }
+
+  get flowSteps(): string[] {
+    return this.isRetirementCategorySelected
+      ? ['Account Type', 'Retirement Type', 'Details & Profile', 'Review & Confirm']
+      : ['Account Type', 'Details & Profile', 'Review & Confirm'];
+  }
+
+  get currentFlowStepIndex(): number {
+    const retirement = this.isRetirementCategorySelected;
+    switch (this.currentStep) {
+      case 'select-type': return 0;
+      case 'select-retirement-type': return 1;
+      case 'deposit': return retirement ? 2 : 1;
+      case 'review':
+      case 'confirmation': return retirement ? 3 : 2;
+    }
+  }
+
+  selectRetirementType(type: string): void {
+    if (this.isLoading) {
+      return;
+    }
     this.selectedAccountType = type;
     this.primaryFundingMethod = '';
     this.errorMessage = '';
@@ -137,11 +219,11 @@ export class AccountOpening implements OnInit {
   }
 
   get maximumContribution(): number {
-    if (this.selectedAccountType === 'ROTH IRA') {
+    if (this.selectedAccountType === 'ROTH IRA' || this.selectedAccountType === 'TRADITIONAL IRA') {
       return this.getOwnerAge() >= 50 ? 8600 : 7500;
     }
 
-    if (this.selectedAccountType === '401K') {
+    if (this.selectedAccountType === 'TRADITIONAL 401K' || this.selectedAccountType === 'ROTH 401K') {
       const age = this.getOwnerAge();
       if (age >= 60 && age <= 63) return 35750;
       if (age >= 50) return 32500;
@@ -156,7 +238,25 @@ export class AccountOpening implements OnInit {
     return Number.isFinite(amount)
       && amount > 0
       && amount <= this.maximumContribution
-      && Boolean(this.primaryFundingMethod)
+      && this.hasRequiredInvestorDetails;
+  }
+
+  get canAttemptContinueToReview(): boolean {
+    const amount = Number(this.depositAmount);
+    return Number.isFinite(amount)
+      && amount > 0
+      && this.hasRequiredInvestorDetails;
+  }
+
+  get depositLimitError(): string | null {
+    const amount = Number(this.depositAmount);
+    return Number.isFinite(amount) && amount > this.maximumContribution
+      ? `The maximum contribution for this account is $${this.maximumContribution.toLocaleString()}.`
+      : null;
+  }
+
+  private get hasRequiredInvestorDetails(): boolean {
+    return Boolean(this.primaryFundingMethod)
       && Boolean(this.tradingExperience)
       && Boolean(this.investmentObjective)
       && Boolean(this.riskTolerance)
@@ -179,9 +279,17 @@ export class AccountOpening implements OnInit {
   }
 
   confirmType(): void {
-    if (!this.selectedAccountType || this.isLoading) {
+    if (this.isLoading) {
       return;
     }
+
+    if (this.isRetirementCategorySelected && !this.selectedAccountType) {
+      this.currentStep = 'select-retirement-type';
+      this.errorMessage = '';
+      return;
+    }
+
+    if (!this.selectedAccountType) return;
 
     const refreshToken = this.authService.getStoredRefreshToken();
 
@@ -220,8 +328,8 @@ export class AccountOpening implements OnInit {
       return;
     }
 
-    if (amount > this.maximumContribution) {
-      this.errorMessage = `The maximum contribution for this account is $${this.maximumContribution.toLocaleString()}.`;
+    if (this.depositLimitError) {
+      this.errorMessage = this.depositLimitError;
       return;
     }
 
@@ -304,7 +412,18 @@ export class AccountOpening implements OnInit {
   }
 
   goBackToType(): void {
+    if (this.currentStep === 'deposit' && this.isRetirementCategorySelected) {
+      this.currentStep = 'select-retirement-type';
+      this.errorMessage = '';
+      return;
+    }
     this.currentStep = 'select-type';
+    this.errorMessage = '';
+  }
+
+  goBackToAccountCategory(): void {
+    this.currentStep = 'select-type';
+    this.selectedAccountType = null;
     this.errorMessage = '';
   }
 
@@ -318,7 +437,6 @@ export class AccountOpening implements OnInit {
   }
 
   getSelectedLabel(): string {
-    const match = this.accountTypes.find(type => type.value === this.selectedAccountType);
-    return match ? match.label : '';
+    return this.selectedAccountType ? this.accountTypeLabels[this.selectedAccountType] ?? this.selectedAccountType : '';
   }
 }

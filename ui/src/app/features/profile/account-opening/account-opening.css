@@ -3,8 +3,9 @@
   flex: 0 0 auto;
   align-items: center;
   justify-content: center;
-  gap: var(--space-sm);
+  gap: clamp(4px, 1vw, var(--space-sm));
   margin-bottom: var(--space-md);
+  min-width: 0;
 }
 
 .account-flow-step {
@@ -47,9 +48,37 @@
 }
 
 .step-connector {
-  width: clamp(24px, 8vw, 96px);
+  flex: 1 1 48px;
+  min-width: 16px;
   height: 1px;
   background-color: var(--background-tertiary);
+}
+
+.account-flow-steps.four-step {
+  width: 100%;
+  align-items: flex-start;
+  gap: 4px;
+}
+
+.four-step .account-flow-step {
+  flex: 1 1 0;
+  min-width: 0;
+  flex-direction: column;
+  gap: var(--space-xs);
+  text-align: center;
+  white-space: normal;
+}
+
+.four-step .step-label {
+  max-width: 100%;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.four-step .step-connector {
+  flex: 0 1 48px;
+  min-width: 8px;
+  margin-top: 14px;
 }
 
 .step-connector.completed {
@@ -67,7 +96,10 @@
   border: 2px solid var(--background-tertiary);
   border-radius: var(--radius-lg);
   padding: var(--space-md);
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-color: var(--background-tertiary) transparent;
 }
 
 .header-row {
@@ -82,12 +114,14 @@
   color: var(--text-primary);
   font-size: var(--font-size-xl);
   font-weight: var(--font-weight-semibold);
+  margin: 0;
 }
 
 .sublabel {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+  margin: var(--space-xs) 0 0;
 }
 
 .error-banner {
@@ -156,11 +190,14 @@
   color: var(--text-primary);
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-semibold);
+  margin: 0 0 var(--space-xs);
 }
 
 .account-description {
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
+  line-height: 1.4;
+  margin: 0;
 }
 
 .confirm-row {
@@ -172,6 +209,9 @@
 }
 
 .flow-actions {
+  position: sticky;
+  bottom: calc(-1 * var(--space-md));
+  z-index: 2;
   display: flex;
   flex: 0 0 auto;
   justify-content: space-between;
@@ -179,14 +219,15 @@
   gap: var(--space-md);
   border-top: 1px solid var(--background-tertiary);
   margin-top: auto;
-  padding-top: var(--space-sm);
+  padding: var(--space-sm) 0;
+  background-color: var(--background-secondary);
 }
 
 .deposit-form {
   display: flex;
-  flex: 1;
+  flex: 0 0 auto;
   flex-direction: column;
-  min-height: 0;
+  min-height: min-content;
   gap: var(--space-sm);
 }
 
@@ -207,6 +248,13 @@
   color: var(--text-secondary);
   font-size: var(--font-size-sm);
   font-weight: var(--font-weight-semibold);
+}
+
+.field-error {
+  margin: 0;
+  color: #ff8b83;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
 }
 
 .deposit-form input,

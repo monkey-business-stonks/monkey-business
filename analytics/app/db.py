@@ -8,7 +8,16 @@ import psycopg
 from psycopg.rows import dict_row
 
 
-VALID_ACCOUNT_TYPES = {"BROKERAGE", "401K", "ROTH IRA", "CRYPTO", "FOREX"}
+VALID_ACCOUNT_TYPES = {
+    "BROKERAGE",
+    "401K",
+    "TRADITIONAL 401K",
+    "ROTH 401K",
+    "TRADITIONAL IRA",
+    "ROTH IRA",
+    "CRYPTO",
+    "FOREX",
+}
 
 
 def _db_config() -> dict[str, str | int]:

@@ -12,7 +12,9 @@ public class AccountTypeConverter implements AttributeConverter<Account.AccountT
         }
 
         return switch (accountType) {
-            case _401K -> "401K";
+            case TRADITIONAL_401K -> "TRADITIONAL 401K";
+            case ROTH_401K -> "ROTH 401K";
+            case TRADITIONAL_IRA -> "TRADITIONAL IRA";
             case ROTH_IRA -> "ROTH IRA";
             default -> accountType.name();
         };
@@ -25,7 +27,9 @@ public class AccountTypeConverter implements AttributeConverter<Account.AccountT
         }
 
         return switch (databaseValue) {
-            case "401K", "_401K" -> Account.AccountType._401K;
+            case "401K", "_401K", "TRADITIONAL 401K", "TRADITIONAL_401K" -> Account.AccountType.TRADITIONAL_401K;
+            case "ROTH 401K", "ROTH_401K" -> Account.AccountType.ROTH_401K;
+            case "TRADITIONAL IRA", "TRADITIONAL_IRA" -> Account.AccountType.TRADITIONAL_IRA;
             case "ROTH IRA", "ROTH_IRA" -> Account.AccountType.ROTH_IRA;
             default -> Account.AccountType.valueOf(databaseValue);
         };

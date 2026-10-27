@@ -68,7 +68,7 @@ export class TradeInput {
         const compatibleAccounts = accounts.filter(account => this.isCompatibleAccount(account));
         this.accounts.set(compatibleAccounts);
         this.accountOptions.set(compatibleAccounts.map(account => ({
-          label: account.accountType,
+          label: this.accountTypeLabel(account.accountType),
           value: account.accountId
         })));
         this.selectedAccount.set(compatibleAccounts[0]?.accountId ?? '');
@@ -129,8 +129,33 @@ export class TradeInput {
     switch (this.getSelectedAssetType()) {
       case 'CRYPTO': return account.accountType === 'CRYPTO';
       case 'FOREIGN EXCHANGE': return account.accountType === 'FOREX';
-      default: return ['BROKERAGE', '401K', '_401K', 'ROTH IRA', 'ROTH_IRA'].includes(account.accountType);
+      default: return [
+        'BROKERAGE', '401K', '_401K',
+        'TRADITIONAL 401K', 'TRADITIONAL_401K',
+        'ROTH 401K', 'ROTH_401K',
+        'TRADITIONAL IRA', 'TRADITIONAL_IRA',
+        'ROTH IRA', 'ROTH_IRA'
+      ].includes(account.accountType);
     }
+  }
+
+  private accountTypeLabel(accountType: string): string {
+    const labels: Record<string, string> = {
+      BROKERAGE: 'Brokerage',
+      '401K': 'Traditional 401(k)',
+      _401K: 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      'TRADITIONAL_401K': 'Traditional 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      ROTH_401K: 'Roth 401(k)',
+      'TRADITIONAL IRA': 'Traditional IRA',
+      TRADITIONAL_IRA: 'Traditional IRA',
+      'ROTH IRA': 'Roth IRA',
+      ROTH_IRA: 'Roth IRA',
+      CRYPTO: 'Crypto',
+      FOREX: 'FOREX'
+    };
+    return labels[accountType] ?? accountType;
   }
 
   get orderData(): OrderReviewData {

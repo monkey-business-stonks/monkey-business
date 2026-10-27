@@ -43,13 +43,6 @@
         <app-select-input label="Comparison" [options]="comparisonOptions" [(value)]="selectedComparison" (valueChange)="onFilterChange()"></app-select-input>
 
         <div class="form-group">
-          <label class="form-label">Group by · Ordered dimensions</label>
-          <div class="draggable-pill"><span>Month</span> <span class="drag-handle">:::</span></div>
-          <div class="draggable-pill"><span>Instrument</span> <span class="drag-handle">:::</span></div>
-          <div class="draggable-pill"><span>Client segment</span> <span class="drag-handle">:::</span></div>
-        </div>
-
-        <div class="form-group">
           <label class="form-label">Metrics</label>
           <p class="text-xs text-muted">USD notional · Filled order count<br>Volume share · Month-on-month change</p>
         </div>
@@ -123,13 +116,14 @@
                   <td class="align-right mono">{{ row.notional }}</td>
                   <td class="align-right mono">{{ row.orders }}</td>
                   <td class="align-right mono">{{ row.share }}</td>
-                  <td class="align-right mono text-success">{{ row.vsAug }}</td>
+                  <td class="align-right mono" [class.text-success]="(row.volumeChange ?? 0) > 0"
+                    [class.text-negative]="(row.volumeChange ?? 0) < 0">{{ row.vsAug }}</td>
                 </tr>
               }
               <tr class="table-summary-row">
-                <td colspan="3" class="align-left">Grand total</td>
+                <td colspan="3" class="align-left">Total</td>
                 <td class="align-right mono">{{ totalNotional }}</td>
-                <td class="align-right mono">{{ totalOrders }} orders</td>
+                <td class="align-right mono">{{ totalOrders }}</td>
                 <td class="align-right mono">{{ totalShare }}</td>
                 <td></td>
               </tr>

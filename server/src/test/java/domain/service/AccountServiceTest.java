@@ -8,6 +8,8 @@ import domain.repository.AccountRepository;
 import domain.repository.AssetRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -75,6 +77,11 @@ class AccountServiceTest {
         
         createAccountRequest = new CreateAccountRequest();
         createAccountRequest.setAccountType(domain.dto.AccountType.BROKERAGE);
+        createAccountRequest.setInitialDeposit(BigDecimal.valueOf(1000));
+        createAccountRequest.setTradingExperience("Beginner");
+        createAccountRequest.setInvestmentObjective("Growth");
+        createAccountRequest.setRiskTolerance("Moderate");
+        createAccountRequest.setAcceptsDisclosure(true);
     }
 
     @Test
@@ -92,6 +99,30 @@ class AccountServiceTest {
         assertEquals(testUserId, response.getUserId());
         verify(userService, times(1)).getUserDirect(testUserId);
         verify(accountRepository, times(1)).save(any(Account.class));
+    }
+
+    @ParameterizedTest
+    @CsvSource({
+        "TRADITIONAL 401K",
+        "ROTH 401K",
+        "TRADITIONAL IRA",
+        "ROTH IRA"
+    })
+    void testCreateAccount_SupportsAllRetirementTypes(String accountType) {
+        when(userService.getUserDirect(testUserId)).thenReturn(testUser);
+        when(accountRepository.save(any(Account.class))).thenAnswer(invocation -> invocation.getArgument(0));
+        when(assetRepository.findAssetsByAccountIdOrderByValue(any())).thenReturn(new ArrayList<>());
+
+        createAccountRequest.setAccountType(domain.dto.AccountType.fromValue(accountType));
+        createAccountRequest.setInitialDeposit(new BigDecimal("1000"));
+        createAccountRequest.setTradingExperience("Beginner");
+        createAccountRequest.setInvestmentObjective("Growth");
+        createAccountRequest.setRiskTolerance("Moderate");
+        createAccountRequest.setAcceptsDisclosure(true);
+
+        AccountResponse response = accountService.createAccount(testUserId, createAccountRequest);
+
+        assertEquals(accountType, response.getAccountType().getValue());
     }
 
     @Test

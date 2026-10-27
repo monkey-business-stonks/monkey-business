@@ -40,6 +40,9 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
   loading = false;
   error: string | null = null;
   bannerDetail = 'Loading operations analytics...';
+  readonly pageSize = 20;
+  currentPage = 1;
+  totalOrders = 0;
 
   acceptedOrders = '0';
   settledOrders = '0';
@@ -109,6 +112,25 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
   }> = [];
 
   private orderUpdateSubscription?: Subscription;
+  private overviewSubscription?: Subscription;
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalOrders / this.pageSize));
+  }
+
+  get firstVisibleOrder(): number {
+    return this.totalOrders ? (this.currentPage - 1) * this.pageSize + 1 : 0;
+  }
+
+  get lastVisibleOrder(): number {
+    return Math.min(this.currentPage * this.pageSize, this.totalOrders);
+  }
+
+  get visiblePages(): number[] {
+    const start = Math.max(1, Math.min(this.currentPage - 2, this.totalPages - 4));
+    const end = Math.min(this.totalPages, start + 4);
+    return Array.from({ length: end - start + 1 }, (_, index) => start + index);
+  }
 
   constructor(
     private analyticsService: AnalyticsService,
@@ -124,13 +146,24 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
 
   ngOnDestroy(): void {
     this.orderUpdateSubscription?.unsubscribe();
+    this.overviewSubscription?.unsubscribe();
   }
 
   onFilterChange(): void {
+    this.currentPage = 1;
     this.loadOverview();
   }
 
   onSearch(): void {
+    this.currentPage = 1;
+    this.loadOverview();
+  }
+
+  changePage(page: number): void {
+    if (this.loading || page < 1 || page > this.totalPages || page === this.currentPage) {
+      return;
+    }
+    this.currentPage = page;
     this.loadOverview();
   }
 
@@ -154,12 +187,13 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
   }
 
   private loadOverview(): void {
+    this.overviewSubscription?.unsubscribe();
     this.loading = true;
     this.error = null;
 
     const selectedRange = this.selectedTimeRange === 'all' ? null : this.selectedTimeRange.split('|');
 
-    this.analyticsService
+    this.overviewSubscription = this.analyticsService
       .getOperationsOverview({
         period_from: selectedRange?.[0],
         period_to: selectedRange?.[1],
@@ -168,8 +202,8 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
         execution_status: this.selectedExecution === 'ALL' ? undefined : this.selectedExecution,
         settlement_status: this.selectedSettlement === 'ALL' ? undefined : this.selectedSettlement,
         exception_filter: this.selectedException === 'ALL' ? undefined : this.selectedException,
-        limit: 50,
-        offset: 0,
+        limit: this.pageSize,
+        offset: (this.currentPage - 1) * this.pageSize,
       })
       .pipe(finalize(() => {
         this.loading = false;
@@ -177,6 +211,12 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
       }))
       .subscribe({
         next: (data) => {
+          this.totalOrders = data.total_matching_orders;
+          if (this.currentPage > this.totalPages) {
+            this.currentPage = this.totalPages;
+            this.loadOverview();
+            return;
+          }
           this.applyOverview(data);
           this.changeDetector.detectChanges();
         },
@@ -211,7 +251,8 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
       client: `${row.client_ref} / ${row.account_type}`,
       instrument: row.instrument,
       qty: this.formatDecimal(row.quantity),
-      execPrice: '-',
+      execPrice: row.execution_status === 'Rejected' ? 'N/A'
+        : row.execution_price_usd != null ? this.formatCurrency(row.execution_price_usd) : '-',
       principal: this.formatCurrency(row.principal_usd),
       execution: row.execution_status,
       settlement: row.settlement_status,
@@ -220,10 +261,9 @@ export class OperationsOverviewComponent implements OnDestroy, OnInit {
       source: row,
     }));
 
-    const uniqueInstruments = [...new Set(data.orders.map((row) => row.instrument.split(' ')[0]))];
     this.instrumentOptions = [
       { label: 'All instruments', value: 'All instruments' },
-      ...uniqueInstruments.map((instrument) => ({ label: instrument, value: instrument })),
+      ...data.available_instruments.map((instrument) => ({ label: instrument, value: instrument })),
     ];
 
     if (this.selectedOrder && !data.orders.some((row) => row.order_id === this.selectedOrder?.id)) {
