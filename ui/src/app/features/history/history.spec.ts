@@ -109,6 +109,13 @@ describe('History', () => {
       'Date', 'Time', 'Account type', 'Account', 'Description', 'Quantity', 'Price', 'Amount', 'Status'
     ]);
     expect(element.querySelector('.status-rejected')?.textContent).toBe('REJECTED');
+    expect(element.querySelector('.status-rejected')?.getAttribute('aria-label')).toBe(
+      'REJECTED: Order rejected; no reason code was provided.'
+    );
+    expect(element.querySelector('.status-tooltip')?.textContent).toContain(
+      'Order rejected; no reason code was provided.'
+    );
+    expect(element.querySelector('.status-tooltip')?.textContent).not.toContain('Code');
     expect(element.querySelector('.status-pending')?.textContent).toBe('ACCEPTED');
     expect(element.querySelector('.status-settled')?.textContent).toBe('SETTLED');
     expect(element.querySelectorAll('.order-status').length).toBe(4);
@@ -124,6 +131,53 @@ describe('History', () => {
       expect(component.statusClass(status)).toBe('status-pending');
     }
     expect(component.statusClass('UNKNOWN')).toBe('');
+  });
+
+  it('should explain statuses on hover and map rejection codes to reasons', () => {
+    const rejected = { ...component.orderData()[0], status: 'REJECTED' };
+    expect(component.statusTooltip({ ...rejected, statusCode: 422 })).toBe(
+      'Rejected: insufficient funds or quantity.'
+    );
+    expect(component.statusTooltip({ ...rejected, statusCode: 409 })).toBe(
+      'Rejected: the market was closed.'
+    );
+    expect(component.statusTooltip({ ...rejected, statusCode: 503 })).toBe(
+      'Rejected: pricing data is temporarily unavailable.'
+    );
+    expect(component.statusTooltip({ ...rejected, statusCode: 777 })).toBe(
+      'Order rejected (code 777).'
+    );
+    expect(component.statusTooltip({ ...rejected, statusCode: null })).toBe(
+      'Order rejected; no reason code was provided.'
+    );
+    expect(component.statusTooltip({ ...rejected, status: 'SETTLED' })).toBe(
+      'Order completed and settled.'
+    );
+    expect(component.statusTooltip({ ...rejected, status: 'FILLED' })).toBe(
+      'Order executed and awaiting settlement.'
+    );
+    expect(component.statusTooltip({ ...rejected, status: 'ACCEPTED' })).toBe(
+      'Order validated and awaiting execution.'
+    );
+  });
+
+  it('should keep the status tooltip inside the viewport', () => {
+    const status = document.createElement('span');
+    const tooltip = document.createElement('span');
+    Object.defineProperty(status, 'getBoundingClientRect', {
+      value: () => ({ left: 100, top: 160, width: 60 })
+    });
+    Object.defineProperties(tooltip, {
+      offsetWidth: { value: 180 },
+      offsetHeight: { value: 40 }
+    });
+
+    const focusEvent = new FocusEvent('focus');
+    Object.defineProperty(focusEvent, 'currentTarget', { value: status });
+    component.positionStatusTooltip(focusEvent, tooltip);
+
+    expect(tooltip.style.left).toBe('142px');
+    expect(tooltip.style.top).toBe('108px');
   });
 
   it('should still show orders when account details are unavailable', async () => {

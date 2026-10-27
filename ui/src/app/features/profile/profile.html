@@ -6,8 +6,8 @@
     @if (isEditMode) {
       <edit-panel
         [user]="user()"
-        [saving]="isSavingProfile"
-        [saveError]="profileSaveError"
+        [saving]="isSavingProfile()"
+        [saveError]="profileSaveError()"
         (saveConfiguration)="saveProfileChanges($event)"
         (cancelEdit)="saveAndReturnToAccounts()"
       ></edit-panel>

@@ -45,7 +45,7 @@
           type="tel"
           variant="form"
           [value]="phone"
-          [disabled]="true"
+          (valueChange)="phone = $event"
         ></app-base-input>
         <app-base-input
           label="Date of Birth"
@@ -73,7 +73,9 @@
             (focusout)="currentPasswordBlurred = true"
           ></app-base-input>
           <div class="password-validation-slot">
-            @if (currentPasswordBlurred && passwordChangeStarted && !currentPassword) {
+            @if (currentPasswordIncorrect) {
+              <p class="password-validation" role="alert">Current password is incorrect. Please try again.</p>
+            } @else if (currentPasswordBlurred && passwordChangeStarted && !currentPassword) {
               <p class="password-validation">Current password is required.</p>
             }
           </div>
@@ -123,7 +125,7 @@
         {{ saving ? 'Saving…' : 'Save Changes' }}
       </app-button>
     </div>
-    @if (saveError) {
+    @if (saveError && saveError !== 'Current password is incorrect') {
       <p class="password-validation" role="alert">{{ saveError }}</p>
     }
   </div>
