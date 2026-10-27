@@ -77,9 +77,11 @@ describe('TradeInput crypto trading', () => {
     expect(component.canReviewOrder).toBe(true);
   });
 
-  it('excludes 401k accounts while keeping other equity accounts available', () => {
+  it('excludes traditional and Roth 401k accounts from equity trading options', () => {
     const rothIra = { accountId: 'roth', accountType: 'ROTH_IRA', cashBalance: 100000 } as Account;
-    const component = createComponent([k401, brokerage, rothIra], 'AAPL');
+    const traditional401k = { ...k401, accountId: 'traditional-401k' };
+    const roth401k = { accountId: 'roth-401k', accountType: 'ROTH_401K', cashBalance: 100000 } as Account;
+    const component = createComponent([traditional401k, roth401k, brokerage, rothIra], 'AAPL');
 
     expect(component.accountOptions().map(option => option.value)).toEqual(['brokerage', 'roth']);
     expect(component.selectedAccount()).toBe('brokerage');
@@ -92,19 +94,18 @@ describe('TradeInput crypto trading', () => {
     ], 'AAPL');
 
     expect(component.accountOptions()).toEqual([
-      { label: 'BROKERAGE · A1B2', value: 'account-a1b2' },
-      { label: 'BROKERAGE · C3D4', value: 'account-c3d4' }
+      { label: 'BROKERAGE XXXXA1B2', value: 'account-a1b2' },
+      { label: 'BROKERAGE XXXXC3D4', value: 'account-c3d4' }
     ]);
     expect(component.selectedAccount()).toBe('account-a1b2');
   });
 
-  it('does not allow trading when the only compatible-looking account is a 401k', () => {
+  it('does not show a 401k account as an equity trading option', () => {
     const component = createComponent([k401], 'AAPL');
 
     expect(component.accountOptions()).toEqual([]);
     expect(component.selectedAccount()).toBe('');
     expect(component.canReviewOrder).toBe(false);
-    expect(component.orderError()).toContain('EQUITY account');
   });
 });
 
@@ -185,7 +186,7 @@ describe('TradeInput', () => {
   it('explains insufficient cash, incompatible accounts and invalid quantities', () => {
     component['accounts'].set([
       { accountId: 'brokerage', accountType: 'BROKERAGE', cashBalance: 100 } as Account,
-      { accountId: 'retirement', accountType: '_401K', cashBalance: 100 } as Account
+      { accountId: 'retirement', accountType: 'CRYPTO', cashBalance: 100 } as Account
     ]);
     component.selectedAccount.set('brokerage');
     component.sharePrice = 100;
