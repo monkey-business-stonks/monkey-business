@@ -133,6 +133,21 @@
   opacity: 0.6;
 }
 
+.holding-link {
+  display: block;
+  text-decoration: none;
+}
+
+.holding-link:hover .ticker {
+  color: var(--accent-primary);
+  text-decoration: underline;
+}
+
+.holding-link:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 4px;
+}
+
 .asset-name {
   font-size: 0.75rem;
   color: var(--text-secondary);

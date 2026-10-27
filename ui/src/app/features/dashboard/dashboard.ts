@@ -125,7 +125,7 @@ export class Dashboard implements OnDestroy, OnInit {
           { id: 'cash', label: 'Cash', value: Number(account?.cashBalance ?? 0), profitLoss: 0, costBasis: 0 },
           ...(account?.heldAssets ?? []).map(asset => ({
             id: asset.ticker,
-            label: asset.ticker,
+            label: asset.ticker.replace(/^(X:|FX:)/, ''),
             ...this.assetValuation(asset)
           }))
         ];
@@ -182,7 +182,8 @@ export class Dashboard implements OnDestroy, OnInit {
           accountId: acc.accountId,
           accountType: acc.accountType,
           ticker: asset.ticker,
-          assetName: asset.name || asset.ticker,
+          displayTicker: asset.ticker.replace(/^(X:|FX:)/, ''),
+          assetName: /^(X:|FX:)/.test(asset.ticker) ? asset.ticker : asset.name || asset.ticker,
           quantity: qty.toFixed(2),
           avgCost: `$${avgCost.toFixed(2)}`,
           currentPrice: `$${currentPrice.toFixed(2)}`,
@@ -299,6 +300,10 @@ export class Dashboard implements OnDestroy, OnInit {
     ));
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
+  }
+
+  openTrade(ticker: string): void {
+    this.router.navigate(['/trade'], { queryParams: { ticker } });
   }
 
   openAccountPage(): void {

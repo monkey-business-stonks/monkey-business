@@ -100,11 +100,16 @@
           {{ group.label }} <span class="holdings-group-id">· XXXX{{ group.accountId.slice(-4).toUpperCase() }}</span>
         </h2>
       }
-  <app-table [columns]="columns" [data]="group.rows">
+  <app-table [columns]="columns" [data]="group.rows" rowKey="ticker"
+    (rowSelected)="openTrade($event.ticker)">
     <ng-template #cellTemplate let-row let-column="column">
       <ng-container *ngIf="column.key === 'ticker'; else standardCell">
-        <div class="ticker">{{ row.ticker }}</div>
-        <div class="asset-name">{{ row.assetName }}</div>
+        <a class="holding-link" routerLink="/trade" [queryParams]="{ ticker: row.ticker }"
+          (click)="$event.stopPropagation()" (keydown)="$event.stopPropagation()"
+          [attr.aria-label]="'Trade ' + row.ticker">
+          <div class="ticker">{{ row.displayTicker }}</div>
+          <div class="asset-name">{{ row.assetName }}</div>
+        </a>
       </ng-container>
 
       <ng-template #standardCell>
