@@ -16,6 +16,40 @@
   box-sizing: border-box;
 }
 
+.account-add-button {
+  box-sizing: border-box;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  width: calc(36px + 2 * var(--space-sm) + 3px);
+  height: calc(36px + 2 * var(--space-sm) + 3px);
+  padding: 0;
+  border: 1.5px solid var(--background-tertiary);
+  border-radius: var(--radius-md);
+  background: var(--clear);
+  color: var(--text-secondary);
+  font: inherit;
+  font-size: 32px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.account-add-button > span {
+  transform: translateY(-2px);
+}
+
+.account-add-button:hover {
+  color: var(--accent-primary);
+  border-color: var(--accent-primary);
+  background: var(--accent-primary-transparent);
+}
+
+.account-add-button:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 3px;
+}
+
 .account-button-label {
   display: inline-flex;
   flex-direction: column;
@@ -172,7 +206,7 @@
 }
 
 .allocation-segment:hover .allocation-tooltip,
-.allocation-segment:focus .allocation-tooltip {
+.allocation-segment:focus-visible .allocation-tooltip {
   display: block;
 }
 
