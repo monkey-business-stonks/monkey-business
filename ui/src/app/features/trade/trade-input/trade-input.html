@@ -32,8 +32,11 @@
     <app-base-input
       label="Quantity (Shares)"
       type="number"
-      [suffix]="selectedAccountCashBalance !== null ? 'Cash: ' + (selectedAccountCashBalance | currency:'USD':'symbol':'1.2-2') : 'Cash: --'"
+      [suffix]="selectedAction === 'Sell'
+        ? 'Max: ' + (availableShares | number:'1.0-8') + ' shares'
+        : maxPurchasableShares !== null ? 'Max: ' + (maxPurchasableShares | number:'1.0-8') + ' shares' : 'Max: -- shares'"
       [value]="quantity"
+      [errorMessage]="quantityError"
       (valueChange)="onQuantityChange($event)"
     ></app-base-input>
   </div>
@@ -58,14 +61,30 @@
 
     <div class="summary-row total-row">
       <span class="font-bold">Estimated Total</span>
-      <span class="total-amount font-mono">{{ estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
+      <span class="total-amount font-mono" [class.over-balance]="!!quantityError">{{ estimatedTotal | currency:'USD':'symbol':'1.2-2' }}</span>
     </div>
   </div>
 
   <!-- Action Button -->
-  <app-button variant="secondary" [disabled]="!canReviewOrder" (click)="reviewOrder()">
-    Review Order
-  </app-button>
+  @if (!marketStatus.isOpen) {
+    <p class="market-closed" role="status" aria-live="polite">{{ marketStatus.message }}</p>
+  }
+  <div
+    class="review-button-wrapper"
+    [class.review-disabled]="!marketStatus.isOpen"
+    [attr.tabindex]="!marketStatus.isOpen ? 0 : null"
+    [attr.aria-label]="!marketStatus.isOpen ? 'Review Order unavailable: market closed' : null"
+    [attr.aria-describedby]="!marketStatus.isOpen ? 'review-disabled-tooltip' : null"
+  >
+    <app-button variant="secondary" [disabled]="!canReviewOrder" (click)="reviewOrder()">
+      Review Order
+    </app-button>
+    @if (!marketStatus.isOpen) {
+      <div id="review-disabled-tooltip" class="review-tooltip" role="tooltip">
+        {{ marketStatus.message }}
+      </div>
+    }
+  </div>
 
   @if (orderError()) {
     <p class="order-error" role="alert">{{ orderError() }}</p>

@@ -388,15 +388,18 @@ class OrderValidatorTest {
     }
 
     @Test
-    void testIsValidTrade_RetirementAccount_EquityAsset_Valid() {
-        // Arrange
-        when(pricingEngine.getPrice("AAPL")).thenReturn(BigDecimal.valueOf(150));
+    void testIsValidTrade_RetirementAccount_EquityAsset_Invalid() {
+        assertFalse(orderValidator.isValidTrade(validBuyOrder, retirementAccount));
+    }
 
-        // Act
-        boolean isValid = orderValidator.isValidTrade(validBuyOrder, retirementAccount);
+    @Test
+    void testIsValidTrade_RetirementAccount_ForexAsset_Invalid() {
+        Order forexOrder = new Order(
+            UUID.randomUUID(), "FOREIGN EXCHANGE", "EURUSD", 1000.0, "BUY",
+            ZonedDateTime.now(), BigDecimal.valueOf(1100), Order.OrderStatus.SUBMITTED, 202, ZonedDateTime.now()
+        );
 
-        // Assert
-        assertTrue(isValid);
+        assertFalse(orderValidator.isValidTrade(forexOrder, retirementAccount));
     }
 
     @ParameterizedTest

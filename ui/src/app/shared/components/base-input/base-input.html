@@ -11,10 +11,16 @@
       [disabled]="disabled"
       [required]="required"
       [name]="name"
+      [class.input-invalid]="!!errorMessage"
+      [attr.aria-invalid]="errorMessage ? 'true' : null"
+      [attr.aria-describedby]="errorMessage ? errorId : null"
       class="custom-input"
     />
     @if (suffix) {
       <span class="input-suffix">{{ suffix }}</span>
     }
   </div>
+  @if (errorMessage) {
+    <p class="input-error" [id]="errorId" role="alert">{{ errorMessage }}</p>
+  }
 </div>
