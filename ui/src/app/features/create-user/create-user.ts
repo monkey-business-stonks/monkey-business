@@ -41,6 +41,11 @@ export class CreateUser {
 
   constructor(private router: Router, private authService: AuthService) {}
 
+  private showError(message: string) {
+    this.error.set(message);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
   private isAtLeastEighteen(): boolean {
     const dateParts = this.dateOfBirth().split('-').map(Number);
     if (dateParts.length !== 3 || dateParts.some(part => !Number.isInteger(part))) return false;
@@ -69,9 +74,9 @@ export class CreateUser {
   onCreateAccount() {
     if (!this.isFormValid()) {
       if (this.password().length > 0 && this.password().length < 8) {
-        this.error.set('Password must be at least 8 characters.');
+        this.showError('Password must be at least 8 characters.');
       } else if (this.dateOfBirthError()) {
-        this.error.set(this.dateOfBirthError());
+        this.showError(this.dateOfBirthError());
       }
       return;
     }
@@ -97,7 +102,7 @@ export class CreateUser {
           },
           error: () => {
             this.loading.set(false);
-            this.error.set('Your account was created, but automatic sign-in failed. Please sign in.');
+            this.showError('Your account was created, but automatic sign-in failed. Please sign in.');
           },
         });
       },
@@ -106,15 +111,15 @@ export class CreateUser {
         const backendMessage = err?.error?.message || err?.error?.error || null;
 
         if (err.status === 0) {
-          this.error.set('Unable to reach the registration service. Verify backend is running and reachable on port 8080.');
+          this.showError('Unable to reach the registration service. Verify backend is running and reachable on port 8080.');
         } else if (err.status === 409) {
-          this.error.set(backendMessage || 'Username or email already exists.');
+          this.showError(backendMessage || 'Username or email already exists.');
         } else if (err.status === 400) {
-          this.error.set(backendMessage || 'Please verify all fields and try again.');
+          this.showError(backendMessage || 'Please verify all fields and try again.');
         } else if (backendMessage) {
-          this.error.set(`Registration failed: ${backendMessage}`);
+          this.showError(`Registration failed: ${backendMessage}`);
         } else {
-          this.error.set('Registration failed. Please check your details and try again.');
+          this.showError('Registration failed. Please check your details and try again.');
         }
       }
     });

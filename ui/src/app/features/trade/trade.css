@@ -11,6 +11,15 @@
   overflow: hidden;
 }
 
+.quote-status {
+  color: var(--text-secondary);
+}
+
+.quote-error {
+  color: var(--accent-negative);
+  margin-bottom: var(--space-md);
+}
+
 instrument-details {
   display: block;
   flex: 2 1 0;
