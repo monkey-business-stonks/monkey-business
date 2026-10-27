@@ -139,9 +139,10 @@ public class OrderValidator {
 
     /**
      * Check if account type is compatible with asset type
-     * CRYPTO accounts can only hold CRYPTO assets
-     * FOREX accounts can only hold FOREX assets
-    * 401K/ROTH_IRA and BROKERAGE accounts can hold EQUITY only
+    * CRYPTO accounts can only hold CRYPTO assets
+    * FOREX accounts can only hold FOREX assets
+    * ROTH_IRA and BROKERAGE accounts can hold EQUITY only
+    * 401K accounts cannot trade
      * 
      * @param account Account
      * @param assetType Asset type (EQUITY, CRYPTO, FOREX)
@@ -165,8 +166,10 @@ public class OrderValidator {
             case FOREX:
                 // FOREX accounts can ONLY hold FOREX assets
                 return normalizedAssetType.equals("FOREX") || normalizedAssetType.equals("FOREIGN EXCHANGE");
-                
+
             case _401K:
+                return false;
+
             case ROTH_IRA:
                 return normalizedAssetType.equals("EQUITY");
                 

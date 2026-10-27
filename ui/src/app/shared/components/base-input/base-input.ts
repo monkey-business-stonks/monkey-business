@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 
 export type InputVariant = 'default' | 'form';
 
+let nextInputErrorId = 0;
+
 @Component({
   selector: 'app-base-input',
   standalone: true,
@@ -21,6 +23,8 @@ export class BaseInputComponent {
   @Input() required: boolean = false;
   @Input() name: string = '';
   @Input() variant: InputVariant = 'default';
+  @Input() errorMessage: string = '';
+  readonly errorId = `base-input-error-${nextInputErrorId++}`;
 
   @Output() valueChange = new EventEmitter<any>();
 
