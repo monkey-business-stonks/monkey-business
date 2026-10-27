@@ -253,8 +253,7 @@ The application supports **Traditional 401(k)**, **Roth 401(k)**, **Traditional 
 
 All retirement account variants are restricted to EQUITY trades. CRYPTO and FOREX assets are not supported in retirement accounts. The current application applies an initial-deposit cap based on account family and the account owner's age; it does not model tax treatment, annual contribution aggregation across accounts, or withdrawal penalties.
 
-Existing database rows recorded as `401K` are migrated to `TRADITIONAL 401K`. The legacy API value remains accepted during rollout for compatibility.
-For an existing database, apply [db/migrations/001_split_retirement_account_types.sql](db/migrations/001_split_retirement_account_types.sql) before deploying the server. Fresh databases get the expanded account-type constraint from `db/databasescript.sql`.
+The legacy API value `401K` is still accepted and treated as `TRADITIONAL 401K` for compatibility. The expanded account-type constraint is defined in `db/databasescript.sql`; because this project uses regenerable mock data, reset/recreate the local database from the initialization script when applying schema changes.
 
 ---
 
