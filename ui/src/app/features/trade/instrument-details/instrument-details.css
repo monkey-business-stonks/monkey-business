@@ -84,23 +84,37 @@
 
 .instrument-caption {
   width: 100%;
-  height: 36px;
+  min-height: 36px;
   flex-shrink: 0;
   background-color: var(--background-tertiary);
   border-radius: var(--radius-md);
-  display: flex;
-  flex-direction: row;
-  justify-content: space-around;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: center;
-  padding: 0 var(--space-md);
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
   box-sizing: border-box;
 }
 
 .instrument-caption-pair {
   display: flex;
   flex-direction: row;
-  align-items: center; 
-  gap: var(--space-xs);
+  justify-content: center;
+  align-items: baseline;
+  flex-wrap: wrap;
+  column-gap: var(--space-sm);
+  row-gap: var(--space-xs);
+  min-width: 0;
+  text-align: center;
+}
+
+.instrument-caption-pair .label,
+.instrument-caption-pair .val {
+  font-family: 'Inter', sans-serif;
+  font-size: var(--font-size-xs);
+  line-height: 1.4;
+  white-space: nowrap;
+  margin: 0;
 }
 
 .label {
@@ -112,7 +126,8 @@
 }
 
 .val {
-  font-family: 'Roboto Mono', sans-serif;
+  font-family: 'Inter', sans-serif;
+  font-variant-numeric: tabular-nums;
   color: var(--text-primary);
   font-size: var(--font-size-xs);
   font-weight: var(--font-weight-semibold);
