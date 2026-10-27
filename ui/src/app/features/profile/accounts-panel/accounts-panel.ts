@@ -14,6 +14,16 @@ import { Subscription } from 'rxjs';
   templateUrl: './accounts-panel.html',
 })
 export class AccountsPanel implements OnDestroy, OnInit {
+  private readonly accountTypeOrder: Record<string, number> = {
+    BROKERAGE: 0,
+    _401K: 1,
+    '401K': 1,
+    ROTH_IRA: 2,
+    'ROTH IRA': 2,
+    CRYPTO: 3,
+    FOREX: 4
+  };
+
   @Input() showEditProfileButton = false;
   @Output() editProfile = new EventEmitter<void>();
 
@@ -53,7 +63,10 @@ export class AccountsPanel implements OnDestroy, OnInit {
 
     this.accountService.getUserAccounts(currentUserId).subscribe({
       next: (accounts: Account[]) => {
-        this.accounts.set(accounts);
+        this.accounts.set([...accounts].sort((a, b) =>
+          (this.accountTypeOrder[a.accountType] ?? 0) -
+          (this.accountTypeOrder[b.accountType] ?? 0)
+        ));
         this.isLoading.set(false);
       },
       error: () => {
