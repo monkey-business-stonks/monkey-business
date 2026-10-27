@@ -2,8 +2,14 @@
   <instrument-details [selectedTicker]="selectedTicker"/>
   
   <div class="trade-panels">
+    @if (quoteLoading()) {
+      <p class="quote-status" role="status">Loading instrument...</p>
+    }
+    @if (quoteError()) {
+      <p class="quote-error" role="alert">{{ quoteError() }}</p>
+    }
     <trade-search 
-      *ngIf="!isTickerSelected"
+      *ngIf="!isTickerSelected && !quoteLoading()"
       [selectedTickerFromParent]="selectedTicker"
       (onTickerHighlighted)="onTickerHighlighted($event)"
       (onTickerSelected)="onTickerSelected($event)"/>
