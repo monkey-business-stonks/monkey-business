@@ -5,6 +5,7 @@ import { AuthService } from '@/app/core/services/auth.service';
 import { AccountService } from '@/app/core/services/account.service';
 import { OrderUpdateService } from '@/app/core/services/order-update.service';
 import { Account } from '@/app/core/models'; 
+import { Asset } from '@/app/core/models/asset';
 import { TableColumn } from '@/app/shared/models/table-column';
 import { Subscription } from 'rxjs';
 
@@ -13,6 +14,8 @@ interface BalanceAllocation {
   label: string;
   value: number;
   percentage: number;
+  profitLoss: number;
+  profitLossPercent: number | null;
   color: string;
 }
 
@@ -37,6 +40,51 @@ export class Dashboard implements OnDestroy, OnInit {
   loading = signal(false);
   error = signal<string | null>(null);
   private orderUpdateSubscription?: Subscription;
+
+  private readonly accountTypeOrder = [
+    'BROKERAGE', 'TRADITIONAL_401K', 'ROTH_401K', 'TRADITIONAL_IRA', 'ROTH_IRA', 'CRYPTO', 'FOREX'
+  ];
+
+  private normalizeAccountType(accountType: string): string {
+    const type = accountType.toUpperCase().replaceAll(' ', '_').replace(/[()]/g, '');
+    return type === '_401K' || type === '401K' ? 'TRADITIONAL_401K' : type;
+  }
+
+  sortedAccounts = computed(() => [...this.accounts()].sort((first, second) => {
+    const rank = (type: string) => {
+      const index = this.accountTypeOrder.indexOf(this.normalizeAccountType(type));
+      return index < 0 ? this.accountTypeOrder.length : index;
+    };
+    return rank(first.accountType) - rank(second.accountType) || first.accountId.localeCompare(second.accountId);
+  }));
+
+  private assetValuation(asset: Asset) {
+    const averageCost = Number((asset as Asset & { boughtAverage?: number }).boughtAverage ?? asset.averageCost ?? 0);
+    const currentPrice = Number(asset.currentPrice ?? averageCost);
+    const quantity = Number(asset.quantity);
+    return { averageCost, currentPrice, quantity, costBasis: quantity * averageCost, value: quantity * currentPrice, profitLoss: quantity * (currentPrice - averageCost) };
+  }
+
+  private accountValuation(account: Account) {
+    return (account.heldAssets ?? []).reduce((total, asset) => {
+      const { quantity, profitLoss, costBasis } = this.assetValuation(asset);
+      if (quantity <= 0 || !Number.isFinite(profitLoss) || !Number.isFinite(costBasis)) {
+        return total;
+      }
+      return { profitLoss: total.profitLoss + profitLoss, costBasis: total.costBasis + costBasis };
+    }, { profitLoss: 0, costBasis: 0 });
+  }
+
+  private allocationColor(profitLoss: number, profitLossPercent: number | null, largestReturn: number): string {
+    const accent = profitLoss < 0 ? 'var(--accent-negative)' : 'var(--accent-primary)';
+    const relativeMagnitude = largestReturn > 0 ? Math.abs(profitLossPercent ?? 0) / largestReturn : 0;
+    const intensity = 25 + relativeMagnitude * 75;
+    return `color-mix(in srgb, ${accent} ${intensity}%, var(--text-primary))`;
+  }
+
+  profitLossColor(value: number): string {
+    return value > 0 ? 'var(--accent-primary)' : value < 0 ? 'var(--accent-negative)' : 'var(--text-secondary)';
+  }
 
   /**
    * Total balance across all accounts or the currently selected account
@@ -64,36 +112,46 @@ export class Dashboard implements OnDestroy, OnInit {
   });
 
   balanceAllocation = computed<BalanceAllocation[]>(() => {
-    const colors = ['#16857b', '#507dd1', '#c68621', '#bc5980', '#7963bb', '#448da6', '#ad633e', '#6b8841'];
     const filter = this.selectedAccountFilter();
-    const account = this.accounts().find(account => account.accountId === filter || account.accountType === filter);
+    const account = this.sortedAccounts().find(account => account.accountId === filter || account.accountType === filter);
     const values = filter === 'ALL'
-      ? this.accounts().map(account => ({
+      ? this.sortedAccounts().map(account => ({
           id: account.accountId,
-          label: account.accountType.replace(/^_/, '').replaceAll('_', ' '),
-          value: Number(account.balance)
+          label: `${this.getAccountTypeLabel(account.accountType)} XX${account.accountId.slice(-4).toUpperCase()}`,
+          value: Number(account.balance),
+          ...this.accountValuation(account)
         }))
       : [
-          { id: 'cash', label: 'Cash', value: Number(account?.cashBalance ?? 0) },
+          { id: 'cash', label: 'Cash', value: Number(account?.cashBalance ?? 0), profitLoss: 0, costBasis: 0 },
           ...(account?.heldAssets ?? []).map(asset => ({
             id: asset.ticker,
-            label: asset.ticker,
-            value: Number(asset.quantity) * Number(asset.currentPrice ?? asset.averageCost ?? (asset as typeof asset & { boughtAverage?: number }).boughtAverage ?? 0)
+            label: asset.ticker.replace(/^(X:|FX:)/, ''),
+            ...this.assetValuation(asset)
           }))
         ];
-    const grouped = new Map<string, { id: string; label: string; value: number }>();
+    const grouped = new Map<string, { id: string; label: string; value: number; profitLoss: number; costBasis: number }>();
     for (const item of values) {
       if (!Number.isFinite(item.value) || item.value <= 0) {
         continue;
       }
       const existing = grouped.get(item.id);
-      grouped.set(item.id, { ...item, value: (existing?.value ?? 0) + item.value });
+      grouped.set(item.id, {
+        ...item,
+        value: (existing?.value ?? 0) + item.value,
+        profitLoss: (existing?.profitLoss ?? 0) + item.profitLoss,
+        costBasis: (existing?.costBasis ?? 0) + item.costBasis
+      });
     }
-    const total = Array.from(grouped.values()).reduce((sum, item) => sum + item.value, 0);
-    return Array.from(grouped.values()).map((item, index) => ({
+    const items = Array.from(grouped.values()).map(item => {
+      const percent = item.costBasis > 0 ? item.profitLoss / item.costBasis * 100 : item.profitLoss === 0 ? 0 : null;
+      return { ...item, profitLossPercent: percent !== null && Number.isFinite(percent) ? percent : null };
+    });
+    const total = items.reduce((sum, item) => sum + item.value, 0);
+    const largestReturn = items.reduce((largest, item) => Math.max(largest, Math.abs(item.profitLossPercent ?? 0)), 0);
+    return items.map(item => ({
       ...item,
       percentage: item.value / total * 100,
-      color: colors[index % colors.length]
+      color: this.allocationColor(item.profitLoss, item.profitLossPercent, largestReturn)
     }));
   });
 
@@ -102,7 +160,7 @@ export class Dashboard implements OnDestroy, OnInit {
    */
   tableHoldings = computed(() => {
     const filter = this.selectedAccountFilter();
-    const allAccounts = this.accounts();
+    const allAccounts = this.sortedAccounts();
 
     // Filter accounts based on selection button
     const filteredAccounts = filter === 'ALL'
@@ -113,28 +171,25 @@ export class Dashboard implements OnDestroy, OnInit {
 
     filteredAccounts.forEach(acc => {
       // If backend returns heldAssets array inside Account response
-      const assets = (acc as any).heldAssets || [];
-      assets.forEach((asset: any) => {
-        const qty = Number(asset.quantity);
+      const assets = acc.heldAssets || [];
+      assets.forEach(asset => {
+        const { quantity: qty, averageCost: avgCost, currentPrice, value: mktValue, profitLoss: pl } = this.assetValuation(asset);
         if (!Number.isFinite(qty) || qty <= 0) {
           return;
         }
-
-        const avgCost = asset.boughtAverage || 0;
-        const currentPrice = asset.currentPrice || avgCost; 
-        const mktValue = qty * currentPrice;
-        const pl = mktValue - (qty * avgCost);
 
         rows.push({
           accountId: acc.accountId,
           accountType: acc.accountType,
           ticker: asset.ticker,
-          assetName: asset.name || asset.ticker,
+          displayTicker: asset.ticker.replace(/^(X:|FX:)/, ''),
+          assetName: /^(X:|FX:)/.test(asset.ticker) ? asset.ticker : asset.name || asset.ticker,
           quantity: qty.toFixed(2),
           avgCost: `$${avgCost.toFixed(2)}`,
           currentPrice: `$${currentPrice.toFixed(2)}`,
           marketValue: `$${mktValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
-          totalPl: `${pl >= 0 ? '+' : ''}$${pl.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+          profitLoss: pl,
+          totalPl: `${pl >= 0 ? '+' : '-'}$${Math.abs(pl).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
         });
       });
     });
@@ -166,11 +221,13 @@ export class Dashboard implements OnDestroy, OnInit {
 
   getAccountTypeLabel(accountType: string): string {
     const labels: Record<string, string> = {
+      TRADITIONAL_401K: 'TRADITIONAL 401(K)',
+      ROTH_401K: 'ROTH 401(K)',
+      TRADITIONAL_IRA: 'TRADITIONAL IRA',
       ROTH_IRA: 'ROTH IRA',
-      _401K: '401(K)',
-      '401K': '401(K)'
     };
-    return labels[accountType] ?? accountType.toUpperCase();
+    const type = this.normalizeAccountType(accountType);
+    return labels[type] ?? type;
   }
 
   constructor(
@@ -243,6 +300,10 @@ export class Dashboard implements OnDestroy, OnInit {
     ));
     tooltip.style.left = `${left}px`;
     tooltip.style.top = `${top}px`;
+  }
+
+  openTrade(ticker: string): void {
+    this.router.navigate(['/trade'], { queryParams: { ticker } });
   }
 
   openAccountPage(): void {

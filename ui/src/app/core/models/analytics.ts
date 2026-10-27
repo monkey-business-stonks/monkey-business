@@ -64,6 +64,7 @@ export interface OperationsOrderRow {
   instrument: string;
   quantity: number;
   principal_usd: number;
+  execution_price_usd: number | null;
   execution_status: string;
   settlement_status: string;
   latest_event_utc: string | null;
@@ -75,6 +76,8 @@ export interface OperationsOverviewResponse {
   summary: OperationsSummary;
   status_tabs: string[];
   orders: OperationsOrderRow[];
+  total_matching_orders: number;
+  available_instruments: string[];
 }
 
 export interface OperationsLifecycleEvent {

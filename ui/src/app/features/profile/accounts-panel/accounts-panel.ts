@@ -14,6 +14,22 @@ import { Subscription } from 'rxjs';
   templateUrl: './accounts-panel.html',
 })
 export class AccountsPanel implements OnDestroy, OnInit {
+  private readonly accountTypeOrder: Record<string, number> = {
+    BROKERAGE: 0,
+    _401K: 1,
+    '401K': 1,
+    'TRADITIONAL 401K': 1,
+    TRADITIONAL_401K: 1,
+    'ROTH 401K': 1,
+    ROTH_401K: 1,
+    'TRADITIONAL IRA': 2,
+    TRADITIONAL_IRA: 2,
+    ROTH_IRA: 2,
+    'ROTH IRA': 2,
+    CRYPTO: 3,
+    FOREX: 4
+  };
+
   @Input() showEditProfileButton = false;
   @Output() editProfile = new EventEmitter<void>();
 
@@ -53,7 +69,10 @@ export class AccountsPanel implements OnDestroy, OnInit {
 
     this.accountService.getUserAccounts(currentUserId).subscribe({
       next: (accounts: Account[]) => {
-        this.accounts.set(accounts);
+        this.accounts.set([...accounts].sort((a, b) =>
+          (this.accountTypeOrder[a.accountType] ?? 0) -
+          (this.accountTypeOrder[b.accountType] ?? 0)
+        ));
         this.isLoading.set(false);
       },
       error: () => {
@@ -80,9 +99,11 @@ export class AccountsPanel implements OnDestroy, OnInit {
   getAccountTypeLabel(accountType: string): string {
     const typeMap: { [key: string]: string } = {
       BROKERAGE: 'Individual Brokerage',
-      _401K: '401(k)',
-      '401K': '401(k)',
-      ROTH_IRA: 'Roth IRA',
+      '401K': 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      'TRADITIONAL IRA': 'Traditional IRA',
+      'ROTH IRA': 'Roth IRA',
       CRYPTO: 'Crypto',
       FOREX: 'FOREX'
     };

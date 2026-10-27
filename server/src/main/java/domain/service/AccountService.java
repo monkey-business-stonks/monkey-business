@@ -94,13 +94,13 @@ public class AccountService {
     }
 
     private BigDecimal getMaximumContribution(String accountType, LocalDate dateOfBirth) {
-        if ("ROTH IRA".equals(accountType) || "ROTH_IRA".equals(accountType)) {
+        if (isIraAccount(accountType)) {
             return dateOfBirth != null && getAge(dateOfBirth) >= 50
                 ? new BigDecimal("8600")
                 : new BigDecimal("7500");
         }
 
-        if ("401K".equals(accountType) || "_401K".equals(accountType)) {
+        if (is401kAccount(accountType)) {
             int age = dateOfBirth == null ? 0 : getAge(dateOfBirth);
             if (age >= 60 && age <= 63) return new BigDecimal("35750");
             if (age >= 50) return new BigDecimal("32500");
@@ -108,6 +108,21 @@ public class AccountService {
         }
 
         return new BigDecimal("250000");
+    }
+
+    private boolean isIraAccount(String accountType) {
+        String normalized = normalizeAccountType(accountType);
+        return normalized.equals("ROTH IRA") || normalized.equals("TRADITIONAL IRA");
+    }
+
+    private boolean is401kAccount(String accountType) {
+        String normalized = normalizeAccountType(accountType);
+        return normalized.equals("401K") || normalized.equals("TRADITIONAL 401K")
+            || normalized.equals("ROTH 401K");
+    }
+
+    private String normalizeAccountType(String accountType) {
+        return accountType.trim().toUpperCase().replace('_', ' ').replaceAll("\\s+", " ").trim();
     }
 
     private int getAge(LocalDate dateOfBirth) {
@@ -175,7 +190,9 @@ public class AccountService {
 
     private Account.AccountType toEntityAccountType(String accountType) {
         return switch (accountType.trim().toUpperCase()) {
-            case "401K", "_401K" -> Account.AccountType._401K;
+            case "401K", "_401K", "TRADITIONAL 401K", "TRADITIONAL_401K" -> Account.AccountType.TRADITIONAL_401K;
+            case "ROTH 401K", "ROTH_401K" -> Account.AccountType.ROTH_401K;
+            case "TRADITIONAL IRA", "TRADITIONAL_IRA" -> Account.AccountType.TRADITIONAL_IRA;
             case "ROTH IRA", "ROTH_IRA" -> Account.AccountType.ROTH_IRA;
             default -> Account.AccountType.valueOf(accountType.trim().toUpperCase());
         };
@@ -229,7 +246,9 @@ public class AccountService {
 
     private domain.dto.AccountType toDtoAccountType(Account.AccountType accountType) {
         return switch (accountType) {
-            case _401K -> domain.dto.AccountType.fromValue("401K");
+            case TRADITIONAL_401K -> domain.dto.AccountType.fromValue("TRADITIONAL 401K");
+            case ROTH_401K -> domain.dto.AccountType.fromValue("ROTH 401K");
+            case TRADITIONAL_IRA -> domain.dto.AccountType.fromValue("TRADITIONAL IRA");
             case ROTH_IRA -> domain.dto.AccountType.fromValue("ROTH IRA");
             default -> domain.dto.AccountType.fromValue(accountType.name());
         };

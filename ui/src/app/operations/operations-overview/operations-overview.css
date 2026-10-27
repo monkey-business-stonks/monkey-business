@@ -72,7 +72,7 @@
   width: 100%;
 }
 
-.selection-footer { 
+.selection-toolbar { 
   width: 100%;
   box-sizing: border-box;
   background-color: var(--accent-primary-transparent); 
@@ -83,23 +83,28 @@
   justify-content: space-between; 
   align-items: center; 
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4); 
-  margin-top: var(--space-lg); 
+  margin-bottom: var(--space-md);
+  gap: var(--space-md);
 }
 
 .selection-content {
   display: flex;
   align-items: center;
   gap: var(--space-md);
+  min-width: 0;
 }
 
 .selection-info {
   display: flex;
   flex-direction: column;
   gap: var(--space-xxs);
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .selection-title {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--space-xs);
   font-size: var(--font-size-sm);
@@ -139,4 +144,62 @@
 .table-card app-table {
   width: 100%;
   display: block;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  color: var(--text-secondary);
+  font-size: var(--font-size-xs);
+}
+
+.pagination-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xxs);
+}
+
+.page-button {
+  min-width: 36px;
+  height: 36px;
+  padding: 0 var(--space-xs);
+  border: var(--width-xs) solid var(--background-tertiary);
+  border-radius: var(--radius-sm);
+  background: var(--background-secondary);
+  color: var(--text-primary);
+  font: inherit;
+  cursor: pointer;
+}
+
+.page-button.active {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+  background: var(--accent-primary-transparent);
+}
+
+.page-button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.page-button:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .selection-toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: var(--space-md);
+  }
+
+  .filter-row {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }

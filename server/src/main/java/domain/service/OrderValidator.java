@@ -16,6 +16,19 @@ import domain.entities.Order;
 @Service
 public class OrderValidator {
 
+    public static final int INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE = 422;
+    public static final int MARKET_CLOSED_STATUS_CODE = 409;
+
+    public record ValidationResult(boolean valid, Integer rejectionStatusCode) {
+        private static ValidationResult accepted() {
+            return new ValidationResult(true, null);
+        }
+
+        private static ValidationResult rejected(int statusCode) {
+            return new ValidationResult(false, statusCode);
+        }
+    }
+
     private static final ZoneId UTC = ZoneId.of("UTC");
     private static final ZoneId NEW_YORK = ZoneId.of("America/New_York");
     private static final LocalTime US_EQUITY_OPEN = LocalTime.of(13, 30);
@@ -45,34 +58,38 @@ public class OrderValidator {
      * @return true if order is valid, false otherwise
      */
     public boolean isValidTrade(Order order, Account account) {
+        return validateTrade(order, account).valid();
+    }
+
+    public ValidationResult validateTrade(Order order, Account account) {
         // Check required fields
         if (order == null || account == null) {
-            return false;
+            return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
         }
 
         // Validate ticker
         if (order.getTicker() == null || order.getTicker().isEmpty()) {
-            return false;
+            return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
         }
 
         // Validate quantity
         if (order.getQuantity() == null || order.getQuantity() <= 0) {
-            return false;
+            return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
         }
 
         // Validate action
         String action = order.getAction();
         if (action == null || (!action.equalsIgnoreCase("BUY") && !action.equalsIgnoreCase("SELL"))) {
-            return false;
+            return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
         }
 
         // Validate account type matches asset type (orderType)
         if (!isAccountTypeCompatibleWithAssetType(account, order.getOrderType())) {
-            return false;
+            return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
         }
 
         if (!isWithinTradingHours(order.getOrderType(), order.getTicker())) {
-            return false;
+            return ValidationResult.rejected(MARKET_CLOSED_STATUS_CODE);
         }
 
         // For BUY orders: check cash balance is sufficient
@@ -83,18 +100,18 @@ public class OrderValidator {
             
             // Check if account has enough cash
             if (account.getCashBalance().compareTo(totalCost) < 0) {
-                return false;
+                return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
             }
         }
         // For SELL orders: check quantity held is sufficient
         else if (action.equalsIgnoreCase("SELL")) {
             var asset = assetService.getAsset(account, order.getTicker());
             if (asset == null || asset.quantity() < order.getQuantity()) {
-                return false;
+                return ValidationResult.rejected(INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE);
             }
         }
 
-        return true;
+        return ValidationResult.accepted();
     }
 
     boolean isWithinTradingHours(String assetType, String ticker) {
@@ -139,10 +156,9 @@ public class OrderValidator {
 
     /**
      * Check if account type is compatible with asset type
-    * CRYPTO accounts can only hold CRYPTO assets
-    * FOREX accounts can only hold FOREX assets
-    * ROTH_IRA and BROKERAGE accounts can hold EQUITY only
-    * 401K accounts cannot trade
+     * CRYPTO accounts can only hold CRYPTO assets
+     * FOREX accounts can only hold FOREX assets
+    * Retirement and BROKERAGE accounts can hold EQUITY only
      * 
      * @param account Account
      * @param assetType Asset type (EQUITY, CRYPTO, FOREX)
@@ -166,10 +182,10 @@ public class OrderValidator {
             case FOREX:
                 // FOREX accounts can ONLY hold FOREX assets
                 return normalizedAssetType.equals("FOREX") || normalizedAssetType.equals("FOREIGN EXCHANGE");
-
-            case _401K:
-                return false;
-
+                
+            case TRADITIONAL_401K:
+            case ROTH_401K:
+            case TRADITIONAL_IRA:
             case ROTH_IRA:
                 return normalizedAssetType.equals("EQUITY");
                 

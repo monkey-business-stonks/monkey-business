@@ -1,5 +1,5 @@
 import { SharedModule } from '@/app/shared/shared.module';
-import { ChangeDetectorRef, Component, EventEmitter, Input, OnDestroy, Output, signal } from '@angular/core';
+import { ChangeDetectorRef, Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { SelectOption } from '@/app/shared/models/select-option';
 import { Confirmation, ConfirmationStatus, OrderReviewData } from '@/app/shared/components/confirmation/confirmation';
 import { PricingService } from '@/app/core/services/pricing.service';
@@ -9,7 +9,6 @@ import { OrderService } from '@/app/core/services/order.service';
 import { Account } from '@/app/core/models/account';
 import { Subscription, timer } from 'rxjs';
 import { switchMap, takeWhile } from 'rxjs/operators';
-import { getMarketStatus, MarketStatus } from './market-hours';
 
 @Component({
   selector: 'trade-input',
@@ -18,7 +17,7 @@ import { getMarketStatus, MarketStatus } from './market-hours';
   templateUrl: './trade-input.html',
   styleUrl: './trade-input.css',
 })
-export class TradeInput implements OnDestroy {
+export class TradeInput {
   @Input() selectedTicker: any;
   @Output() onBack = new EventEmitter<void>();
   @Output() onOrderConfirmed = new EventEmitter<OrderReviewData>();
@@ -28,7 +27,8 @@ export class TradeInput implements OnDestroy {
   accountOptions = signal<SelectOption[]>([{ label: 'Loading accounts...', value: '' }]);
   selectedAccount = signal('');
   orderTypeOptions: SelectOption[] = [
-    { label: 'Market Order', value: 'market' }
+    { label: 'Market Order', value: 'market' },
+    { label: 'Limit Order', value: 'limit' }
   ];
   selectedOrderType = 'market';
   quantity = 50;
@@ -38,8 +38,6 @@ export class TradeInput implements OnDestroy {
   orderStatus: ConfirmationStatus = null;
   rejectionMessage: string | null = null;
   private orderStatusSubscription?: Subscription;
-  private marketClockSubscription?: Subscription;
-  private marketClock = signal(Date.now());
   private accounts = signal<Account[]>([]);
 
   constructor(
@@ -51,23 +49,11 @@ export class TradeInput implements OnDestroy {
   ) {}
 
   ngOnInit(): void {
-    this.marketClockSubscription = timer(1000, 1000).subscribe(() => this.marketClock.set(Date.now()));
     if (this.getSelectedAssetType() === 'CRYPTO') {
       this.quantity = 0.01;
     }
     this.loadSharePrice();
     this.loadAccounts();
-  }
-
-  ngOnDestroy(): void {
-    this.marketClockSubscription?.unsubscribe();
-    this.orderStatusSubscription?.unsubscribe();
-  }
-
-  get marketStatus(): MarketStatus {
-    // Signal refreshes the UI while the form is idle; always check the current time on interaction.
-    this.marketClock();
-    return getMarketStatus(this.selectedTicker?.data?.symbol ?? '');
   }
 
   private loadAccounts(): void {
@@ -82,7 +68,7 @@ export class TradeInput implements OnDestroy {
         const compatibleAccounts = accounts.filter(account => this.isCompatibleAccount(account));
         this.accounts.set(compatibleAccounts);
         this.accountOptions.set(compatibleAccounts.map(account => ({
-          label: `${account.accountType} · ${account.accountId.slice(-4).toUpperCase()}`,
+          label: this.accountTypeLabel(account.accountType),
           value: account.accountId
         })));
         this.selectedAccount.set(compatibleAccounts[0]?.accountId ?? '');
@@ -125,29 +111,6 @@ export class TradeInput implements OnDestroy {
     return this.accounts().find(account => account.accountId === this.selectedAccount())?.cashBalance ?? null;
   }
 
-  get maxPurchasableShares(): number | null {
-    const cashBalance = this.selectedAccountCashBalance;
-    if (cashBalance === null || !Number.isFinite(cashBalance)
-      || !Number.isFinite(this.sharePrice) || this.sharePrice <= 0) {
-      return null;
-    }
-
-    const affordableShares = Math.max(0, cashBalance) / this.sharePrice;
-    if (this.getSelectedAssetType() === 'EQUITY') {
-      return Math.floor(affordableShares);
-    }
-
-    // Floor crypto/forex maximums to two decimals rather than rounding up.
-    return Math.floor(affordableShares * 100) / 100;
-  }
-
-  get exceedsCashBalance(): boolean {
-    const cashBalance = this.selectedAccountCashBalance;
-    return this.selectedAction === 'Buy' && cashBalance !== null
-      && Number.isFinite(this.estimatedTotal) && this.normalizedQuantity > 0
-      && this.sharePrice > 0 && this.estimatedTotal > cashBalance;
-  }
-
   get availableShares(): number {
     const account = this.accounts().find(account => account.accountId === this.selectedAccount());
     const ticker = this.selectedTicker?.data?.symbol?.toUpperCase();
@@ -155,68 +118,44 @@ export class TradeInput implements OnDestroy {
     return Number(holding?.quantity ?? 0);
   }
 
-  get exceedsAvailableShares(): boolean {
-    return this.selectedAction === 'Sell'
-      && this.accounts().some(account => account.accountId === this.selectedAccount())
-      && Number.isFinite(this.normalizedQuantity) && this.normalizedQuantity > 0
-      && (!Number.isFinite(this.availableShares) || this.normalizedQuantity > this.availableShares);
-  }
-
-  get quantityError(): string {
-    if (this.exceedsCashBalance) {
-      return 'Insufficient cash balance. Reduce the quantity to continue.';
-    }
-    if (this.exceedsAvailableShares) {
-      return this.availableShares > 0
-        ? `Insufficient holdings. You can sell up to ${this.availableShares} shares from this account.`
-        : 'You do not own this asset in the selected account.';
-    }
-    return '';
-  }
-
-  get reviewDisabledReasons(): string[] {
-    const reasons: string[] = [];
-    if (!this.selectedTicker?.data?.symbol) {
-      reasons.push('Select an instrument to trade.');
-    } else if (!this.marketStatus.isOpen) {
-      reasons.push(this.marketStatus.message);
-    }
-
-    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
-    if (!account) {
-      reasons.push('Select an account to trade from.');
-    } else if (!this.isCompatibleAccount(account)) {
-      reasons.push('Select an account compatible with this instrument.');
-    }
-    if (!this.selectedOrderType) {
-      reasons.push('Select an order type.');
-    }
-    if (!Number.isFinite(this.normalizedQuantity) || this.normalizedQuantity <= 0) {
-      reasons.push('Enter a quantity greater than zero.');
-    }
-    if (!Number.isFinite(this.sharePrice) || this.sharePrice <= 0) {
-      reasons.push('A valid share price is not available yet. Please try again.');
-    }
-    if (account && this.selectedAction === 'Buy'
-      && (!Number.isFinite(account.cashBalance) || !Number.isFinite(this.estimatedTotal))) {
-      reasons.push('Unable to calculate available funds for this order.');
-    }
-    if (this.quantityError) {
-      reasons.push(this.quantityError);
-    }
-    return reasons;
-  }
-
   get canReviewOrder(): boolean {
-    return this.reviewDisabledReasons.length === 0;
+    const account = this.accounts().find(account => account.accountId === this.selectedAccount());
+    return !!account && this.isCompatibleAccount(account)
+      && Number.isFinite(this.normalizedQuantity) && this.normalizedQuantity > 0 && this.sharePrice > 0
+      && (this.selectedAction === 'Sell' || this.estimatedTotal <= account.cashBalance);
   }
 
   private isCompatibleAccount(account: Account): boolean {
     switch (this.getSelectedAssetType()) {
       case 'CRYPTO': return account.accountType === 'CRYPTO';
       case 'FOREIGN EXCHANGE': return account.accountType === 'FOREX';
-      default: return ['BROKERAGE', 'ROTH IRA', 'ROTH_IRA'].includes(account.accountType);
+      default: return [
+        'BROKERAGE', '401K', '_401K',
+        'TRADITIONAL 401K', 'TRADITIONAL_401K',
+        'ROTH 401K', 'ROTH_401K',
+        'TRADITIONAL IRA', 'TRADITIONAL_IRA',
+        'ROTH IRA', 'ROTH_IRA'
+      ].includes(account.accountType);
     }
+  }
+
+  private accountTypeLabel(accountType: string): string {
+    const labels: Record<string, string> = {
+      BROKERAGE: 'Brokerage',
+      '401K': 'Traditional 401(k)',
+      _401K: 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      'TRADITIONAL_401K': 'Traditional 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      ROTH_401K: 'Roth 401(k)',
+      'TRADITIONAL IRA': 'Traditional IRA',
+      TRADITIONAL_IRA: 'Traditional IRA',
+      'ROTH IRA': 'Roth IRA',
+      ROTH_IRA: 'Roth IRA',
+      CRYPTO: 'Crypto',
+      FOREX: 'FOREX'
+    };
+    return labels[accountType] ?? accountType;
   }
 
   get orderData(): OrderReviewData {
@@ -240,14 +179,6 @@ export class TradeInput implements OnDestroy {
   }
 
   onConfirmTrade(data: OrderReviewData): void {
-    const market = getMarketStatus(data.ticker ?? this.selectedTicker?.data?.symbol ?? '');
-    if (!market.isOpen) {
-      this.orderError.set(market.message);
-      this.rejectionMessage = market.message;
-      this.orderStatus = 'REJECTED';
-      return;
-    }
-
     if (!data.accountId) {
       this.orderError.set('Select a valid account before placing the order.');
       return;

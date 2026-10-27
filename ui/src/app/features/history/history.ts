@@ -18,6 +18,7 @@ export interface OrderHistoryItem {
   price: string;
   amount: string;
   status: string;
+  statusCode?: number | null;
 }
 
 @Component({
@@ -190,8 +191,53 @@ export class History implements OnInit {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       })}`,
-      status: order.status
+      status: order.status,
+      ...(order.statusCode == null ? {} : { statusCode: order.statusCode })
     };
+  }
+
+  statusTooltip(order: OrderHistoryItem): string {
+    switch (order.status) {
+      case 'SUBMITTED': return 'Order submitted and awaiting validation.';
+      case 'ACCEPTED': return 'Order validated and awaiting execution.';
+      case 'FILLED': return 'Order executed and awaiting settlement.';
+      case 'SETTLED': return 'Order completed and settled.';
+      case 'REJECTED':
+        switch (order.statusCode) {
+          case 409: return 'Rejected: the market was closed.';
+          case 422: return 'Rejected: insufficient funds or quantity.';
+          case 500: return 'Rejected: an execution error occurred.';
+          case 503: return 'Rejected: pricing data is temporarily unavailable.';
+          default: return order.statusCode == null
+            ? 'Order rejected; no reason code was provided.'
+            : `Order rejected (code ${order.statusCode}).`;
+        }
+      default: return order.status;
+    }
+  }
+
+  positionStatusTooltip(event: MouseEvent | FocusEvent, tooltip: HTMLElement): void {
+    const viewport = tooltip.ownerDocument.defaultView;
+    if (!viewport) {
+      return;
+    }
+
+    const status = event.currentTarget as HTMLElement;
+    const bounds = status.getBoundingClientRect();
+    const pointer = 'clientX' in event;
+    const anchorX = pointer ? event.clientX : bounds.left + bounds.width / 2;
+    const anchorY = pointer ? event.clientY : bounds.top;
+    const width = tooltip.offsetWidth;
+    const height = tooltip.offsetHeight;
+    const left = Math.max(8, Math.min(anchorX + 12, viewport.innerWidth - width - 8));
+    const preferredTop = anchorY - height - 12;
+    const top = Math.max(8, Math.min(
+      preferredTop >= 8 ? preferredTop : anchorY + 12,
+      viewport.innerHeight - height - 8
+    ));
+
+    tooltip.style.left = `${left}px`;
+    tooltip.style.top = `${top}px`;
   }
 
   private formatDate(date: Date | string): string {
@@ -221,8 +267,14 @@ export class History implements OnInit {
     const accountType = this.accountTypes.get(accountId);
     const labels: Record<string, string> = {
       BROKERAGE: 'Individual Brokerage',
-      _401K: '401(k)',
-      '401K': '401(k)',
+      _401K: 'Traditional 401(k)',
+      '401K': 'Traditional 401(k)',
+      TRADITIONAL_401K: 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      ROTH_401K: 'Roth 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      TRADITIONAL_IRA: 'Traditional IRA',
+      'TRADITIONAL IRA': 'Traditional IRA',
       ROTH_IRA: 'Roth IRA',
       'ROTH IRA': 'Roth IRA',
       CRYPTO: 'Crypto',

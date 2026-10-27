@@ -23,7 +23,7 @@
 
 ### Key Features
 
-- **Multi-Account Support**: Users can create multiple accounts with different types (brokerage, 401k, roth ira, crypto, forex)
+- **Multi-Account Support**: Users can create brokerage, traditional/Roth 401(k), traditional/Roth IRA, crypto, and forex accounts
 - **Multiple Asset Classes**: Trade equities, cryptocurrencies, and forex pairs
 - **Order Management**: Place, track, and execute buy/sell orders (EXCHANGE limited to FOREX accounts)
 - **Portfolio Tracking**: View holdings, average cost basis, and order history
@@ -159,7 +159,7 @@ Monkey Business implements role-based access control (RBAC) with three access le
 **Purpose**: Regular trading account holder
 
 **Privileges**:
-- ✅ Create own accounts (brokerage, 401k, roth ira, crypto, forex)
+- ✅ Create own accounts (brokerage, traditional/Roth 401(k), traditional/Roth IRA, crypto, forex)
 - ✅ Place orders (buy/sell on all accounts, exchange on FOREX only)
 - ✅ View own accounts and portfolios
 - ✅ View own order history
@@ -248,48 +248,12 @@ Users can create multiple accounts of different types. Each account type has dif
 
 ---
 
-### 2. 401K (Retirement Account)
-**Purpose**: Employer-sponsored retirement savings
+### 2. Retirement Accounts
+The application supports **Traditional 401(k)**, **Roth 401(k)**, **Traditional IRA**, and **Roth IRA** accounts. The account-opening flow first asks whether the user is opening a 401(k) or IRA, then presents the applicable traditional/Roth choices.
 
-**Characteristics**:
-- Restricted to retirement-focused assets
-- Annual contribution limits (enforced at validation layer)
-- Supports: EQUITY, FOREX
-- Does not support: CRYPTO (regulations)
-- Early withdrawal penalties (simplified model)
+All retirement account variants are restricted to EQUITY trades. CRYPTO and FOREX assets are not supported in retirement accounts. The current application applies an initial-deposit cap based on account family and the account owner's age; it does not model tax treatment, annual contribution aggregation across accounts, or withdrawal penalties.
 
-**Allowed Actions**:
-- BUY (contribute)
-- SELL (withdrawal)
-
-**Restrictions**:
-- 401K accounts cannot hold CRYPTO assets (regulatory restrictions)
-- Annual contribution limits enforced at validation layer
-- Withdrawals before age 59½ may incur penalties (simplified model)
-
-*Validation logic implemented in* `Validation.isValidTrade()` *and account type validators*
-
----
-
-### 3. ROTH IRA
-**Purpose**: After-tax retirement savings
-
-**Characteristics**:
-- Similar to 401K but with different contribution rules
-- Contributions are after-tax (not modeled separately)
-- Earnings grow tax-free
-- Supports: EQUITY, FOREX (no CRYPTO)
-
-**Allowed Actions**:
-- BUY (after-tax contribution)
-- SELL (withdrawal)
-
-**Restrictions**:
-- Roth IRA accounts cannot hold CRYPTO assets
-- Contribution limits enforced (different from 401K)
-- Age and time-based withdrawal restrictions (simplified model)
-
-*Validation logic implemented in* `Validation.isValidTrade()` *and account type validators*
+The legacy API value `401K` is still accepted and treated as `TRADITIONAL 401K` for compatibility. The expanded account-type constraint is defined in `db/databasescript.sql`; because this project uses regenerable mock data, reset/recreate the local database from the initialization script when applying schema changes.
 
 ---
 
@@ -343,8 +307,10 @@ Users can create multiple accounts of different types. Each account type has dif
 | Account Type | EQUITY | CRYPTO | FOREX | BUY | SELL | EXCHANGE |
 |--------------|--------|--------|-------|-----|------|----------|
 | BROKERAGE    | ✅     | ✅     | ✅    | ✅  | ✅   | ❌       |
-| 401K         | ✅     | ❌     | ✅    | ✅  | ✅   | ❌       |
-| ROTH IRA     | ✅     | ❌     | ✅    | ✅  | ✅   | ❌       |
+| Traditional 401K | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Roth 401K        | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Traditional IRA  | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
+| Roth IRA         | ✅ | ❌ | ❌ | ✅ | ✅ | ❌ |
 | CRYPTO       | ❌     | ✅     | ❌    | ✅  | ✅   | ❌       |
 | FOREX        | ❌     | ❌     | ✅    | ✅  | ✅   | ✅       |
 
@@ -381,7 +347,7 @@ The system is built around 5 core entities with specific responsibilities. Each 
 
 **Key Attributes**:
 - Belongs to a single User
-- Account type (BROKERAGE | 401K | ROTH IRA | CRYPTO | FOREX)
+- Account type (BROKERAGE | TRADITIONAL 401K | ROTH 401K | TRADITIONAL IRA | ROTH IRA | CRYPTO | FOREX)
 - Two balances tracked: `cashBalance` (liquid cash) and `balance` (total portfolio value)
 - Open date and lifecycle tracking
 - Non-negative balance constraints
@@ -514,7 +480,7 @@ When a user submits an order, it flows through multiple validation and execution
 │                                                                  │
 │    B) ASSET CLASS VALIDATION                                     │
 │       - Is CRYPTO account trying to hold EQUITY? → REJECT        │
-│       - Is 401K account trying to hold CRYPTO? → REJECT          │
+│       - Is a retirement account trying to hold CRYPTO? → REJECT  │
 │       - Does orderType match assetClass? → REJECT               │
 │                                                                  │
 │    C) ACTION VALIDATION                                          │
@@ -534,8 +500,8 @@ When a user submits an order, it flows through multiple validation and execution
 │       Response: insufficient shares → REJECT                     │
 │                                                                  │
 │    F) ACCOUNT TYPE VALIDATION                                    │
-│       - 401K has annual contribution limits                       │
-│       - 401K cannot hold CRYPTO                                  │
+│       - Retirement accounts have initial deposit caps             │
+│       - Retirement accounts cannot hold CRYPTO                    │
 │       - CRYPTO account exclusive to CRYPTO assets                │
 │       - FOREX account exclusive to FOREX                         │
 │       Response: account type mismatch → REJECT                   │
@@ -621,7 +587,7 @@ When a user submits an order, it flows through multiple validation and execution
 3. **Account Type Compatible**: Check account/asset class matrix
 4. **Sufficient Funds**: `cashBalance >= (quantity × currentPrice)`
 5. **Quantity Valid**: `quantity > 0`
-6. **Account Limits**: Check 401K contribution limits if applicable
+6. **Account Limits**: Check retirement-account initial deposit caps if applicable
 
 #### For SELL Orders:
 1. **Ticker Exists**: Ticker must be in market data
@@ -631,7 +597,7 @@ When a user submits an order, it flows through multiple validation and execution
 5. **Account Type Compatible**: Check account type restrictions
 
 #### For EXCHANGE Orders:
-1. **Only in FOREX Accounts**: EXCHANGE orders are exclusively for FOREX account types. BROKERAGE, 401K, ROTH IRA, and CRYPTO accounts can only use BUY/SELL.
+1. **Only in FOREX Accounts**: EXCHANGE orders are exclusively for FOREX account types. Brokerage, retirement, and CRYPTO accounts can only use BUY/SELL.
 2. **Both Tickers Valid**: Both source and destination must exist and be FOREX pairs
 3. **Sufficient Quantity**: Must own enough of the source ticker
 4. **Sufficient Funds**: Destination purchase must have sufficient cash
@@ -828,7 +794,7 @@ The order processing pipeline consists of several key Spring Boot components, ea
 - Verify account type supports this asset class
 - Check account has sufficient funds (for BUY)
 - Check account has sufficient position (for SELL)
-- Apply account-type specific rules (401K contribution limits, EXCHANGE→FOREX only, etc)
+- Apply account-type specific rules (retirement deposit caps, EXCHANGE→FOREX only, etc)
 - Return `ValidationResult` with pass/fail and reason
 
 **Spring Annotations Expected**:

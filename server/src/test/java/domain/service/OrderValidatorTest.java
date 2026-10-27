@@ -77,7 +77,7 @@ class OrderValidatorTest {
         retirementAccount = new Account(
             UUID.randomUUID(),
             ZonedDateTime.now(),
-            Account.AccountType._401K,
+            Account.AccountType.TRADITIONAL_401K,
             BigDecimal.valueOf(30000),
             BigDecimal.valueOf(30000),
             new java.util.HashSet<>(),
@@ -125,10 +125,11 @@ class OrderValidatorTest {
         when(pricingEngine.getPrice("AAPL")).thenReturn(BigDecimal.valueOf(150));
 
         // Act
-        boolean isValid = orderValidator.isValidTrade(validBuyOrder, lowCashAccount);
+        OrderValidator.ValidationResult result = orderValidator.validateTrade(validBuyOrder, lowCashAccount);
 
         // Assert
-        assertFalse(isValid);
+        assertFalse(result.valid());
+        assertEquals(OrderValidator.INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE, result.rejectionStatusCode());
     }
 
     @Test
@@ -179,7 +180,19 @@ class OrderValidatorTest {
             new domain.entities.Asset(UUID.randomUUID(), "EQUITY", "AAPL", "Apple Inc.", 25.0, BigDecimal.valueOf(150))
         );
 
-        assertFalse(orderValidator.isValidTrade(sellOrder, brokerageAccount));
+        OrderValidator.ValidationResult result = orderValidator.validateTrade(sellOrder, brokerageAccount);
+        assertFalse(result.valid());
+        assertEquals(OrderValidator.INSUFFICIENT_FUNDS_OR_QUANTITY_STATUS_CODE, result.rejectionStatusCode());
+    }
+
+    @Test
+    void testValidateTrade_EquityOrderOutsideMarketHours_ReturnsMarketClosedCode() {
+        orderValidator.setClock(Clock.fixed(Instant.parse("2026-10-21T12:00:00Z"), ZoneOffset.UTC));
+
+        OrderValidator.ValidationResult result = orderValidator.validateTrade(validBuyOrder, brokerageAccount);
+
+        assertFalse(result.valid());
+        assertEquals(OrderValidator.MARKET_CLOSED_STATUS_CODE, result.rejectionStatusCode());
     }
 
     @Test
@@ -387,6 +400,23 @@ class OrderValidatorTest {
         );
 
         assertFalse(orderValidator.isValidTrade(forexOrder, retirementAccount));
+    }
+
+    @ParameterizedTest
+    @CsvSource({"TRADITIONAL_401K", "ROTH_401K", "TRADITIONAL_IRA", "ROTH_IRA"})
+    void testRetirementAccountTypesSupportEquities(String accountType) {
+        Account account = new Account(
+            UUID.randomUUID(),
+            ZonedDateTime.now(),
+            Account.AccountType.valueOf(accountType),
+            BigDecimal.valueOf(30000),
+            BigDecimal.valueOf(30000),
+            new java.util.HashSet<>(),
+            new java.util.HashSet<>()
+        );
+        when(pricingEngine.getPrice("AAPL")).thenReturn(BigDecimal.valueOf(150));
+
+        assertTrue(orderValidator.isValidTrade(validBuyOrder, account));
     }
 
     @ParameterizedTest

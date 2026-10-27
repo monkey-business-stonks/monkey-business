@@ -77,6 +77,7 @@ class OperationsOrderRow(BaseModel):
     instrument: str
     quantity: float
     principal_usd: float
+    execution_price_usd: float | None = None
     execution_status: str
     settlement_status: str
     latest_event_utc: datetime | None = None
@@ -88,6 +89,8 @@ class OperationsOverviewResponse(BaseModel):
     summary: OperationsSummary
     status_tabs: list[str]
     orders: list[OperationsOrderRow]
+    total_matching_orders: int = 0
+    available_instruments: list[str] = []
 
 
 class OperationsLifecycleEvent(BaseModel):

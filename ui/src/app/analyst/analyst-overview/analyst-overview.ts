@@ -61,6 +61,8 @@ export class AnalystOverviewComponent implements OnInit {
     clients: string;
     clientsVsAug: string;
     volumeVsAug: string;
+    clientsChange: number | null;
+    volumeChange: number | null;
   }> = [];
 
   private orderUpdateSubscription?: Subscription;
@@ -155,6 +157,8 @@ export class AnalystOverviewComponent implements OnInit {
       clients: this.formatInt(row.active_accounts),
       clientsVsAug: this.formatPct(row.active_accounts_vs_comparison_pct),
       volumeVsAug: this.formatPct(row.notional_vs_comparison_pct),
+      clientsChange: row.active_accounts_vs_comparison_pct,
+      volumeChange: row.notional_vs_comparison_pct,
     }));
 
     const instrumentValues = data.available_instruments;

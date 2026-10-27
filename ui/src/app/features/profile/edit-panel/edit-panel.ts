@@ -29,6 +29,12 @@ export class EditPanel implements OnChanges {
   newPasswordBlurred = false;
   confirmNewPasswordBlurred = false;
   showDiscardConfirmation = false;
+  rejectedCurrentPassword: string | null = null;
+
+  get currentPasswordIncorrect(): boolean {
+    return this.rejectedCurrentPassword !== null
+      && this.currentPassword === this.rejectedCurrentPassword;
+  }
 
   private initialValues = {
     firstName: '',
@@ -72,6 +78,10 @@ export class EditPanel implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['user']) {
       this.populateFromUser();
+    }
+    if (changes['saveError']) {
+      this.rejectedCurrentPassword = this.saveError === 'Current password is incorrect'
+        ? this.currentPassword : null;
     }
   }
 

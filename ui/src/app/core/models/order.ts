@@ -28,6 +28,7 @@ export interface Order {
   submittedValue: number;
   executedValue: number | null;
   status: OrderStatus;
+  statusCode?: number | null;
   submittedOn: Date;
   verifiedOn: Date | null;
   settledOn: Date | null;
