@@ -61,27 +61,8 @@
     </div>
   </div>
 
-  <div class="table-card">
-    <app-table [columns]="tableColumns" [data]="ordersData" rowKey="orderId"
-      [selectedRowKey]="selectedOrder?.id ?? null" (rowSelected)="selectOrder($event)">
-      <ng-template #cellTemplate let-row let-column="column">
-        @if ((column.key === 'execution' || column.key === 'settlement') && row[column.key] !== 'N/A') {
-          <span class="order-status" [ngClass]="{
-            'status-rejected': row[column.key] === 'Rejected',
-            'status-settled': row[column.key] === 'Settled',
-            'status-pending': ['Submitted', 'Accepted', 'Filled', 'Awaiting'].includes(row[column.key])
-          }">{{ row[column.key] }}</span>
-        } @else if (column.key === 'exception' && row.exception !== 'None' && row.exception !== 'N/A') {
-          <span class="order-status status-rejected">{{ row.exception }}</span>
-        } @else {
-          {{ row[column.key] }}
-        }
-      </ng-template>
-    </app-table>
-  </div>
-
   @if (selectedOrder) {
-    <div class="selection-footer">
+    <div class="selection-toolbar">
       <div class="selection-content">
         <!-- Green File/Search Icon Container -->
         <div class="selection-icon-wrapper">
@@ -112,4 +93,48 @@
       </app-button>
     </div>
   }
+
+  <div class="table-card" [attr.aria-busy]="loading">
+    <app-table [columns]="tableColumns" [data]="ordersData" rowKey="orderId"
+      [selectedRowKey]="selectedOrder?.id ?? null" (rowSelected)="selectOrder($event)">
+      <ng-template #cellTemplate let-row let-column="column">
+        @if ((column.key === 'execution' || column.key === 'settlement') && row[column.key] !== 'N/A') {
+          <span class="order-status" [ngClass]="{
+            'status-rejected': row[column.key] === 'Rejected',
+            'status-settled': row[column.key] === 'Settled',
+            'status-pending': ['Submitted', 'Accepted', 'Filled', 'Awaiting'].includes(row[column.key])
+          }">{{ row[column.key] }}</span>
+        } @else if (column.key === 'exception' && row.exception !== 'None' && row.exception !== 'N/A') {
+          <span class="order-status status-rejected">{{ row.exception }}</span>
+        } @else {
+          {{ row[column.key] }}
+        }
+      </ng-template>
+    </app-table>
+  </div>
+
+  <nav class="pagination" aria-label="Trading records pages">
+    <span class="pagination-summary" aria-live="polite">
+      {{ firstVisibleOrder }}-{{ lastVisibleOrder }} of {{ totalOrders }} trades
+    </span>
+    <div class="pagination-controls">
+      <button type="button" class="page-button" aria-label="Previous page" title="Previous page"
+        [disabled]="loading || currentPage === 1" (click)="changePage(currentPage - 1)">&larr;</button>
+      @if (visiblePages[0] > 1) {
+        <button type="button" class="page-button" [disabled]="loading" (click)="changePage(1)">1</button>
+        @if (visiblePages[0] > 2) { <span aria-hidden="true">...</span> }
+      }
+      @for (page of visiblePages; track page) {
+        <button type="button" class="page-button" [class.active]="currentPage === page"
+          [attr.aria-current]="currentPage === page ? 'page' : null"
+          [attr.aria-label]="'Page ' + page" [disabled]="loading" (click)="changePage(page)">{{ page }}</button>
+      }
+      @if (visiblePages[visiblePages.length - 1] < totalPages) {
+        @if (visiblePages[visiblePages.length - 1] < totalPages - 1) { <span aria-hidden="true">...</span> }
+        <button type="button" class="page-button" [disabled]="loading" (click)="changePage(totalPages)">{{ totalPages }}</button>
+      }
+      <button type="button" class="page-button" aria-label="Next page" title="Next page"
+        [disabled]="loading || currentPage === totalPages" (click)="changePage(currentPage + 1)">&rarr;</button>
+    </div>
+  </nav>
 </div>

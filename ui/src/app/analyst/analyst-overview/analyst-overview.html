@@ -71,8 +71,10 @@
                 <td class="align-right mono">{{ row.notional }}</td>
                 <td class="align-right mono">{{ row.orders }}</td>
                 <td class="align-right mono">{{ row.clients }}</td>
-                <td class="align-right mono text-success">{{ row.clientsVsAug }}</td>
-                <td class="align-right mono text-success">{{ row.volumeVsAug }}</td>
+                <td class="align-right mono" [class.text-success]="(row.clientsChange ?? 0) > 0"
+                  [class.text-negative]="(row.clientsChange ?? 0) < 0">{{ row.clientsVsAug }}</td>
+                <td class="align-right mono" [class.text-success]="(row.volumeChange ?? 0) > 0"
+                  [class.text-negative]="(row.volumeChange ?? 0) < 0">{{ row.volumeVsAug }}</td>
               </tr>
             }
           </tbody>

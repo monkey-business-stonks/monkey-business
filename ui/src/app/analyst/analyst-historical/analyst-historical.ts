@@ -59,6 +59,7 @@ export class AnalystHistoricalComponent implements OnInit {
     orders: string;
     share: string;
     vsAug: string;
+    volumeChange: number | null;
   }> = [];
 
   private orderUpdateSubscription?: Subscription;
@@ -153,6 +154,7 @@ export class AnalystHistoricalComponent implements OnInit {
       orders: this.formatInt(row.orders_count),
       share: `${row.share_of_total_pct.toFixed(2)}%`,
       vsAug: this.totalNotionalDelta,
+      volumeChange: data.kpi_deltas.traded_volume_usd_pct,
     }));
 
     const instrumentValues = data.available_instruments;

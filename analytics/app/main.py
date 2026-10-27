@@ -407,6 +407,12 @@ def operations_overview(
             instrument=f"{row['ticker']} {row['action'].title()}",
             quantity=float(row["quantity"] or 0),
             principal_usd=float(row["executedvalue"] or 0),
+            execution_price_usd=(
+                float(row["executedvalue"]) / float(row["quantity"])
+                if row["status"] in {"FILLED", "SETTLED"}
+                and row["executedvalue"] is not None and row["quantity"]
+                else None
+            ),
             execution_status=row["status"].title(),
             settlement_status=settlement_label(row["status"]),
             latest_event_utc=row["latest_event"],
@@ -442,6 +448,8 @@ def operations_overview(
         ),
         status_tabs=status_tabs,
         orders=orders,
+        total_matching_orders=payload["total_matching_orders"],
+        available_instruments=payload["available_instruments"],
     )
 
 
