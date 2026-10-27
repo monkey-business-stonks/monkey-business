@@ -267,8 +267,14 @@ export class History implements OnInit {
     const accountType = this.accountTypes.get(accountId);
     const labels: Record<string, string> = {
       BROKERAGE: 'Individual Brokerage',
-      _401K: '401(k)',
-      '401K': '401(k)',
+      _401K: 'Traditional 401(k)',
+      '401K': 'Traditional 401(k)',
+      TRADITIONAL_401K: 'Traditional 401(k)',
+      'TRADITIONAL 401K': 'Traditional 401(k)',
+      ROTH_401K: 'Roth 401(k)',
+      'ROTH 401K': 'Roth 401(k)',
+      TRADITIONAL_IRA: 'Traditional IRA',
+      'TRADITIONAL IRA': 'Traditional IRA',
       ROTH_IRA: 'Roth IRA',
       'ROTH IRA': 'Roth IRA',
       CRYPTO: 'Crypto',

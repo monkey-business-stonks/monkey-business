@@ -1,24 +1,15 @@
-<div class="account-flow-steps" aria-label="Account opening progress">
-  <div class="account-flow-step" [class.active]="currentStep === 'select-type'" [class.completed]="currentStep !== 'select-type'">
-    <span class="step-circle">
-      @if (currentStep !== 'select-type') { ✓ } @else { 1 }
-    </span>
-    <span class="step-label">Account Type</span>
-  </div>
-  <span class="step-connector" [class.completed]="currentStep !== 'select-type'" aria-hidden="true"></span>
-  <div class="account-flow-step" [class.active]="currentStep === 'deposit'" [class.completed]="currentStep === 'review' || currentStep === 'confirmation'">
-    <span class="step-circle">
-      @if (currentStep === 'review' || currentStep === 'confirmation') { ✓ } @else { 2 }
-    </span>
-    <span class="step-label">Details &amp; Profile</span>
-  </div>
-  <span class="step-connector" [class.completed]="currentStep === 'review' || currentStep === 'confirmation'" aria-hidden="true"></span>
-  <div class="account-flow-step" [class.active]="currentStep === 'review'" [class.completed]="currentStep === 'confirmation'">
-    <span class="step-circle">
-      @if (currentStep === 'confirmation') { ✓ } @else { 3 }
-    </span>
-    <span class="step-label">Review &amp; Confirm</span>
-  </div>
+<div class="account-flow-steps" [class.four-step]="flowSteps.length === 4" aria-label="Account opening progress">
+  @for (step of flowSteps; track step; let i = $index) {
+    <div class="account-flow-step" [class.active]="currentFlowStepIndex === i" [class.completed]="currentFlowStepIndex > i">
+      <span class="step-circle">
+        @if (currentFlowStepIndex > i) { ✓ } @else { {{ i + 1 }} }
+      </span>
+      <span class="step-label">{{ step }}</span>
+    </div>
+    @if (i < flowSteps.length - 1) {
+      <span class="step-connector" [class.completed]="currentFlowStepIndex > i" aria-hidden="true"></span>
+    }
+  }
 </div>
 
 <div class="account-opening-panel">
@@ -41,7 +32,7 @@
         <button
           type="button"
           class="account-option-card"
-          [class.selected]="selectedAccountType === option.value"
+          [class.selected]="selectedAccountCategory === option.value"
           (click)="selectType(option.value)">
           <span class="account-option-indicator" aria-hidden="true"></span>
           <p class="account-title">{{ option.label }}</p>
@@ -55,10 +46,44 @@
       <app-button
         variant="secondary"
         [compact]="true"
-        [disabled]="isLoading || !selectedAccountType"
+        [disabled]="isLoading || !selectedAccountCategory"
         (click)="confirmType()"
       >
-        @if (!isLoading) { Confirm Account Type } @else { Verifying... }
+        @if (isLoading) { Verifying... } @else if (isRetirementCategorySelected) { Choose Retirement Type } @else { Confirm Account Type }
+      </app-button>
+    </div>
+  }
+
+  @if (currentStep === 'select-retirement-type') {
+    <div class="header-row">
+      <div>
+        <p class="label">Choose {{ selectedAccountCategory === 'RETIREMENT_401K' ? '401(k)' : 'IRA' }} Type</p>
+        <p class="sublabel">Choose the tax treatment for your retirement account.</p>
+      </div>
+    </div>
+
+    <div class="account-options-grid">
+      @for (option of retirementTypeOptions; track option.value) {
+        <button
+          type="button"
+          class="account-option-card"
+          [class.selected]="selectedAccountType === option.value"
+          (click)="selectRetirementType(option.value)">
+          <span class="account-option-indicator" aria-hidden="true"></span>
+          <p class="account-title">{{ option.label }}</p>
+          <p class="account-description">{{ option.description }}</p>
+        </button>
+      }
+    </div>
+
+    <div class="flow-actions">
+      <app-button variant="primary" (click)="goBackToAccountCategory()" [disabled]="isLoading">Back</app-button>
+      <app-button
+        variant="secondary"
+        [compact]="true"
+        [disabled]="isLoading || !selectedAccountType"
+        (click)="confirmType()">
+        @if (isLoading) { Verifying... } @else { Continue }
       </app-button>
     </div>
   }
@@ -96,6 +121,9 @@
             [(ngModel)]="depositAmount"
             [disabled]="isLoading"
             placeholder="Enter amount" />
+          @if (depositLimitError) {
+            <p class="field-error" role="alert">{{ depositLimitError }}</p>
+          }
         </div>
 
         <div class="form-field">
@@ -150,7 +178,7 @@
       <app-button
         variant="secondary"
         [compact]="true"
-        [disabled]="isLoading || !canContinueToReview"
+        [disabled]="isLoading || !canAttemptContinueToReview"
         (click)="confirmDeposit()"
       >
         @if (!isLoading) { Continue } @else { Preparing Review... }
