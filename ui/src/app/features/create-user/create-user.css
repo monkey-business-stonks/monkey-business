@@ -1,17 +1,3 @@
-/**
- * Create Account Page Styles
- * 
- * Styling for the account creation/registration page of the Monkey Business trading platform.
- * Uses the design tokens from the main styles.css for consistent theming.
- * Extends login page styling with additional form elements for registration.
- * 
- * Color Scheme:
- * - Background: Dark gradient (#0a0e13 to #1a1f2e)
- * - Text: White (#ffffff) for primary, #8A99A5 for secondary
- * - Accent: Green (#00E676) for primary actions
- * - Card: Dark background (#202830) with subtle border
- */
-
 /* ===== LOGIN CONTAINER ===== */
 /* Full viewport container with flexbox centering and dark gradient background */
 .login-container {
