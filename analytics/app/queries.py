@@ -152,8 +152,14 @@ def fetch_analyst_overview(
         "top_rows": top_rows,
         "breakdown_rows": breakdown_rows,
         "comparison_breakdown_rows": comparison_breakdown_rows,
-        "available_instruments": sorted({row["ticker"] for row in option_rows}),
-        "available_account_types": sorted({row["accounttype"] for row in option_rows}),
+        "available_instruments": sorted({
+            row["ticker"] for row in option_rows
+            if not filters.account_type or row["accounttype"] == filters.account_type
+        }),
+        "available_account_types": sorted({
+            row["accounttype"] for row in option_rows
+            if not filters.instrument or row["ticker"] == filters.instrument
+        }),
     }
 
 
