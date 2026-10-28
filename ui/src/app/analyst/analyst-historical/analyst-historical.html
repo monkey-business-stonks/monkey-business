@@ -69,17 +69,20 @@
           <div class="metric-item">
             <span class="card-subtitle">USD NOTIONAL</span>
             <span class="metric-val">{{ totalNotional }}</span>
-            <span class="text-xs text-success">{{ totalNotionalDelta }} vs comparison period</span>
+            <span class="text-xs" [class.text-success]="(totalNotionalChange ?? 0) > 0"
+              [class.text-negative]="(totalNotionalChange ?? 0) < 0">{{ totalNotionalDelta }} vs comparison period</span>
           </div>
           <div class="metric-item">
             <span class="card-subtitle">FILLED ORDERS</span>
             <span class="metric-val">{{ totalOrders }}</span>
-            <span class="text-xs text-success">{{ totalOrdersDelta }} vs comparison period</span>
+            <span class="text-xs" [class.text-success]="(totalOrdersChange ?? 0) > 0"
+              [class.text-negative]="(totalOrdersChange ?? 0) < 0">{{ totalOrdersDelta }} vs comparison period</span>
           </div>
           <div class="metric-item">
             <span class="card-subtitle">DISTINCT ACTIVE CLIENTS</span>
             <span class="metric-val">{{ totalActiveClients }}</span>
-            <span class="text-xs text-success">{{ totalActiveClientsDelta }} vs comparison period</span>
+            <span class="text-xs" [class.text-success]="(totalActiveClientsChange ?? 0) > 0"
+              [class.text-negative]="(totalActiveClientsChange ?? 0) < 0">{{ totalActiveClientsDelta }} vs comparison period</span>
           </div>
         </div>
       </div>

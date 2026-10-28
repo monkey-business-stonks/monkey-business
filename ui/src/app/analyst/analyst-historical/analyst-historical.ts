@@ -40,6 +40,9 @@ export class AnalystHistoricalComponent implements OnInit {
   totalNotionalDelta = '0.0%';
   totalOrdersDelta = '0.0%';
   totalActiveClientsDelta = '0.0%';
+  totalNotionalChange: number | null = null;
+  totalOrdersChange: number | null = null;
+  totalActiveClientsChange: number | null = null;
   totalShare = '100.00%';
 
   periodOptions = [{ label: 'All available', value: 'all' }];
@@ -145,6 +148,9 @@ export class AnalystHistoricalComponent implements OnInit {
     this.totalNotionalDelta = this.formatPct(data.kpi_deltas.traded_volume_usd_pct);
     this.totalOrdersDelta = this.formatPct(data.kpi_deltas.filled_orders_pct);
     this.totalActiveClientsDelta = this.formatPct(data.kpi_deltas.active_accounts_pct);
+    this.totalNotionalChange = data.kpi_deltas.traded_volume_usd_pct;
+    this.totalOrdersChange = data.kpi_deltas.filled_orders_pct;
+    this.totalActiveClientsChange = data.kpi_deltas.active_accounts_pct;
 
     this.reportRows = data.top_instruments.map((row) => ({
       period: `${fromLabel} - ${toLabel}`,

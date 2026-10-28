@@ -2,7 +2,7 @@
     <div class="metric-header">
     <span class="metric-title">{{ title }}</span>
     @if (badge) {
-        <span class="metric-badge" [ngClass]="'badge-' + badgeType">{{ badge }}</span>
+        <span class="metric-badge" [ngClass]="'badge-' + resolvedBadgeType">{{ badge }}</span>
     }
     </div>
     <div class="metric-value">{{ value }}</div>

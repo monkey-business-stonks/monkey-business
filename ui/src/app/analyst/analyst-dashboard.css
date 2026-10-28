@@ -193,5 +193,6 @@ h1 {
 .align-right { text-align: right; }
 .mono { font-family: 'Roboto Mono', monospace; }
 .text-success { color: var(--accent-primary); }
+.text-negative { color: var(--accent-negative); }
 .text-muted { color: var(--text-secondary); }
 .flex-grow { flex: 1; }
