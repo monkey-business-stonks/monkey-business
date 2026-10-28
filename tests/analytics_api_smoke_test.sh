@@ -3,7 +3,7 @@
 set -euo pipefail
 
 BASE_URL="${ANALYTICS_BASE_URL:-http://localhost:8001}"
-JWT_SIGNING_KEY="${JWT_SIGNING_KEY:-my-secret-key-change-me-in-production}"
+: "${JWT_SIGNING_KEY:?Set JWT_SIGNING_KEY to the deployed signing key}"
 TMP_DIR="$(mktemp -d)"
 
 cleanup() {

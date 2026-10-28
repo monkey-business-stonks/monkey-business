@@ -3,9 +3,9 @@ spring:
     name: monkeybusiness-server
   
   datasource:
-    url: jdbc:postgresql://localhost:5432/monkey_business
-    username: postgres
-    password: n3u3d4!
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/monkey_business}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
   
   jpa:
@@ -123,8 +123,8 @@ analytics:
   primary-fallback-enabled: false
   datasource:
     url: jdbc:postgresql://postgres_replica:5432/monkey_business
-    username: analytics_reader
-    password: analytics_reader_change_me
+    username: ${ANALYTICS_DATASOURCE_USERNAME}
+    password: ${ANALYTICS_DATASOURCE_PASSWORD}
     driver-class-name: org.postgresql.Driver
     hikari:
       read-only: true
@@ -137,9 +137,9 @@ server:
 
 market-data:
   api-url: ${MARKET_DATA_API_URL:https://y4t9nq2bqf.execute-api.eu-west-2.amazonaws.com/v1}
-  api-key: ${MARKET_DATA_API_KEY:fnx_dev_IFOonKTo37axWB4TH8MpbXit6W4QMHED}
+  api-key: ${MARKET_DATA_API_KEY}
   refresh-interval-ms: ${MARKET_DATA_REFRESH_INTERVAL_MS:300000}
   refresh-initial-delay-ms: ${MARKET_DATA_REFRESH_INITIAL_DELAY_MS:10000}
 
 jwt:
-  signing-key: ${JWT_SIGNING_KEY:your-secret-key-change-me}
+  signing-key: ${JWT_SIGNING_KEY}

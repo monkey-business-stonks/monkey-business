@@ -13,7 +13,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.db import VALID_ACCOUNT_TYPES, get_conn
+from app.db import VALID_ACCOUNT_TYPES, get_conn, require_env
 from app.queries import (
     OrderFilters,
     fetch_analyst_overview,
@@ -39,6 +39,7 @@ from app.schemas import (
 
 app = FastAPI(title="monkey-business-analytics", version="1.1.0")
 bearer_scheme = HTTPBearer(auto_error=False)
+jwt_signing_key = require_env("JWT_SIGNING_KEY")
 
 
 def _require_role(*allowed_roles: str):
@@ -53,7 +54,7 @@ def _require_role(*allowed_roles: str):
         try:
             payload = jwt.decode(
                 credentials.credentials,
-                os.getenv("JWT_SIGNING_KEY", "your-secret-key-change-me"),
+                jwt_signing_key,
                 algorithms=[os.getenv("JWT_ALGORITHM", "HS256")],
                 options={"require": ["sub", "role", "exp"]},
             )

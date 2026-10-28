@@ -1114,18 +1114,63 @@ mvn spring-boot:run
 
 Runs on `http://localhost:8080`
 
-### Configuration (application.properties)
-```properties
-spring.datasource.url=jdbc:postgresql://localhost:5432/monkey_business
-spring.datasource.username=postgres
-spring.datasource.password=postgres
+### Runtime Secrets
 
-fauxnance.api.url=https://y4t9nq2bqf.execute-api.eu-west-2.amazonaws.com/v1
-fauxnance.api.key=your-api-key-here
+Deployment credentials are required environment variables, not values committed
+to source. See [.env.example](.env.example) for the blank Compose template.
+For local development, create a root `.env` from that template and supply your
+own values. Real `.env` files are ignored by Git. Compose refuses to start when
+required values are missing or empty. Do not print resolved Compose configuration
+or environment variables into shared logs because they contain secrets.
 
-jwt.secret=your-shared-secret-key
-jwt.expiration=86400000  # 24 hours in milliseconds
-```
+| Compose input | Used by |
+| --- | --- |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD` | Primary/replica; backend as `SPRING_DATASOURCE_USERNAME`, `SPRING_DATASOURCE_PASSWORD` |
+| `REPLICATION_USER`, `REPLICATION_PASSWORD` | Primary role provisioning and replica connection |
+| `ANALYTICS_DB_USER`, `ANALYTICS_DB_PASSWORD` | Primary role provisioning, Python analytics; backend as `ANALYTICS_DATASOURCE_USERNAME`, `ANALYTICS_DATASOURCE_PASSWORD` |
+| `OPERATIONS_DB_USER`, `OPERATIONS_DB_PASSWORD` | Primary read-only role provisioning |
+| `PGADMIN_DEFAULT_EMAIL`, `PGADMIN_DEFAULT_PASSWORD` | pgAdmin login |
+| `JWT_SIGNING_KEY` | Auth, backend, and Python analytics; use the same randomly generated key of at least 32 bytes across all three |
+| `MARKET_DATA_API_KEY` | Backend market-data client |
+
+Use distinct database role names. `REPLICATION_USER` must be a lowercase SQL
+identifier containing only letters, digits, and underscores, starting with a
+letter or underscore. For an existing database, retain its current role names
+unless you explicitly migrate those roles.
+
+When running Spring outside Compose, supply `SPRING_DATASOURCE_USERNAME`,
+`SPRING_DATASOURCE_PASSWORD`, `ANALYTICS_DATASOURCE_USERNAME`,
+`ANALYTICS_DATASOURCE_PASSWORD`, `JWT_SIGNING_KEY`, and `MARKET_DATA_API_KEY`.
+Use `SPRING_DATASOURCE_URL` and `ANALYTICS_DATASOURCE_URL` to target your deployed
+databases. Python analytics uses `ANALYTICS_DB_HOST`, `ANALYTICS_DB_PORT`,
+`ANALYTICS_DB_NAME`, `ANALYTICS_DB_USER`, `ANALYTICS_DB_PASSWORD`, and
+`JWT_SIGNING_KEY`. Services launched directly do not automatically load `.env`.
+
+### AWS Secrets Manager
+
+Store new credentials in AWS Secrets Manager. For ECS/Fargate, map secret ARNs
+or JSON-key references into each container's `secrets` configuration using the
+runtime names above. The ECS task execution role needs `secretsmanager:GetSecretValue`
+and, for a customer-managed encryption key, `kms:Decrypt` on the specific resources.
+Do not put secret values in Docker build arguments, images, frontend code, or
+plain-text task definition environment entries.
+
+On EC2 with Compose, use an instance IAM role and deployment bootstrap to retrieve
+and inject the required variables before invoking Compose. The application does
+not fetch Secrets Manager values itself; `.env.example` is only a template.
+Never commit AWS access keys. Inject updated secrets and restart/redeploy services
+after rotation.
+
+Previously committed API keys, passwords, and JWT signing keys must be treated
+as exposed and rotated. These changes do not erase Git history. PostgreSQL init
+scripts only run for new volumes: changing environment values does not update
+existing database roles or stored passwords. Rotate those in PostgreSQL first
+and coordinate the application/replica rollout; do not delete data volumes to
+apply this change. See [replication setup](db/replication/README.md).
+
+Seed data and test-account credentials are intentionally unchanged. Do not load
+the demonstration seed accounts into a public production database; the existing
+Compose setup still loads them on a fresh database volume.
 
 ---
 

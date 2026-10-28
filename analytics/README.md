@@ -6,6 +6,10 @@ This service exposes analytics endpoints directly from a Python FastAPI app.
 
 From repo root:
 
+Supply the required variables from the root [.env.example](../.env.example) in
+your local `.env` or deployment environment before starting the stack. Database
+credentials and the shared JWT signing key no longer have fallback values.
+
 ```bash
 ./analytics/scripts/analytics-up.sh
 ```
@@ -38,7 +42,9 @@ Base URL: `http://localhost:8001`
 
 Analytics validates the same HS256 access tokens issued by the auth service. Set
 `JWT_SIGNING_KEY` to the auth service signing key when running the service outside
-Docker; `/health` remains public for container health checks.
+Docker, along with `ANALYTICS_DB_USER` and `ANALYTICS_DB_PASSWORD`. A missing or
+blank signing key prevents startup; `/health` remains public for container health
+checks once configured. Direct launches do not automatically load `.env`.
 
 ## Logs
 
