@@ -218,8 +218,10 @@ public class AccountService {
     private AccountResponse toAccountResponse(Account account, UUID userId) {
         // Load assets for this account
         List<domain.dto.AssetResponse> heldAssets = new ArrayList<>();
+        BigDecimal balance = account.getCashBalance();
         for (domain.entities.Asset asset : assetRepository.findAssetsByAccountIdOrderByValue(account.getAccID())) {
             BigDecimal currentPrice = pricingEngine.getPrice(asset.ticker());
+            balance = balance.add(asset.getMarketValue(currentPrice));
             heldAssets.add(new domain.dto.AssetResponse()
                 .assetId(asset.getAssetId())
                 .assetClass(domain.dto.AssetClass.valueOf(asset.getAssetClass()))
@@ -236,7 +238,7 @@ public class AccountService {
             .userId(userId)
             .accountType(toDtoAccountType(account.getAccType()))
             .openedDate(account.getCreatedOn().toOffsetDateTime())
-            .balance(new BigDecimal(account.getBalance()))
+            .balance(balance)
             .cashBalance(account.getCashBalance())
             .tradingExperience(account.getTradingExperience())
             .investmentObjective(account.getInvestmentObjective())
